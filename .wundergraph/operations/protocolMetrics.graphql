@@ -1,0 +1,66 @@
+query ProtocolMetrics($startDate: String!) {
+    treasuryArbitrum_protocolMetrics(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+        id
+        block
+        currentAPY
+        currentIndex
+        date
+        gOhmPrice
+        gOhmTotalSupply
+        nextDistributedOhm
+        nextEpochRebase
+        ohmPrice
+        ohmTotalSupply
+        sOhmCirculatingSupply
+        timestamp
+        totalValueLocked
+    }
+    treasuryEthereum_protocolMetrics(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+        id
+        block
+        currentAPY
+        currentIndex
+        date
+        gOhmPrice
+        gOhmTotalSupply
+        nextDistributedOhm
+        nextEpochRebase
+        ohmPrice
+        ohmTotalSupply
+        sOhmCirculatingSupply
+        timestamp
+        totalValueLocked
+    }
+    treasuryFantom_protocolMetrics(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+        id
+        block
+        currentAPY
+        currentIndex
+        date
+        gOhmPrice
+        gOhmTotalSupply
+        nextDistributedOhm
+        nextEpochRebase
+        ohmPrice
+        ohmTotalSupply
+        sOhmCirculatingSupply
+        timestamp
+        totalValueLocked
+    }
+    treasuryPolygon_protocolMetrics(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+        id
+        block
+        currentAPY
+        currentIndex
+        date
+        gOhmPrice
+        gOhmTotalSupply
+        nextDistributedOhm
+        nextEpochRebase
+        ohmPrice
+        ohmTotalSupply
+        sOhmCirculatingSupply
+        timestamp
+        totalValueLocked
+    }
+}

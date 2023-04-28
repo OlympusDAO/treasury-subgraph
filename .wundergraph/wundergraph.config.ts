@@ -2,29 +2,29 @@ import { configureWunderGraphApplication, cors, EnvironmentVariable, introspect,
 import server from './wundergraph.server';
 import operations from './wundergraph.operations';
 
-const protocolMetricsEthereum = introspect.graphql({
-	apiNamespace: "protocolMetricsEthereum",
+const treasuryEthereum = introspect.graphql({
+	apiNamespace: "treasuryEthereum",
 	url: `https://gateway.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/subgraphs/id/DTcDcUSBRJjz9NeoK5VbXCVzYbRTyuBwdPUqMi8x32pY`,
 });
 
-const protocolMetricsArbitrum = introspect.graphql({
-	apiNamespace: "protocolMetricsArbitrum",
+const treasuryArbitrum = introspect.graphql({
+	apiNamespace: "treasuryArbitrum",
 	url: "https://api.studio.thegraph.com/proxy/28103/protocol-metrics-arbitrum/1.1.6",
 });
 
-const protocolMetricsFantom = introspect.graphql({
-	apiNamespace: "protocolMetricsFantom",
+const treasuryFantom = introspect.graphql({
+	apiNamespace: "treasuryFantom",
 	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-fantom",
 });
 
-const protocolMetricsPolygon = introspect.graphql({
-	apiNamespace: "protocolMetricsPolygon",
+const treasuryPolygon = introspect.graphql({
+	apiNamespace: "treasuryPolygon",
 	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-polygon",
 });
 
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [protocolMetricsArbitrum, protocolMetricsEthereum, protocolMetricsFantom, protocolMetricsPolygon],
+	apis: [treasuryArbitrum, treasuryEthereum, treasuryFantom, treasuryPolygon],
 	server,
 	operations,
 	codeGenerators: [

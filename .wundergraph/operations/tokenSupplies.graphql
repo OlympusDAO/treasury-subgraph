@@ -1,0 +1,62 @@
+query TokenSupplies($startDate: String!) {
+  treasuryArbitrum_tokenSupplies(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+    id
+    balance
+    block
+    date
+    pool
+    poolAddress
+    source
+    sourceAddress
+    supplyBalance
+    timestamp
+    token
+    tokenAddress
+    type
+  }
+  treasuryEthereum_tokenSupplies(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+    id
+    balance
+    block
+    date
+    pool
+    poolAddress
+    source
+    sourceAddress
+    supplyBalance
+    timestamp
+    token
+    tokenAddress
+    type
+  }
+  treasuryFantom_tokenSupplies(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+    id
+    balance
+    block
+    date
+    pool
+    poolAddress
+    source
+    sourceAddress
+    supplyBalance
+    timestamp
+    token
+    tokenAddress
+    type
+  }
+  treasuryPolygon_tokenSupplies(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+    id
+    balance
+    block
+    date
+    pool
+    poolAddress
+    source
+    sourceAddress
+    supplyBalance
+    timestamp
+    token
+    tokenAddress
+    type
+  }
+}
