@@ -12,9 +12,19 @@ const protocolMetricsArbitrum = introspect.graphql({
 	url: "https://api.studio.thegraph.com/proxy/28103/protocol-metrics-arbitrum/1.1.6",
 });
 
+const protocolMetricsFantom = introspect.graphql({
+	apiNamespace: "protocolMetricsArbitrum",
+	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-fantom",
+});
+
+const protocolMetricsPolygon = introspect.graphql({
+	apiNamespace: "protocolMetricsArbitrum",
+	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-polygon",
+});
+
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [protocolMetricsArbitrum, protocolMetricsEthereum],
+	apis: [protocolMetricsArbitrum, protocolMetricsEthereum, protocolMetricsFantom, protocolMetricsPolygon],
 	server,
 	operations,
 	codeGenerators: [
