@@ -8,5 +8,9 @@
   },
   "dependencies": {
     "@wundergraph/sdk": "^0.149.1"
+  },
+  "scripts": {
+    "start": "wunderctl up",
+    "build": "wunderctl generate"
   }
 }

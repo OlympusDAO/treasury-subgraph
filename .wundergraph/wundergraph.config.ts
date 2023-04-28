@@ -2,14 +2,21 @@ import { configureWunderGraphApplication, cors, EnvironmentVariable, introspect,
 import server from './wundergraph.server';
 import operations from './wundergraph.operations';
 
-const protocolMetricsEthereum = introspect.graphql({
-	apiNamespace: 'protocolMetricsEthereum',
-	url: 'https://countries.trevorblades.com/',
+const federated = introspect.federation({
+	apiNamespace: 'federated',
+	upstreams: [
+		{
+			url: `https://gateway.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/subgraphs/id/DTcDcUSBRJjz9NeoK5VbXCVzYbRTyuBwdPUqMi8x32pY`,
+		},
+		{
+			url: 'https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-arbitrum',
+		},
+	],
 });
 
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [protocol - metrics - ethereum],
+	apis: [federated],
 	server,
 	operations,
 	codeGenerators: [
