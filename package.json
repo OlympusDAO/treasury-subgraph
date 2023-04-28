@@ -1,0 +1,12 @@
+{
+  "name": "treasury-subgraph",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@wundergraph/wunderctl": "^0.146.1"
+  },
+  "dependencies": {
+    "@wundergraph/sdk": "^0.149.1"
+  }
+}
