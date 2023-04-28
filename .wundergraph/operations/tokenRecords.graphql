@@ -1,5 +1,24 @@
 query {
-  tokenRecords: federated_tokenRecords(orderBy: date, orderDirection: desc) {
+  protocolMetricsEthereum_tokenRecords(orderBy: date, orderDirection: desc) {
+    id
+    balance
+    block
+    blockchain
+    category
+    date
+    isBluechip
+    isLiquid
+    multiplier
+    rate
+    source
+    sourceAddress
+    timestamp
+    token
+    tokenAddress
+    value
+    valueExcludingOhm
+  }
+  protocolMetricsArbitrum_tokenRecords(orderBy: date, orderDirection: desc) {
     id
     balance
     block
