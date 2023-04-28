@@ -13,12 +13,12 @@ const protocolMetricsArbitrum = introspect.graphql({
 });
 
 const protocolMetricsFantom = introspect.graphql({
-	apiNamespace: "protocolMetricsArbitrum",
+	apiNamespace: "protocolMetricsFantom",
 	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-fantom",
 });
 
 const protocolMetricsPolygon = introspect.graphql({
-	apiNamespace: "protocolMetricsArbitrum",
+	apiNamespace: "protocolMetricsPolygon",
 	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-polygon",
 });
 
