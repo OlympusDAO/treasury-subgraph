@@ -7,7 +7,8 @@
     "@wundergraph/wunderctl": "^0.146.1"
   },
   "dependencies": {
-    "@wundergraph/sdk": "^0.149.1"
+    "@wundergraph/sdk": "^0.149.1",
+    "date-fns": "^2.30.0"
   },
   "scripts": {
     "start": "wunderctl up",
