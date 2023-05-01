@@ -9,7 +9,7 @@ const treasuryEthereum = introspect.graphql({
 
 const treasuryArbitrum = introspect.graphql({
 	apiNamespace: "treasuryArbitrum",
-	url: "https://api.studio.thegraph.com/proxy/28103/protocol-metrics-arbitrum/1.1.6",
+	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-arbitrum",
 });
 
 const treasuryFantom = introspect.graphql({
