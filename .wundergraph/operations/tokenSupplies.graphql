@@ -1,5 +1,5 @@
-query TokenSupplies($startDate: String!) {
-  treasuryArbitrum_tokenSupplies(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+query TokenSupplies($pageSize: Int! = 1000, $startDate: String!, $endDate: String!) {
+  treasuryArbitrum_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     id
     balance
     block
@@ -14,7 +14,7 @@ query TokenSupplies($startDate: String!) {
     tokenAddress
     type
   }
-  treasuryEthereum_tokenSupplies(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+  treasuryEthereum_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     id
     balance
     block
@@ -29,7 +29,7 @@ query TokenSupplies($startDate: String!) {
     tokenAddress
     type
   }
-  treasuryFantom_tokenSupplies(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+  treasuryFantom_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     id
     balance
     block
@@ -44,7 +44,7 @@ query TokenSupplies($startDate: String!) {
     tokenAddress
     type
   }
-  treasuryPolygon_tokenSupplies(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+  treasuryPolygon_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     id
     balance
     block

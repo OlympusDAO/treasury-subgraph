@@ -1,5 +1,5 @@
-query TokenRecords($first: Int! = 1000, $skip: Int! = 0, $startDate: String!, $endDate: String!) {
-  treasuryArbitrum_tokenRecords(first: $first, skip: $skip, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+query TokenRecords($pageSize: Int! = 1000, $startDate: String!, $endDate: String!) {
+  treasuryArbitrum_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     id
     balance
     block
@@ -18,7 +18,7 @@ query TokenRecords($first: Int! = 1000, $skip: Int! = 0, $startDate: String!, $e
     value
     valueExcludingOhm
   }
-  treasuryEthereum_tokenRecords(first: $first, skip: $skip, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+  treasuryEthereum_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     id
     balance
     block
@@ -37,7 +37,7 @@ query TokenRecords($first: Int! = 1000, $skip: Int! = 0, $startDate: String!, $e
     value
     valueExcludingOhm
   }
-  treasuryFantom_tokenRecords(first: $first, skip: $skip, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+  treasuryFantom_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     id
     balance
     block
@@ -56,7 +56,7 @@ query TokenRecords($first: Int! = 1000, $skip: Int! = 0, $startDate: String!, $e
     value
     valueExcludingOhm
   }
-  treasuryPolygon_tokenRecords(first: $first, skip: $skip, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+  treasuryPolygon_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     id
     balance
     block

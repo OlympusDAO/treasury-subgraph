@@ -1,6 +1,6 @@
 import { addDays } from 'date-fns';
-import { TokenRecordsResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
+import { ProtocolMetricsResponseData } from '../../generated/models';
 
 /**
  * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
@@ -52,7 +52,7 @@ export default createOperation.query({
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
   }),
   handler: async (ctx) => {
-    console.log(`Commencing paginated query for TokenRecord`);
+    console.log(`Commencing paginated query for ProtocolMetric`);
     console.log(`Input: ${JSON.stringify(ctx.input)}`);
     const finalStartDate: Date = new Date(ctx.input.startDate);
     console.log(`finalStartDate: ${finalStartDate.toISOString()}`);
@@ -63,7 +63,7 @@ export default createOperation.query({
     const offsetDays: number = getOffsetDays(ctx.input.dateOffset);
 
     // Combine across pages and endpoints
-    const combinedTokenRecords: TokenRecordsResponseData["treasuryEthereum_tokenRecords"] = [];
+    const combinedProtocolMetrics: ProtocolMetricsResponseData["treasuryEthereum_protocolMetrics"] = [];
 
     let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
     let currentEndDate: Date = getNextEndDate(null);
@@ -71,7 +71,7 @@ export default createOperation.query({
     while (currentStartDate.getTime() > finalStartDate.getTime()) {
       console.log(`Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
-        operationName: "tokenRecords",
+        operationName: "protocolMetrics",
         input: {
           startDate: getISO8601DateString(currentStartDate),
           endDate: getISO8601DateString(currentEndDate),
@@ -79,21 +79,21 @@ export default createOperation.query({
       });
 
       if (queryResult.data) {
-        console.log(`Got ${queryResult.data.treasuryArbitrum_tokenRecords.length} Arbitrum records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryArbitrum_tokenRecords);
-        console.log(`Got ${queryResult.data.treasuryEthereum_tokenRecords.length} Ethereum records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryEthereum_tokenRecords);
-        console.log(`Got ${queryResult.data.treasuryFantom_tokenRecords.length} Fantom records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryFantom_tokenRecords);
-        console.log(`Got ${queryResult.data.treasuryPolygon_tokenRecords.length} Polygon records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryPolygon_tokenRecords);
+        console.log(`Got ${queryResult.data.treasuryArbitrum_protocolMetrics.length} Arbitrum records.`);
+        combinedProtocolMetrics.push(...queryResult.data.treasuryArbitrum_protocolMetrics);
+        console.log(`Got ${queryResult.data.treasuryEthereum_protocolMetrics.length} Ethereum records.`);
+        combinedProtocolMetrics.push(...queryResult.data.treasuryEthereum_protocolMetrics);
+        console.log(`Got ${queryResult.data.treasuryFantom_protocolMetrics.length} Fantom records.`);
+        combinedProtocolMetrics.push(...queryResult.data.treasuryFantom_protocolMetrics);
+        console.log(`Got ${queryResult.data.treasuryPolygon_protocolMetrics.length} Polygon records.`);
+        combinedProtocolMetrics.push(...queryResult.data.treasuryPolygon_protocolMetrics);
       }
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
     }
 
-    console.log(`Returning ${combinedTokenRecords.length} records.`);
-    return combinedTokenRecords;
+    console.log(`Returning ${combinedProtocolMetrics.length} records.`);
+    return combinedProtocolMetrics;
   },
 });

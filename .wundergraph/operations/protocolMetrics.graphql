@@ -1,5 +1,5 @@
-query ProtocolMetrics($startDate: String!) {
-    treasuryArbitrum_protocolMetrics(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+query ProtocolMetrics($pageSize: Int! = 1000, $startDate: String!, $endDate: String!) {
+    treasuryArbitrum_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
         id
         block
         currentAPY
@@ -15,7 +15,7 @@ query ProtocolMetrics($startDate: String!) {
         timestamp
         totalValueLocked
     }
-    treasuryEthereum_protocolMetrics(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+    treasuryEthereum_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
         id
         block
         currentAPY
@@ -31,7 +31,7 @@ query ProtocolMetrics($startDate: String!) {
         timestamp
         totalValueLocked
     }
-    treasuryFantom_protocolMetrics(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+    treasuryFantom_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
         id
         block
         currentAPY
@@ -47,7 +47,7 @@ query ProtocolMetrics($startDate: String!) {
         timestamp
         totalValueLocked
     }
-    treasuryPolygon_protocolMetrics(orderBy: date, orderDirection: desc, where: { date_gte: $startDate }) {
+    treasuryPolygon_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
         id
         block
         currentAPY

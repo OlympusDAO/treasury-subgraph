@@ -1,5 +1,5 @@
 import { addDays } from 'date-fns';
-import { TokenRecordsResponseData } from '../../generated/models';
+import { TokenSuppliesResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 
 /**
@@ -50,9 +50,10 @@ export default createOperation.query({
   input: z.object({
     startDate: z.string({ description: "The start date in the YYYY-MM-DD format." }),
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
+    pageSize: z.number({ description: "The number of records per page. Increase the value if data is missing." }).optional(),
   }),
   handler: async (ctx) => {
-    console.log(`Commencing paginated query for TokenRecord`);
+    console.log(`Commencing paginated query for TokenSupply`);
     console.log(`Input: ${JSON.stringify(ctx.input)}`);
     const finalStartDate: Date = new Date(ctx.input.startDate);
     console.log(`finalStartDate: ${finalStartDate.toISOString()}`);
@@ -63,7 +64,7 @@ export default createOperation.query({
     const offsetDays: number = getOffsetDays(ctx.input.dateOffset);
 
     // Combine across pages and endpoints
-    const combinedTokenRecords: TokenRecordsResponseData["treasuryEthereum_tokenRecords"] = [];
+    const combinedTokenSupplies: TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"] = [];
 
     let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
     let currentEndDate: Date = getNextEndDate(null);
@@ -71,7 +72,7 @@ export default createOperation.query({
     while (currentStartDate.getTime() > finalStartDate.getTime()) {
       console.log(`Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
-        operationName: "tokenRecords",
+        operationName: "tokenSupplies",
         input: {
           startDate: getISO8601DateString(currentStartDate),
           endDate: getISO8601DateString(currentEndDate),
@@ -79,21 +80,21 @@ export default createOperation.query({
       });
 
       if (queryResult.data) {
-        console.log(`Got ${queryResult.data.treasuryArbitrum_tokenRecords.length} Arbitrum records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryArbitrum_tokenRecords);
-        console.log(`Got ${queryResult.data.treasuryEthereum_tokenRecords.length} Ethereum records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryEthereum_tokenRecords);
-        console.log(`Got ${queryResult.data.treasuryFantom_tokenRecords.length} Fantom records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryFantom_tokenRecords);
-        console.log(`Got ${queryResult.data.treasuryPolygon_tokenRecords.length} Polygon records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryPolygon_tokenRecords);
+        console.log(`Got ${queryResult.data.treasuryArbitrum_tokenSupplies.length} Arbitrum records.`);
+        combinedTokenSupplies.push(...queryResult.data.treasuryArbitrum_tokenSupplies);
+        console.log(`Got ${queryResult.data.treasuryEthereum_tokenSupplies.length} Ethereum records.`);
+        combinedTokenSupplies.push(...queryResult.data.treasuryEthereum_tokenSupplies);
+        console.log(`Got ${queryResult.data.treasuryFantom_tokenSupplies.length} Fantom records.`);
+        combinedTokenSupplies.push(...queryResult.data.treasuryFantom_tokenSupplies);
+        console.log(`Got ${queryResult.data.treasuryPolygon_tokenSupplies.length} Polygon records.`);
+        combinedTokenSupplies.push(...queryResult.data.treasuryPolygon_tokenSupplies);
       }
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
     }
 
-    console.log(`Returning ${combinedTokenRecords.length} records.`);
-    return combinedTokenRecords;
+    console.log(`Returning ${combinedTokenSupplies.length} records.`);
+    return combinedTokenSupplies;
   },
 });
