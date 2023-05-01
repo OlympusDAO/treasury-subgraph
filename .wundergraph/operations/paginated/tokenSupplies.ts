@@ -41,7 +41,7 @@ const getNextStartDate = (offsetDays: number, finalStartDate: Date, currentDate:
 };
 
 /**
- * This custom query will return a flat array containing TokenRecord objects from
+ * This custom query will return a flat array containing TokenSupply objects from
  * across all endpoints.
  * 
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
