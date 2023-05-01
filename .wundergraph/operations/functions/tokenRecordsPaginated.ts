@@ -89,7 +89,7 @@ export default createOperation.query({
       }
 
       currentEndDate = currentStartDate;
-      currentStartDate = getNextStartDate(finalStartDate, currentEndDate);
+      currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
     }
 
     console.log(`Returning ${combinedTokenRecords.length} records.`);
