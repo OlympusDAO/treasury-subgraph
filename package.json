@@ -10,10 +10,15 @@
   "scripts": {
     "build": "turbo build",
     "lint": "turbo lint",
-    "deploy": "turbo deploy"
+    "deploy": "turbo deploy",
+    "depcheck": "syncpack",
+    "depcheck:fix": "syncpack fix-mismatches"
   },
   "workspaces": [
     "packages/*",
     "apps/*"
-  ]
+  ],
+  "devDependencies": {
+    "syncpack": "^9.8.6"
+  }
 }
