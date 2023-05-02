@@ -19,7 +19,7 @@
         "build"
       ]
     },
-    "publish": {
+    "publish-package": {
       "dependsOn": [
         "build"
       ]

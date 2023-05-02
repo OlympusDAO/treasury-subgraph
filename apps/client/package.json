@@ -1,6 +1,6 @@
 {
   "name": "olympusdao-treasury-subgraph-client-test",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "WunderGraph client for the OlympusDAO treasury subgraph",
   "main": "./dist/client.js",
   "module": "./dist/client.mjs",
@@ -24,8 +24,8 @@
     "@wundergraph/sdk": "^0.149.1"
   },
   "devDependencies": {
+    "@olympusdao/treasury-subgraph": "*",
     "tsup": "^6.7.0",
-    "zod": "^3.21.4",
-    "@olympusdao/treasury-subgraph": "*"
+    "zod": "^3.21.4"
   }
 }
