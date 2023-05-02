@@ -8,6 +8,9 @@
       "outputs": [
         "dist",
         ".wundergraph/generated"
+      ],
+      "env": [
+        "WG_PUBLIC_NODE_URL"
       ]
     },
     "lint": {},

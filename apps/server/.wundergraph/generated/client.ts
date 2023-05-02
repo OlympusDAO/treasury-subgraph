@@ -59,8 +59,8 @@ export const WUNDERGRAPH_S3_ENABLED = false;
 export const WUNDERGRAPH_AUTH_ENABLED = false;
 
 export const defaultClientConfig: ClientConfig = {
-	applicationHash: "b6b37ead",
-	baseURL: "http://localhost:9991",
+	applicationHash: "e70c9844",
+	baseURL: "https://jem-federated-subgraph.wundergraph.dev",
 	sdkVersion: "0.149.1",
 };
 

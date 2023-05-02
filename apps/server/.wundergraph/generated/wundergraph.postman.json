@@ -497,7 +497,7 @@
   "variable": [
     {
       "type": "string",
-      "value": "http://localhost:9991",
+      "value": "https://jem-federated-subgraph.wundergraph.dev",
       "key": "apiBaseUrl"
     }
   ],

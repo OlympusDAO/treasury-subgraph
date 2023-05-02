@@ -13,6 +13,7 @@
   },
   "scripts": {
     "start": "wunderctl up",
+    "prebuild": "echo \"WG_PUBLIC_NODE_URL is ${WG_PUBLIC_NODE_URL:?}\"",
     "build": "wunderctl generate"
   }
 }

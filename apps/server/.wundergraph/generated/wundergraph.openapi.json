@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:9991/operations"
+      "url": "https://jem-federated-subgraph.wundergraph.dev/operations"
     }
   ],
   "paths": {
