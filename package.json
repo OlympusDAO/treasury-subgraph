@@ -6,11 +6,11 @@
   "repository": "git@github.com:0xJem/federated-subgraph.git",
   "author": "Jem <0x0xjem@gmail.com>",
   "license": "MIT",
-  "private": "true",
+  "private": true,
   "scripts": {
-    "build": "turbo build",
-    "lint": "turbo lint",
-    "deploy": "turbo deploy",
+    "build": "dotenv -- turbo build",
+    "lint": "dotenv -- turbo lint",
+    "deploy": "dotenv -- turbo deploy",
     "depcheck": "syncpack",
     "depcheck:fix": "syncpack fix-mismatches"
   },
@@ -19,6 +19,7 @@
     "apps/*"
   ],
   "devDependencies": {
+    "dotenv-cli": "^7.2.1",
     "syncpack": "^9.8.6",
     "turbo": "^1.9.3"
   }
