@@ -1,5 +1,5 @@
 {
-  "name": "treasury-subgraph",
+  "name": "@olympusdao/treasury-subgraph",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",

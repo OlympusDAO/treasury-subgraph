@@ -19,6 +19,7 @@
     "apps/*"
   ],
   "devDependencies": {
-    "syncpack": "^9.8.6"
+    "syncpack": "^9.8.6",
+    "turbo": "^1.9.3"
   }
 }

@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "tsup": "^6.7.0",
-    "zod": "^3.21.4"
+    "zod": "^3.21.4",
+    "@olympusdao/treasury-subgraph": "*"
   }
 }
