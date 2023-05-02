@@ -1,0 +1,20 @@
+{
+  "name": "@olympusdao/treasury-subgraph-client",
+  "version": "1.0.0",
+  "description": "WunderGraph client for the OlympusDAO treasury subgraph",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@wundergraph/sdk": "^0.149.1"
+  },
+  "devDependencies": {
+    "tsup": "^6.7.0",
+    "zod": "^3.21.4"
+  }
+}

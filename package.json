@@ -1,17 +1,19 @@
 {
   "name": "treasury-subgraph",
   "version": "1.0.0",
+  "description": "Monorepo for the OlympusDAO treasury subgraph",
   "main": "index.js",
+  "repository": "git@github.com:0xJem/federated-subgraph.git",
+  "author": "Jem <0x0xjem@gmail.com>",
   "license": "MIT",
-  "devDependencies": {
-    "@wundergraph/wunderctl": "^0.146.1"
-  },
-  "dependencies": {
-    "@wundergraph/sdk": "^0.149.1",
-    "date-fns": "^2.30.0"
-  },
+  "private": "true",
   "scripts": {
-    "start": "wunderctl up",
-    "build": "wunderctl generate"
-  }
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "deploy": "turbo deploy"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
 }
