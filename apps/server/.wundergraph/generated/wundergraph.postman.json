@@ -1,0 +1,513 @@
+{
+  "item": [
+    {
+      "_": {
+        "postman_id": "operations"
+      },
+      "id": "operations",
+      "name": "operations",
+      "item": [
+        {
+          "id": "protocolMetrics",
+          "name": "protocolMetrics",
+          "request": {
+            "url": {
+              "path": [
+                "operations",
+                "protocolMetrics"
+              ],
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Type integer, Optional",
+                    "type": "text/plain"
+                  },
+                  "key": "pageSize",
+                  "value": ""
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Type string, Optional",
+                    "type": "text/plain"
+                  },
+                  "key": "startDate",
+                  "value": ""
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Type string, Optional",
+                    "type": "text/plain"
+                  },
+                  "key": "endDate",
+                  "value": ""
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "protocolMetricsLatest",
+          "name": "protocolMetricsLatest",
+          "request": {
+            "url": {
+              "path": [
+                "operations",
+                "protocolMetricsLatest"
+              ],
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "tokenRecords",
+          "name": "tokenRecords",
+          "request": {
+            "url": {
+              "path": [
+                "operations",
+                "tokenRecords"
+              ],
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Type integer, Optional",
+                    "type": "text/plain"
+                  },
+                  "key": "pageSize",
+                  "value": ""
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Type string, Optional",
+                    "type": "text/plain"
+                  },
+                  "key": "startDate",
+                  "value": ""
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Type string, Optional",
+                    "type": "text/plain"
+                  },
+                  "key": "endDate",
+                  "value": ""
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "tokenRecordsLatest",
+          "name": "tokenRecordsLatest",
+          "request": {
+            "url": {
+              "path": [
+                "operations",
+                "tokenRecordsLatest"
+              ],
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "tokenSupplies",
+          "name": "tokenSupplies",
+          "request": {
+            "url": {
+              "path": [
+                "operations",
+                "tokenSupplies"
+              ],
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Type integer, Optional",
+                    "type": "text/plain"
+                  },
+                  "key": "pageSize",
+                  "value": ""
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Type string, Optional",
+                    "type": "text/plain"
+                  },
+                  "key": "startDate",
+                  "value": ""
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Type string, Optional",
+                    "type": "text/plain"
+                  },
+                  "key": "endDate",
+                  "value": ""
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "tokenSuppliesLatest",
+          "name": "tokenSuppliesLatest",
+          "request": {
+            "url": {
+              "path": [
+                "operations",
+                "tokenSuppliesLatest"
+              ],
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "latest",
+          "name": "latest",
+          "item": [
+            {
+              "id": "latest/protocolMetrics",
+              "name": "protocolMetrics",
+              "request": {
+                "url": {
+                  "path": [
+                    "operations",
+                    "latest",
+                    "protocolMetrics"
+                  ],
+                  "host": [
+                    "{{apiBaseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET"
+              },
+              "response": [],
+              "event": []
+            },
+            {
+              "id": "latest/tokenRecords",
+              "name": "tokenRecords",
+              "request": {
+                "url": {
+                  "path": [
+                    "operations",
+                    "latest",
+                    "tokenRecords"
+                  ],
+                  "host": [
+                    "{{apiBaseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET"
+              },
+              "response": [],
+              "event": []
+            },
+            {
+              "id": "latest/tokenSupplies",
+              "name": "tokenSupplies",
+              "request": {
+                "url": {
+                  "path": [
+                    "operations",
+                    "latest",
+                    "tokenSupplies"
+                  ],
+                  "host": [
+                    "{{apiBaseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET"
+              },
+              "response": [],
+              "event": []
+            }
+          ],
+          "event": []
+        },
+        {
+          "id": "paginated",
+          "name": "paginated",
+          "item": [
+            {
+              "id": "paginated/protocolMetrics",
+              "name": "protocolMetrics",
+              "request": {
+                "url": {
+                  "path": [
+                    "operations",
+                    "paginated",
+                    "protocolMetrics"
+                  ],
+                  "host": [
+                    "{{apiBaseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Type string, Optional",
+                        "type": "text/plain"
+                      },
+                      "key": "startDate",
+                      "value": ""
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Type number, Optional",
+                        "type": "text/plain"
+                      },
+                      "key": "dateOffset",
+                      "value": ""
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET"
+              },
+              "response": [],
+              "event": []
+            },
+            {
+              "id": "paginated/tokenRecords",
+              "name": "tokenRecords",
+              "request": {
+                "url": {
+                  "path": [
+                    "operations",
+                    "paginated",
+                    "tokenRecords"
+                  ],
+                  "host": [
+                    "{{apiBaseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Type string, Optional",
+                        "type": "text/plain"
+                      },
+                      "key": "startDate",
+                      "value": ""
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Type number, Optional",
+                        "type": "text/plain"
+                      },
+                      "key": "dateOffset",
+                      "value": ""
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET"
+              },
+              "response": [],
+              "event": []
+            },
+            {
+              "id": "paginated/tokenSupplies",
+              "name": "tokenSupplies",
+              "request": {
+                "url": {
+                  "path": [
+                    "operations",
+                    "paginated",
+                    "tokenSupplies"
+                  ],
+                  "host": [
+                    "{{apiBaseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Type string, Optional",
+                        "type": "text/plain"
+                      },
+                      "key": "startDate",
+                      "value": ""
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Type number, Optional",
+                        "type": "text/plain"
+                      },
+                      "key": "dateOffset",
+                      "value": ""
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Type number, Optional",
+                        "type": "text/plain"
+                      },
+                      "key": "pageSize",
+                      "value": ""
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET"
+              },
+              "response": [],
+              "event": []
+            }
+          ],
+          "event": []
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "http://localhost:9991",
+      "key": "apiBaseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "Wundergraph",
+    "name": "Wundergraph",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Your Wundergraph collection",
+      "type": "text/plain"
+    }
+  }
+}

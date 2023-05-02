@@ -1,0 +1,78 @@
+{
+  "graphql_operation_files": [
+    {
+      "operation_name": "ProtocolMetrics",
+      "api_mount_path": "protocolMetrics",
+      "file_path": "protocolMetrics.graphql",
+      "content": "query ProtocolMetrics($pageSize: Int! = 1000, $startDate: String!, $endDate: String!){treasuryArbitrum_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id block currentAPY currentIndex date gOhmPrice gOhmTotalSupply nextDistributedOhm nextEpochRebase ohmPrice ohmTotalSupply sOhmCirculatingSupply timestamp totalValueLocked} treasuryEthereum_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id block currentAPY currentIndex date gOhmPrice gOhmTotalSupply nextDistributedOhm nextEpochRebase ohmPrice ohmTotalSupply sOhmCirculatingSupply timestamp totalValueLocked} treasuryFantom_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id block currentAPY currentIndex date gOhmPrice gOhmTotalSupply nextDistributedOhm nextEpochRebase ohmPrice ohmTotalSupply sOhmCirculatingSupply timestamp totalValueLocked} treasuryPolygon_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id block currentAPY currentIndex date gOhmPrice gOhmTotalSupply nextDistributedOhm nextEpochRebase ohmPrice ohmTotalSupply sOhmCirculatingSupply timestamp totalValueLocked}}"
+    },
+    {
+      "operation_name": "ProtocolMetricsLatest",
+      "api_mount_path": "protocolMetricsLatest",
+      "file_path": "protocolMetricsLatest.graphql",
+      "content": "query ProtocolMetricsLatest {treasuryArbitrum_protocolMetrics(orderBy: date, orderDirection: desc, first: 1){id block currentAPY currentIndex date gOhmPrice gOhmTotalSupply nextDistributedOhm nextEpochRebase ohmPrice ohmTotalSupply sOhmCirculatingSupply timestamp totalValueLocked} treasuryEthereum_protocolMetrics(orderBy: date, orderDirection: desc, first: 1){id block currentAPY currentIndex date gOhmPrice gOhmTotalSupply nextDistributedOhm nextEpochRebase ohmPrice ohmTotalSupply sOhmCirculatingSupply timestamp totalValueLocked} treasuryFantom_protocolMetrics(orderBy: date, orderDirection: desc, first: 1){id block currentAPY currentIndex date gOhmPrice gOhmTotalSupply nextDistributedOhm nextEpochRebase ohmPrice ohmTotalSupply sOhmCirculatingSupply timestamp totalValueLocked} treasuryPolygon_protocolMetrics(orderBy: date, orderDirection: desc, first: 1){id block currentAPY currentIndex date gOhmPrice gOhmTotalSupply nextDistributedOhm nextEpochRebase ohmPrice ohmTotalSupply sOhmCirculatingSupply timestamp totalValueLocked}}"
+    },
+    {
+      "operation_name": "TokenRecords",
+      "api_mount_path": "tokenRecords",
+      "file_path": "tokenRecords.graphql",
+      "content": "query TokenRecords($pageSize: Int! = 1000, $startDate: String!, $endDate: String!){treasuryArbitrum_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id balance block blockchain category date isBluechip isLiquid multiplier rate source sourceAddress timestamp token tokenAddress value valueExcludingOhm} treasuryEthereum_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id balance block blockchain category date isBluechip isLiquid multiplier rate source sourceAddress timestamp token tokenAddress value valueExcludingOhm} treasuryFantom_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id balance block blockchain category date isBluechip isLiquid multiplier rate source sourceAddress timestamp token tokenAddress value valueExcludingOhm} treasuryPolygon_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id balance block blockchain category date isBluechip isLiquid multiplier rate source sourceAddress timestamp token tokenAddress value valueExcludingOhm}}"
+    },
+    {
+      "operation_name": "TokenRecordsLatest",
+      "api_mount_path": "tokenRecordsLatest",
+      "file_path": "tokenRecordsLatest.graphql",
+      "content": "query TokenRecordsLatest {treasuryArbitrum_tokenRecords(orderBy: date, orderDirection: desc, first: 1){id balance block blockchain category date isBluechip isLiquid multiplier rate source sourceAddress timestamp token tokenAddress value valueExcludingOhm} treasuryEthereum_tokenRecords(orderBy: date, orderDirection: desc, first: 1){id balance block blockchain category date isBluechip isLiquid multiplier rate source sourceAddress timestamp token tokenAddress value valueExcludingOhm} treasuryFantom_tokenRecords(orderBy: date, orderDirection: desc, first: 1){id balance block blockchain category date isBluechip isLiquid multiplier rate source sourceAddress timestamp token tokenAddress value valueExcludingOhm} treasuryPolygon_tokenRecords(orderBy: date, orderDirection: desc, first: 1){id balance block blockchain category date isBluechip isLiquid multiplier rate source sourceAddress timestamp token tokenAddress value valueExcludingOhm}}"
+    },
+    {
+      "operation_name": "TokenSupplies",
+      "api_mount_path": "tokenSupplies",
+      "file_path": "tokenSupplies.graphql",
+      "content": "query TokenSupplies($pageSize: Int! = 1000, $startDate: String!, $endDate: String!){treasuryArbitrum_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id balance block date pool poolAddress source sourceAddress supplyBalance timestamp token tokenAddress type} treasuryEthereum_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id balance block date pool poolAddress source sourceAddress supplyBalance timestamp token tokenAddress type} treasuryFantom_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id balance block date pool poolAddress source sourceAddress supplyBalance timestamp token tokenAddress type} treasuryPolygon_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: {date_gte: $startDate,date_lt: $endDate}){id balance block date pool poolAddress source sourceAddress supplyBalance timestamp token tokenAddress type}}"
+    },
+    {
+      "operation_name": "TokenSuppliesLatest",
+      "api_mount_path": "tokenSuppliesLatest",
+      "file_path": "tokenSuppliesLatest.graphql",
+      "content": "query TokenSuppliesLatest {treasuryArbitrum_tokenSupplies(orderBy: date, orderDirection: desc, first: 1){id balance block date pool poolAddress source sourceAddress supplyBalance timestamp token tokenAddress type} treasuryEthereum_tokenSupplies(orderBy: date, orderDirection: desc, first: 1){id balance block date pool poolAddress source sourceAddress supplyBalance timestamp token tokenAddress type} treasuryFantom_tokenSupplies(orderBy: date, orderDirection: desc, first: 1){id balance block date pool poolAddress source sourceAddress supplyBalance timestamp token tokenAddress type} treasuryPolygon_tokenSupplies(orderBy: date, orderDirection: desc, first: 1){id balance block date pool poolAddress source sourceAddress supplyBalance timestamp token tokenAddress type}}"
+    }
+  ],
+  "typescript_operation_files": [
+    {
+      "operation_name": "LatestProtocolMetrics",
+      "api_mount_path": "latest/protocolMetrics",
+      "file_path": "latest/protocolMetrics.ts",
+      "module_path": "generated/bundle/operations/latest/protocolMetrics"
+    },
+    {
+      "operation_name": "LatestTokenRecords",
+      "api_mount_path": "latest/tokenRecords",
+      "file_path": "latest/tokenRecords.ts",
+      "module_path": "generated/bundle/operations/latest/tokenRecords"
+    },
+    {
+      "operation_name": "LatestTokenSupplies",
+      "api_mount_path": "latest/tokenSupplies",
+      "file_path": "latest/tokenSupplies.ts",
+      "module_path": "generated/bundle/operations/latest/tokenSupplies"
+    },
+    {
+      "operation_name": "PaginatedProtocolMetrics",
+      "api_mount_path": "paginated/protocolMetrics",
+      "file_path": "paginated/protocolMetrics.ts",
+      "module_path": "generated/bundle/operations/paginated/protocolMetrics"
+    },
+    {
+      "operation_name": "PaginatedTokenRecords",
+      "api_mount_path": "paginated/tokenRecords",
+      "file_path": "paginated/tokenRecords.ts",
+      "module_path": "generated/bundle/operations/paginated/tokenRecords"
+    },
+    {
+      "operation_name": "PaginatedTokenSupplies",
+      "api_mount_path": "paginated/tokenSupplies",
+      "file_path": "paginated/tokenSupplies.ts",
+      "module_path": "generated/bundle/operations/paginated/tokenSupplies"
+    }
+  ]
+}
