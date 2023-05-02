@@ -1,6 +1,6 @@
 {
   "name": "olympusdao-treasury-subgraph-client-test",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "WunderGraph client for the OlympusDAO treasury subgraph",
   "main": "./dist/client.js",
   "module": "./dist/client.mjs",
