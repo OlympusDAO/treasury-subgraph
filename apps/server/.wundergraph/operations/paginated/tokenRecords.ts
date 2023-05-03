@@ -1,6 +1,7 @@
 import { addDays } from 'date-fns';
 import { TokenRecordsResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
+import { filterLatestBlockByDay } from '../../tokenRecordHelper';
 
 /**
  * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
@@ -78,15 +79,16 @@ export default createOperation.query({
         },
       });
 
+      // Collapse the data into a single array
       if (queryResult.data) {
         console.log(`Got ${queryResult.data.treasuryArbitrum_tokenRecords.length} Arbitrum records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryArbitrum_tokenRecords);
+        combinedTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryArbitrum_tokenRecords));
         console.log(`Got ${queryResult.data.treasuryEthereum_tokenRecords.length} Ethereum records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryEthereum_tokenRecords);
+        combinedTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryEthereum_tokenRecords));
         console.log(`Got ${queryResult.data.treasuryFantom_tokenRecords.length} Fantom records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryFantom_tokenRecords);
+        combinedTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryFantom_tokenRecords));
         console.log(`Got ${queryResult.data.treasuryPolygon_tokenRecords.length} Polygon records.`);
-        combinedTokenRecords.push(...queryResult.data.treasuryPolygon_tokenRecords);
+        combinedTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryPolygon_tokenRecords));
       }
 
       currentEndDate = currentStartDate;
