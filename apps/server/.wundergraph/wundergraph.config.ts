@@ -2,6 +2,19 @@ import { configureWunderGraphApplication, cors, EnvironmentVariable, introspect,
 import server from './wundergraph.server';
 import operations from './wundergraph.operations';
 
+/**
+ * The TokenSupply type on non-Ethereum chains has not historically had a blockchain property.
+ * 
+ * Re-indexing the historical data is very time-consuming, so we modify the schema to add this field,
+ * and add it to each record in the operations.
+ */
+const schemaExtension: string =
+	`
+extend type TokenSupply {
+	blockchain: String!
+}
+`;
+
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
 	url: new EnvironmentVariable("SUBGRAPH_ETHEREUM"), // Needs to be injected at runtime
@@ -10,16 +23,19 @@ const treasuryEthereum = introspect.graphql({
 const treasuryArbitrum = introspect.graphql({
 	apiNamespace: "treasuryArbitrum",
 	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-arbitrum",
+	schemaExtension: schemaExtension,
 });
 
 const treasuryFantom = introspect.graphql({
 	apiNamespace: "treasuryFantom",
 	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-fantom",
+	schemaExtension: schemaExtension,
 });
 
 const treasuryPolygon = introspect.graphql({
 	apiNamespace: "treasuryPolygon",
 	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-polygon",
+	schemaExtension: schemaExtension,
 });
 
 // configureWunderGraph emits the configuration

@@ -16,15 +16,25 @@ export default createOperation.query({
       operationName: "tokenSuppliesLatest",
     });
 
+    // Collapse the data into a single array, and add a missing property (except for Ethereum, which already has it)
     if (queryResult.data) {
       console.log(`Got ${queryResult.data.treasuryArbitrum_tokenSupplies.length} Arbitrum records.`);
-      combinedTokenSupplies.push(...queryResult.data.treasuryArbitrum_tokenSupplies);
+      combinedTokenSupplies.push(...queryResult.data.treasuryArbitrum_tokenSupplies.map(record => {
+        return { ...record, blockchain: "Arbitrum" };
+      }));
+
       console.log(`Got ${queryResult.data.treasuryEthereum_tokenSupplies.length} Ethereum records.`);
       combinedTokenSupplies.push(...queryResult.data.treasuryEthereum_tokenSupplies);
+
       console.log(`Got ${queryResult.data.treasuryFantom_tokenSupplies.length} Fantom records.`);
-      combinedTokenSupplies.push(...queryResult.data.treasuryFantom_tokenSupplies);
+      combinedTokenSupplies.push(...queryResult.data.treasuryFantom_tokenSupplies.map(record => {
+        return { ...record, blockchain: "Fantom" };
+      }));
+
       console.log(`Got ${queryResult.data.treasuryPolygon_tokenSupplies.length} Polygon records.`);
-      combinedTokenSupplies.push(...queryResult.data.treasuryPolygon_tokenSupplies);
+      combinedTokenSupplies.push(...queryResult.data.treasuryPolygon_tokenSupplies.map(record => {
+        return { ...record, blockchain: "Polygon" };
+      }));
     }
 
     console.log(`Returning ${combinedTokenSupplies.length} records.`);
