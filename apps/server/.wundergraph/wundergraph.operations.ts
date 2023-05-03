@@ -13,7 +13,7 @@ export default configureWunderGraphOperations<OperationsConfiguration>({
 			caching: {
 				enable: true,
 				staleWhileRevalidate: 60,
-				maxAge: 60,
+				maxAge: 60 * 60, // Since subgraphs update 2-3 times/day, we can cache for an hour
 				public: true,
 			},
 			liveQuery: {
