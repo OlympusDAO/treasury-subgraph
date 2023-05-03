@@ -3,6 +3,8 @@ import { TokenSuppliesResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { filterLatestBlockByDay } from '../../tokenSupplyHelper';
 
+type TokenSupply = TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"][0];
+
 /**
  * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
  * 
@@ -87,25 +89,25 @@ export default createOperation.query({
       if (queryResult.data) {
         console.log(`Got ${queryResult.data.treasuryArbitrum_tokenSupplies.length} Arbitrum records.`);
         combinedTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryArbitrum_tokenSupplies.map(record => {
+          queryResult.data.treasuryArbitrum_tokenSupplies.map((record: TokenSupply) => {
             return { ...record, blockchain: "Arbitrum" };
           })));
 
         console.log(`Got ${queryResult.data.treasuryEthereum_tokenSupplies.length} Ethereum records.`);
         combinedTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryEthereum_tokenSupplies.map(record => {
+          queryResult.data.treasuryEthereum_tokenSupplies.map((record: TokenSupply) => {
             return { ...record, blockchain: "Ethereum" };
           })));
 
         console.log(`Got ${queryResult.data.treasuryFantom_tokenSupplies.length} Fantom records.`);
         combinedTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryFantom_tokenSupplies.map(record => {
+          queryResult.data.treasuryFantom_tokenSupplies.map((record: TokenSupply) => {
             return { ...record, blockchain: "Fantom" };
           })));
 
         console.log(`Got ${queryResult.data.treasuryPolygon_tokenSupplies.length} Polygon records.`);
         combinedTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryPolygon_tokenSupplies.map(record => {
+          queryResult.data.treasuryPolygon_tokenSupplies.map((record: TokenSupply) => {
             return { ...record, blockchain: "Polygon" };
           })));
       }
