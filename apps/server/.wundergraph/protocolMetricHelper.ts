@@ -1,15 +1,15 @@
-import { TokenRecordsLatestResponseData } from "./generated/models";
+import { ProtocolMetricsLatestResponseData } from "./generated/models";
 
-type TokenRecord = TokenRecordsLatestResponseData["treasuryEthereum_tokenRecords"][0];
+type ProtocolMetric = ProtocolMetricsLatestResponseData["treasuryEthereum_protocolMetrics"][0];
 
-type TokenRecordByDate = {
+type ProtocolMetricByDate = {
   date: string;
   block: number;
-  records: TokenRecord[];
+  records: ProtocolMetric[];
 };
 
-export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] => {
-  const filteredData = Object.values(records.reduce((acc: Record<string, TokenRecordByDate>, curr: TokenRecord) => {
+export const filterLatestBlockByDay = (records: ProtocolMetric[]): ProtocolMetric[] => {
+  const filteredData = Object.values(records.reduce((acc: Record<string, ProtocolMetricByDate>, curr: ProtocolMetric) => {
     const { date, block } = curr;
     const blockNumber = parseInt(block);
     if (!acc[date] || acc[date].block < blockNumber) {
@@ -18,12 +18,12 @@ export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] =>
       acc[date].records.push(curr);
     }
     return acc;
-  }, {})).flatMap((record: TokenRecordByDate) => record.records);
+  }, {})).flatMap((record: ProtocolMetricByDate) => record.records);
 
   return filteredData;
 };
 
-export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => {
+export const sortRecordsDescending = (records: ProtocolMetric[]): ProtocolMetric[] => {
   return records.sort((a, b) => {
     const aTime = new Date(a.date).getTime();
     const bTime = new Date(b.date).getTime();

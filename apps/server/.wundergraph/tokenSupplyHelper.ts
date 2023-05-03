@@ -22,3 +22,18 @@ export const filterLatestBlockByDay = (records: TokenSupply[]): TokenSupply[] =>
 
   return filteredData;
 };
+
+export const sortRecordsDescending = (records: TokenSupply[]): TokenSupply[] => {
+  return records.sort((a, b) => {
+    const aTime = new Date(a.date).getTime();
+    const bTime = new Date(b.date).getTime();
+
+    if (aTime > bTime) {
+      return 1;
+    } else if (aTime < bTime) {
+      return -1;
+    } else {
+      return 0;
+    }
+  });
+};

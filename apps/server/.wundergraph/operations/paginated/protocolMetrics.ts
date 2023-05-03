@@ -1,6 +1,7 @@
 import { addDays } from 'date-fns';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { ProtocolMetricsResponseData } from '../../generated/models';
+import { sortRecordsDescending } from '../../protocolMetricHelper';
 
 /**
  * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
@@ -78,22 +79,27 @@ export default createOperation.query({
         },
       });
 
+      const currentProtocolMetrics: ProtocolMetricsResponseData["treasuryEthereum_protocolMetrics"] = [];
+
       if (queryResult.data) {
         console.log(`Got ${queryResult.data.treasuryArbitrum_protocolMetrics.length} Arbitrum records.`);
-        combinedProtocolMetrics.push(...queryResult.data.treasuryArbitrum_protocolMetrics);
+        currentProtocolMetrics.push(...queryResult.data.treasuryArbitrum_protocolMetrics);
         console.log(`Got ${queryResult.data.treasuryEthereum_protocolMetrics.length} Ethereum records.`);
-        combinedProtocolMetrics.push(...queryResult.data.treasuryEthereum_protocolMetrics);
+        currentProtocolMetrics.push(...queryResult.data.treasuryEthereum_protocolMetrics);
         console.log(`Got ${queryResult.data.treasuryFantom_protocolMetrics.length} Fantom records.`);
-        combinedProtocolMetrics.push(...queryResult.data.treasuryFantom_protocolMetrics);
+        currentProtocolMetrics.push(...queryResult.data.treasuryFantom_protocolMetrics);
         console.log(`Got ${queryResult.data.treasuryPolygon_protocolMetrics.length} Polygon records.`);
-        combinedProtocolMetrics.push(...queryResult.data.treasuryPolygon_protocolMetrics);
+        currentProtocolMetrics.push(...queryResult.data.treasuryPolygon_protocolMetrics);
       }
+
+      // Push to the combined array
+      combinedProtocolMetrics.push(...currentProtocolMetrics);
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
     }
 
     console.log(`Returning ${combinedProtocolMetrics.length} records.`);
-    return combinedProtocolMetrics;
+    return sortRecordsDescending(combinedProtocolMetrics);
   },
 });
