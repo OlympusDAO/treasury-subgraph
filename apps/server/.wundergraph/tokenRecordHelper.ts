@@ -29,9 +29,9 @@ export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => 
     const bTime = new Date(b.date).getTime();
 
     if (aTime > bTime) {
-      return 1;
-    } else if (aTime < bTime) {
       return -1;
+    } else if (aTime < bTime) {
+      return 1;
     } else {
       return 0;
     }
