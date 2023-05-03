@@ -16,7 +16,7 @@ export default createOperation.query({
       operationName: "tokenSuppliesLatest",
     });
 
-    // Collapse the data into a single array, and add a missing property (except for Ethereum, which already has it)
+    // Collapse the data into a single array, and add a missing property
     if (queryResult.data) {
       console.log(`Got ${queryResult.data.treasuryArbitrum_tokenSupplies.length} Arbitrum records.`);
       combinedTokenSupplies.push(...queryResult.data.treasuryArbitrum_tokenSupplies.map(record => {
@@ -24,7 +24,9 @@ export default createOperation.query({
       }));
 
       console.log(`Got ${queryResult.data.treasuryEthereum_tokenSupplies.length} Ethereum records.`);
-      combinedTokenSupplies.push(...queryResult.data.treasuryEthereum_tokenSupplies);
+      combinedTokenSupplies.push(...queryResult.data.treasuryEthereum_tokenSupplies.map(record => {
+        return { ...record, blockchain: "Ethereum" };
+      }));
 
       console.log(`Got ${queryResult.data.treasuryFantom_tokenSupplies.length} Fantom records.`);
       combinedTokenSupplies.push(...queryResult.data.treasuryFantom_tokenSupplies.map(record => {

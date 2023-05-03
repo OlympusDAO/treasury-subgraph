@@ -1,6 +1,7 @@
 import { addDays } from 'date-fns';
 import { TokenSuppliesResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
+import { filterLatestBlockByDay } from '../../tokenSupplyHelper';
 
 /**
  * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
@@ -44,6 +45,9 @@ const getNextStartDate = (offsetDays: number, finalStartDate: Date, currentDate:
  * This custom query will return a flat array containing TokenSupply objects from
  * across all endpoints.
  * 
+ * As TokenSupply snapshots can be created at different blocks, this operation
+ * returns the latest snapshot for each day.
+ * 
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
  */
 export default createOperation.query({
@@ -79,25 +83,31 @@ export default createOperation.query({
         },
       });
 
-      // Collapse the data into a single array, and add a missing property (except for Ethereum, which already has it)
+      // Collapse the data into a single array, and add a missing property
       if (queryResult.data) {
         console.log(`Got ${queryResult.data.treasuryArbitrum_tokenSupplies.length} Arbitrum records.`);
-        combinedTokenSupplies.push(...queryResult.data.treasuryArbitrum_tokenSupplies.map(record => {
-          return { ...record, blockchain: "Arbitrum" };
-        }));
+        combinedTokenSupplies.push(...filterLatestBlockByDay(
+          queryResult.data.treasuryArbitrum_tokenSupplies.map(record => {
+            return { ...record, blockchain: "Arbitrum" };
+          })));
 
         console.log(`Got ${queryResult.data.treasuryEthereum_tokenSupplies.length} Ethereum records.`);
-        combinedTokenSupplies.push(...queryResult.data.treasuryEthereum_tokenSupplies);
+        combinedTokenSupplies.push(...filterLatestBlockByDay(
+          queryResult.data.treasuryEthereum_tokenSupplies.map(record => {
+            return { ...record, blockchain: "Ethereum" };
+          })));
 
         console.log(`Got ${queryResult.data.treasuryFantom_tokenSupplies.length} Fantom records.`);
-        combinedTokenSupplies.push(...queryResult.data.treasuryFantom_tokenSupplies.map(record => {
-          return { ...record, blockchain: "Fantom" };
-        }));
+        combinedTokenSupplies.push(...filterLatestBlockByDay(
+          queryResult.data.treasuryFantom_tokenSupplies.map(record => {
+            return { ...record, blockchain: "Fantom" };
+          })));
 
         console.log(`Got ${queryResult.data.treasuryPolygon_tokenSupplies.length} Polygon records.`);
-        combinedTokenSupplies.push(...queryResult.data.treasuryPolygon_tokenSupplies.map(record => {
-          return { ...record, blockchain: "Polygon" };
-        }));
+        combinedTokenSupplies.push(...filterLatestBlockByDay(
+          queryResult.data.treasuryPolygon_tokenSupplies.map(record => {
+            return { ...record, blockchain: "Polygon" };
+          })));
       }
 
       currentEndDate = currentStartDate;
