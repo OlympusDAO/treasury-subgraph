@@ -61,6 +61,7 @@ configureWunderGraphApplication({
 				[
 					"https://*.olympusdao.finance",
 					"https://*.on.fleek.co",
+					"http://localhost:5173",
 				]
 				// Allow local development
 				: [
