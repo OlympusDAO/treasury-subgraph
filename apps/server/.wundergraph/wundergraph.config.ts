@@ -7,11 +7,13 @@ import operations from './wundergraph.operations';
  * 
  * Re-indexing the historical data is very time-consuming, so we modify the schema to add this field,
  * and add it to each record in the operations.
+ * 
+ * NOTE: this is currently ignored by Wundergraph
  */
 const schemaExtension: string =
 	`
 extend type TokenSupply {
-	blockchain: String!
+	blockchain: String
 }
 `;
 
