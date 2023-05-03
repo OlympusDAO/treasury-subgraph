@@ -11,7 +11,7 @@
     "build": "dotenv -- turbo build",
     "lint": "dotenv -- turbo lint",
     "deploy": "dotenv -- turbo deploy",
-    "publish-package": "dotenv -- turbo publish",
+    "publish-package": "dotenv -- turbo publish-package",
     "depcheck": "syncpack",
     "depcheck:fix": "syncpack fix-mismatches"
   },
