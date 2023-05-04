@@ -44,6 +44,21 @@ describe("paginated", () => {
   });
 });
 
+// describe("converts to numbers", () => {
+//   test("success", async () => {
+//     const result = await wg.client().query({
+//       operationName: "paginated/tokenSupplies",
+//       input: {
+//         startDate: getStartDate(),
+//       }
+//     });
+
+//     const records = result.data;
+//     const record = records ? records[0] : undefined;
+//     expect(typeof record?.balance).toBe("number");
+//   })
+// });
+
 describe("blockchain property", () => {
   test("Arbitrum", async () => {
     const result = await wg.client().query({
