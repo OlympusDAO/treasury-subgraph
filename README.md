@@ -51,8 +51,8 @@ Run `yarn test` from the root or `apps/server` directories.
 
 Wundergraph is setup to deploy automatically:
 
-- `main` branch: 
-- `develop` branch: 
+- `main` branch: https://olympus-treasury-subgraph.wundergraph.dev/
+- `develop` branch: https://olympus-treasury-subgraph-dev.wundergraph.dev/
 
 ### Deployment - Client NPM Package
 
@@ -62,7 +62,7 @@ Wundergraph is setup to deploy automatically:
 4. Login using yarn to authenticate with the NPM package registry: `yarn login`
 5. Run the following command: `yarn publish-package`
 
-    - If you have 2FA enabled on your account (which you should), you can speed this up by appending `--otp <OTP VALUE>` to the end of the command
+    - Prefix the command with `YARN_OTP=<OTP VALUE>`
 
 NOTE: You must be a member of the `@olympusdao` org in NPM in order to publish.
 
