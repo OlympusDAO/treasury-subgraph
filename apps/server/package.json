@@ -19,8 +19,10 @@
   },
   "scripts": {
     "start": "wunderctl up",
-    "prebuild": "echo \"WG_PUBLIC_NODE_URL is ${WG_PUBLIC_NODE_URL:?}\"",
-    "build": "wunderctl generate",
-    "test": "jest"
+    "prebuild": "dotenv -e ../../.env echo \"WG_PUBLIC_NODE_URL is ${WG_PUBLIC_NODE_URL:?}\"",
+    "build": "dotenv -e ../../.env wunderctl generate",
+    "build:local": "WG_PUBLIC_NODE_URL=http://localhost:9991 yarn build",
+    "pretest": "yarn build:local",
+    "test": "dotenv -e ../../.env jest"
   }
 }
