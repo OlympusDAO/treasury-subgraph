@@ -1,7 +1,11 @@
 {
   "name": "@olympusdao/treasury-subgraph-client",
-  "version": "1.0.5",
+  "version": "1.1.1",
   "description": "WunderGraph client for the OlympusDAO treasury subgraph",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OlympusDAO/treasury-subgraph.git"
+  },
   "main": "./dist/client.js",
   "module": "./dist/client.mjs",
   "types": "./dist/client.d.ts",
@@ -18,13 +22,16 @@
   ],
   "scripts": {
     "build": "tsup",
-    "publish-package": "yarn publish --access public"
+    "build:release": "tsup",
+    "changelog": "auto-changelog -p --commit-limit false",
+    "publish-package": "yarn publish --access public --otp $YARN_OTP"
   },
   "dependencies": {
     "@wundergraph/sdk": "^0.151.0"
   },
   "devDependencies": {
     "@olympusdao/treasury-subgraph": "*",
+    "auto-changelog": "^2.4.0",
     "tsup": "^6.7.0",
     "zod": "^3.21.4"
   }
