@@ -56,8 +56,11 @@ Wundergraph is setup to deploy automatically:
 
 ### Deployment - Client NPM Package
 
-1. Login using yarn to authenticate with the NPM package registry: `yarn login`
-2. Run the following command: `yarn publish-package`
+1. Run `yarn build`
+2. Update the `version` in `apps/client/package.json`
+3. Update the changelog using `yarn changelog`
+4. Login using yarn to authenticate with the NPM package registry: `yarn login`
+5. Run the following command: `yarn publish-package`
 
     - If you have 2FA enabled on your account (which you should), you can speed this up by appending `--otp <OTP VALUE>` to the end of the command
 

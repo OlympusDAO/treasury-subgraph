@@ -11,6 +11,7 @@
     "build": "dotenv -- turbo build",
     "lint": "dotenv -- turbo lint",
     "deploy": "dotenv -- turbo deploy",
+    "changelog": "cd apps/client && yarn changelog",
     "publish-package": "cd apps/client && yarn publish-package",
     "depcheck": "syncpack",
     "depcheck:fix": "syncpack fix-mismatches",
