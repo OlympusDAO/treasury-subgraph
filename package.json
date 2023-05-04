@@ -13,7 +13,8 @@
     "deploy": "dotenv -- turbo deploy",
     "publish-package": "dotenv -- turbo publish-package",
     "depcheck": "syncpack",
-    "depcheck:fix": "syncpack fix-mismatches"
+    "depcheck:fix": "syncpack fix-mismatches",
+    "test": "dotenv -- turbo test"
   },
   "workspaces": [
     "packages/*",

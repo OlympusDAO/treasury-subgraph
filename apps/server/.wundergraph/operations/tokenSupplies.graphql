@@ -3,7 +3,7 @@ query TokenSupplies($pageSize: Int! = 1000, $startDate: String!, $endDate: Strin
     id
     balance
     block
-    # blockchain
+    blockchain
     date
     pool
     poolAddress
@@ -19,7 +19,7 @@ query TokenSupplies($pageSize: Int! = 1000, $startDate: String!, $endDate: Strin
     id
     balance
     block
-    # blockchain
+    blockchain
     date
     pool
     poolAddress
@@ -35,7 +35,7 @@ query TokenSupplies($pageSize: Int! = 1000, $startDate: String!, $endDate: Strin
     id
     balance
     block
-    # blockchain
+    blockchain
     date
     pool
     poolAddress
@@ -51,7 +51,7 @@ query TokenSupplies($pageSize: Int! = 1000, $startDate: String!, $endDate: Strin
     id
     balance
     block
-    # blockchain
+    blockchain
     date
     pool
     poolAddress

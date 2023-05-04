@@ -21,7 +21,7 @@
     "publish-package": "yarn publish --access public"
   },
   "dependencies": {
-    "@wundergraph/sdk": "^0.149.1"
+    "@wundergraph/sdk": "^0.151.0"
   },
   "devDependencies": {
     "@olympusdao/treasury-subgraph": "*",

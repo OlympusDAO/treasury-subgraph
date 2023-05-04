@@ -69,7 +69,7 @@ export default createOperation.query({
     let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
     let currentEndDate: Date = getNextEndDate(null);
 
-    while (currentStartDate.getTime() > finalStartDate.getTime()) {
+    while (currentStartDate.getTime() >= finalStartDate.getTime()) {
       console.log(`Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
         operationName: "protocolMetrics",
@@ -97,6 +97,13 @@ export default createOperation.query({
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
+
+      // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
+      // There is probably a cleaner way to do this, but this works for now
+      if (currentStartDate == finalStartDate) {
+        console.log(`Reached final start date.`);
+        break;
+      }
     }
 
     console.log(`Returning ${combinedProtocolMetrics.length} records.`);

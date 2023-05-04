@@ -19,6 +19,12 @@
         "build"
       ]
     },
+    "test": {
+      "dependsOn": [
+        "build",
+        "^test"
+      ]
+    },
     "publish-package": {
       "dependsOn": [
         "build"

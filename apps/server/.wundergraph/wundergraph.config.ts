@@ -20,6 +20,7 @@ extend type TokenSupply {
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
 	url: new EnvironmentVariable("SUBGRAPH_ETHEREUM"), // Needs to be injected at runtime
+	schemaExtension: schemaExtension,
 });
 
 const treasuryArbitrum = introspect.graphql({
@@ -47,9 +48,8 @@ configureWunderGraphApplication({
 	operations,
 	codeGenerators: [
 		{
-			templates: [
-				templates.typescript.client
-			],
+			// all is required for the testing server
+			templates: [...templates.typescript.all]
 		},
 	],
 	cors: {

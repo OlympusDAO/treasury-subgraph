@@ -101,6 +101,7 @@ export default createOperation.query({
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
 
+      // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
       // There is probably a cleaner way to do this, but this works for now
       if (currentStartDate == finalStartDate) {
         console.log(`Reached final start date.`);
