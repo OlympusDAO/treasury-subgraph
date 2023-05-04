@@ -28,3 +28,5 @@ jobs:
     ## Requires the SUBGRAPH_ETHEREUM variable to be set in the repository secrets
     ## This represents an authenticated version of the query URL for this subgraph: https://thegraph.com/explorer/subgraphs/DTcDcUSBRJjz9NeoK5VbXCVzYbRTyuBwdPUqMi8x32pY
     - run: yarn test # Runs build automatically
+      env:
+        SUBGRAPH_ETHEREUM: ${{ secrets.SUBGRAPH_ETHEREUM }}
