@@ -22,12 +22,14 @@
     "build:release": {
       "dependsOn": [
         "^build:release"
-      ]
+      ],
+      "cache": false
     },
     "publish-package": {
       "dependsOn": [
         "build:release"
-      ]
+      ],
+      "cache": false
     }
   }
 }
