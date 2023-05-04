@@ -5,15 +5,24 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "@wundergraph/wunderctl": "^0.146.1"
+    "@types/jest": "^29.5.1",
+    "@wundergraph/wunderctl": "^0.147.0",
+    "date-fns": "^2.30.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@wundergraph/sdk": "^0.149.1",
+    "@wundergraph/sdk": "^0.151.0",
     "date-fns": "^2.30.0"
   },
   "scripts": {
-    "start": "wunderctl up",
-    "prebuild": "echo \"WG_PUBLIC_NODE_URL is ${WG_PUBLIC_NODE_URL:?}\"",
-    "build": "wunderctl generate"
+    "start": "dotenv -e ../../.env wunderctl up --logs",
+    "prebuild": "dotenv -e ../../.env echo \"WG_PUBLIC_NODE_URL is ${WG_PUBLIC_NODE_URL:?}\"",
+    "build": "dotenv -e ../../.env wunderctl generate",
+    "build:local": "WG_PUBLIC_NODE_URL=http://localhost:9991 yarn build",
+    "pretest": "yarn build:local",
+    "test": "dotenv -e ../../.env jest"
   }
 }

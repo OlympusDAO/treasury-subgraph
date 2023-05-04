@@ -1,6 +1,6 @@
 {
   "name": "@olympusdao/treasury-subgraph-client",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "WunderGraph client for the OlympusDAO treasury subgraph",
   "main": "./dist/client.js",
   "module": "./dist/client.mjs",
@@ -21,7 +21,7 @@
     "publish-package": "yarn publish --access public"
   },
   "dependencies": {
-    "@wundergraph/sdk": "^0.149.1"
+    "@wundergraph/sdk": "^0.151.0"
   },
   "devDependencies": {
     "@olympusdao/treasury-subgraph": "*",

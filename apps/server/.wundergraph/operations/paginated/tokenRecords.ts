@@ -1,7 +1,7 @@
 import { addDays } from 'date-fns';
 import { TokenRecordsResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
-import { filterLatestBlockByDay } from '../../tokenRecordHelper';
+import { filterLatestBlockByDay, sortRecordsDescending } from '../../tokenRecordHelper';
 
 /**
  * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
@@ -67,9 +67,11 @@ export default createOperation.query({
     const combinedTokenRecords: TokenRecordsResponseData["treasuryEthereum_tokenRecords"] = [];
 
     let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
+    console.log(`first startDate = ${currentStartDate}`);
     let currentEndDate: Date = getNextEndDate(null);
+    console.log(`first endDate = ${currentEndDate}`);
 
-    while (currentStartDate.getTime() > finalStartDate.getTime()) {
+    while (currentStartDate.getTime() >= finalStartDate.getTime()) {
       console.log(`Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
         operationName: "tokenRecords",
@@ -79,23 +81,35 @@ export default createOperation.query({
         },
       });
 
+      const currentTokenRecords: TokenRecordsResponseData["treasuryEthereum_tokenRecords"] = [];
+
       // Collapse the data into a single array
       if (queryResult.data) {
         console.log(`Got ${queryResult.data.treasuryArbitrum_tokenRecords.length} Arbitrum records.`);
-        combinedTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryArbitrum_tokenRecords));
+        currentTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryArbitrum_tokenRecords));
         console.log(`Got ${queryResult.data.treasuryEthereum_tokenRecords.length} Ethereum records.`);
-        combinedTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryEthereum_tokenRecords));
+        currentTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryEthereum_tokenRecords));
         console.log(`Got ${queryResult.data.treasuryFantom_tokenRecords.length} Fantom records.`);
-        combinedTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryFantom_tokenRecords));
+        currentTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryFantom_tokenRecords));
         console.log(`Got ${queryResult.data.treasuryPolygon_tokenRecords.length} Polygon records.`);
-        combinedTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryPolygon_tokenRecords));
+        currentTokenRecords.push(...filterLatestBlockByDay(queryResult.data.treasuryPolygon_tokenRecords));
       }
+
+      // Push to the combined array
+      combinedTokenRecords.push(...currentTokenRecords);
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
+
+      // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
+      // There is probably a cleaner way to do this, but this works for now
+      if (currentStartDate == finalStartDate) {
+        console.log(`Reached final start date.`);
+        break;
+      }
     }
 
     console.log(`Returning ${combinedTokenRecords.length} records.`);
-    return combinedTokenRecords;
+    return sortRecordsDescending(combinedTokenRecords);
   },
 });
