@@ -67,9 +67,11 @@ export default createOperation.query({
     const combinedTokenRecords: TokenRecordsResponseData["treasuryEthereum_tokenRecords"] = [];
 
     let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
+    console.log(`first startDate = ${currentStartDate}`);
     let currentEndDate: Date = getNextEndDate(null);
+    console.log(`first endDate = ${currentEndDate}`);
 
-    while (currentStartDate.getTime() > finalStartDate.getTime()) {
+    while (currentStartDate.getTime() >= finalStartDate.getTime()) {
       console.log(`Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
         operationName: "tokenRecords",
@@ -98,6 +100,12 @@ export default createOperation.query({
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
+
+      // There is probably a cleaner way to do this, but this works for now
+      if (currentStartDate == finalStartDate) {
+        console.log(`Reached final start date.`);
+        break;
+      }
     }
 
     console.log(`Returning ${combinedTokenRecords.length} records.`);
