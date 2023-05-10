@@ -18,6 +18,9 @@ export default createOperation.query({
       return [];
     }
 
-    return flattenRecords(queryResult.data, true, false);
+    // Combine across pages and endpoints
+    const flatRecords = flattenRecords(queryResult.data, true, false);
+    console.log(`Returning ${flatRecords.length} records.`);
+    return flatRecords;
   },
 });
