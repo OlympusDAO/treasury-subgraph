@@ -11,13 +11,16 @@
       ],
       "env": [
         "WG_PUBLIC_NODE_URL",
-        "SUBGRAPH_ETHEREUM"
+        "SUBGRAPH_API_KEY"
       ]
     },
     "lint": {},
     "test": {
       "dependsOn": [
         "^test"
+      ],
+      "env": [
+        "SUBGRAPH_API_KEY"
       ]
     },
     "build:release": {
