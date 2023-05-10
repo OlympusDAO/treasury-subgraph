@@ -12,7 +12,6 @@ import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString }
  * NOTE: this is not recommended for public use, and is superceded by the Metric queries.
  */
 export default createOperation.query({
-  internal: true,
   input: z.object({
     startDate: z.string({ description: "The start date in the YYYY-MM-DD format." }),
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
