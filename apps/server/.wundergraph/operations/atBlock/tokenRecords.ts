@@ -7,7 +7,7 @@ import { flattenRecords } from '../../tokenRecordHelper';
  */
 export default createOperation.query({
   input: z.object({
-    arbtriumBlock: z.number({ description: "Arbitrum block number" }),
+    arbitrumBlock: z.number({ description: "Arbitrum block number" }),
     ethereumBlock: z.number({ description: "Ethereum block number" }),
     fantomBlock: z.number({ description: "Fantom block number" }),
     polygonBlock: z.number({ description: "Polygon block number" }),
@@ -18,7 +18,7 @@ export default createOperation.query({
     const queryResult = await ctx.operations.query({
       operationName: "tokenRecordsAtBlock",
       input: {
-        arbitrumBlock: ctx.input.arbtriumBlock.toString(),
+        arbitrumBlock: ctx.input.arbitrumBlock.toString(),
         ethereumBlock: ctx.input.ethereumBlock.toString(),
         fantomBlock: ctx.input.fantomBlock.toString(),
         polygonBlock: ctx.input.polygonBlock.toString(),
