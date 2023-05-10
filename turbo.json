@@ -10,7 +10,8 @@
         ".wundergraph/generated"
       ],
       "env": [
-        "WG_PUBLIC_NODE_URL"
+        "WG_PUBLIC_NODE_URL",
+        "SUBGRAPH_ETHEREUM"
       ]
     },
     "lint": {},
