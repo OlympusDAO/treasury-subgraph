@@ -18,6 +18,9 @@
     "test": {
       "dependsOn": [
         "^test"
+      ],
+      "env": [
+        "SUBGRAPH_API_KEY"
       ]
     },
     "build:release": {
