@@ -1,14 +1,14 @@
 query TokenSuppliesLatest {
-  treasuryArbitrum_tokenSupplies(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryArbitrum_tokenSupplies(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenSupplyArbitrum
   }
-  treasuryEthereum_tokenSupplies(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryEthereum_tokenSupplies(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenSupplyEthereum
   }
-  treasuryFantom_tokenSupplies(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryFantom_tokenSupplies(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenSupplyFantom
   }
-  treasuryPolygon_tokenSupplies(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryPolygon_tokenSupplies(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenSupplyPolygon
   }
 }

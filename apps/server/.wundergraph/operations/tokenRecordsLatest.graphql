@@ -1,14 +1,14 @@
 query TokenRecordsLatest {
-  treasuryArbitrum_tokenRecords(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryArbitrum_tokenRecords(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenRecordArbitrum
   }
-  treasuryEthereum_tokenRecords(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryEthereum_tokenRecords(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenRecordEthereum
 }
-  treasuryFantom_tokenRecords(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryFantom_tokenRecords(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenRecordFantom
   }
-  treasuryPolygon_tokenRecords(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryPolygon_tokenRecords(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenRecordPolygon
   }
 }

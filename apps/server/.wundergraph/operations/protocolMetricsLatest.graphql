@@ -1,14 +1,14 @@
 query ProtocolMetricsLatest {
-  treasuryArbitrum_protocolMetrics(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryArbitrum_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_ProtocolMetricArbitrum
   }
-  treasuryEthereum_protocolMetrics(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryEthereum_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_ProtocolMetricEthereum
   }
-  treasuryFantom_protocolMetrics(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryFantom_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_ProtocolMetricFantom
   }
-  treasuryPolygon_protocolMetrics(orderBy: date, orderDirection: desc, first: 1) {
+  treasuryPolygon_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_ProtocolMetricPolygon
   }
 }
