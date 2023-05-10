@@ -37,3 +37,24 @@ export const sortRecordsDescending = (records: TokenSupply[]): TokenSupply[] => 
     }
   });
 };
+
+export const setBlockchainProperty = (records: TokenSupply[], blockchain: string): TokenSupply[] => {
+  return records.map((record: TokenSupply) => {
+    return { ...record, blockchain: blockchain };
+  });
+}
+
+export const flattenRecords = (records: TokenSuppliesLatestResponseData): TokenSupply[] => {
+  const combinedRecords: TokenSupply[] = [];
+
+  console.log(`Got ${records.treasuryArbitrum_tokenSupplies.length} Arbitrum records.`);
+  combinedRecords.push(...records.treasuryArbitrum_tokenSupplies);
+  console.log(`Got ${records.treasuryEthereum_tokenSupplies.length} Ethereum records.`);
+  combinedRecords.push(...records.treasuryEthereum_tokenSupplies);
+  console.log(`Got ${records.treasuryFantom_tokenSupplies.length} Fantom records.`);
+  combinedRecords.push(...records.treasuryFantom_tokenSupplies);
+  console.log(`Got ${records.treasuryPolygon_tokenSupplies.length} Polygon records.`);
+  combinedRecords.push(...records.treasuryPolygon_tokenSupplies);
+
+  return combinedRecords;
+};
