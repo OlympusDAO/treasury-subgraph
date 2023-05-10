@@ -1,6 +1,7 @@
 import { addDays } from "date-fns";
 import { createTestServer } from "../.wundergraph/generated/testing";
 import { getISO8601DateString } from "./dateHelper";
+import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
 
 const wg = createTestServer();
 
@@ -60,7 +61,7 @@ describe("paginated", () => {
 // });
 
 describe("blockchain property", () => {
-  test("Arbitrum", async () => {
+  test(CHAIN_ARBITRUM, async () => {
     const result = await wg.client().query({
       operationName: "paginated/tokenSupplies",
       input: {
@@ -69,11 +70,11 @@ describe("blockchain property", () => {
     });
 
     const records = result.data;
-    const filteredRecords = records ? records.filter((record) => record.blockchain === "Arbitrum") : [];
+    const filteredRecords = records ? records.filter((record) => record.blockchain === CHAIN_ARBITRUM) : [];
     expect(filteredRecords.length).toBeGreaterThan(0);
   });
 
-  test("Ethereum", async () => {
+  test(CHAIN_ETHEREUM, async () => {
     const result = await wg.client().query({
       operationName: "paginated/tokenSupplies",
       input: {
@@ -82,11 +83,11 @@ describe("blockchain property", () => {
     });
 
     const records = result.data;
-    const filteredRecords = records ? records.filter((record) => record.blockchain === "Ethereum") : [];
+    const filteredRecords = records ? records.filter((record) => record.blockchain === CHAIN_ETHEREUM) : [];
     expect(filteredRecords.length).toBeGreaterThan(0);
   });
 
-  test("Fantom", async () => {
+  test(CHAIN_FANTOM, async () => {
     const result = await wg.client().query({
       operationName: "paginated/tokenSupplies",
       input: {
@@ -95,11 +96,11 @@ describe("blockchain property", () => {
     });
 
     const records = result.data;
-    const filteredRecords = records ? records.filter((record) => record.blockchain === "Fantom") : [];
+    const filteredRecords = records ? records.filter((record) => record.blockchain === CHAIN_FANTOM) : [];
     expect(filteredRecords.length).toBe(0); // 0 TokenSupply on this blockchain
   });
 
-  test("Polygon", async () => {
+  test(CHAIN_POLYGON, async () => {
     const result = await wg.client().query({
       operationName: "paginated/tokenSupplies",
       input: {
@@ -108,7 +109,7 @@ describe("blockchain property", () => {
     });
 
     const records = result.data;
-    const filteredRecords = records ? records.filter((record) => record.blockchain === "Polygon") : [];
+    const filteredRecords = records ? records.filter((record) => record.blockchain === CHAIN_POLYGON) : [];
     expect(filteredRecords.length).toBe(0); // 0 TokenSupply on this blockchain
   });
 });

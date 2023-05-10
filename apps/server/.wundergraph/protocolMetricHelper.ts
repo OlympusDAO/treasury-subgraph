@@ -1,6 +1,7 @@
+import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { ProtocolMetricsLatestResponseData } from "./generated/models";
 
-type ProtocolMetric = ProtocolMetricsLatestResponseData["treasuryEthereum_protocolMetrics"][0];
+export type ProtocolMetric = ProtocolMetricsLatestResponseData["treasuryEthereum_protocolMetrics"][0];
 
 type ProtocolMetricByDate = {
   date: string;
@@ -42,10 +43,10 @@ export const flattenRecords = (records: ProtocolMetricsLatestResponseData, lates
   const combinedRecords: ProtocolMetric[] = [];
 
   const mapping = {
-    Arbitrum: records.treasuryArbitrum_protocolMetrics,
-    Ethereum: records.treasuryEthereum_protocolMetrics,
-    Fantom: records.treasuryFantom_protocolMetrics,
-    Polygon: records.treasuryPolygon_protocolMetrics,
+    [CHAIN_ARBITRUM]: records.treasuryArbitrum_protocolMetrics,
+    [CHAIN_ETHEREUM]: records.treasuryEthereum_protocolMetrics,
+    [CHAIN_FANTOM]: records.treasuryFantom_protocolMetrics,
+    [CHAIN_POLYGON]: records.treasuryPolygon_protocolMetrics,
   };
 
   for (const [key, value] of Object.entries(mapping)) {

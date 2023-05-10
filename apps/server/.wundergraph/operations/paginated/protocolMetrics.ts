@@ -8,6 +8,8 @@ import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString }
  * across all endpoints.
  * 
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
+ * 
+ * NOTE: this is not recommended for public use, and is superceded by the Metric queries.
  */
 export default createOperation.query({
   input: z.object({

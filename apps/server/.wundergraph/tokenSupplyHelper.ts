@@ -1,6 +1,7 @@
+import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenSuppliesLatestResponseData } from "./generated/models";
 
-type TokenSupply = TokenSuppliesLatestResponseData["treasuryEthereum_tokenSupplies"][0];
+export type TokenSupply = TokenSuppliesLatestResponseData["treasuryEthereum_tokenSupplies"][0];
 
 type TokenSupplyByDate = {
   date: string;
@@ -48,10 +49,10 @@ export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockch
   const combinedRecords: TokenSupply[] = [];
 
   const mapping = {
-    Arbitrum: records.treasuryArbitrum_tokenSupplies,
-    Ethereum: records.treasuryEthereum_tokenSupplies,
-    Fantom: records.treasuryFantom_tokenSupplies,
-    Polygon: records.treasuryPolygon_tokenSupplies,
+    [CHAIN_ARBITRUM]: records.treasuryArbitrum_tokenSupplies,
+    [CHAIN_ETHEREUM]: records.treasuryEthereum_tokenSupplies,
+    [CHAIN_FANTOM]: records.treasuryFantom_tokenSupplies,
+    [CHAIN_POLYGON]: records.treasuryPolygon_tokenSupplies,
   };
 
   for (const [key, value] of Object.entries(mapping)) {

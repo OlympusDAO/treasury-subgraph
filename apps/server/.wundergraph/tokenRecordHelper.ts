@@ -1,6 +1,7 @@
+import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenRecordsLatestResponseData } from "./generated/models";
 
-type TokenRecord = TokenRecordsLatestResponseData["treasuryEthereum_tokenRecords"][0];
+export type TokenRecord = TokenRecordsLatestResponseData["treasuryEthereum_tokenRecords"][0];
 
 type TokenRecordByDate = {
   date: string;
@@ -42,10 +43,10 @@ export const flattenRecords = (records: TokenRecordsLatestResponseData, latestBl
   const combinedRecords: TokenRecord[] = [];
 
   const mapping = {
-    Arbitrum: records.treasuryArbitrum_tokenRecords,
-    Ethereum: records.treasuryEthereum_tokenRecords,
-    Fantom: records.treasuryFantom_tokenRecords,
-    Polygon: records.treasuryPolygon_tokenRecords,
+    [CHAIN_ARBITRUM]: records.treasuryArbitrum_tokenRecords,
+    [CHAIN_ETHEREUM]: records.treasuryEthereum_tokenRecords,
+    [CHAIN_FANTOM]: records.treasuryFantom_tokenRecords,
+    [CHAIN_POLYGON]: records.treasuryPolygon_tokenRecords,
   };
 
   for (const [key, value] of Object.entries(mapping)) {
@@ -61,3 +62,9 @@ export const flattenRecords = (records: TokenRecordsLatestResponseData, latestBl
 
   return combinedRecords;
 };
+
+export const getBlockByChain = (records: TokenRecord[], chain: string): number | null => {
+  const chainRecords = records.filter((record) => record.blockchain === chain);
+
+  return chainRecords.length > 0 ? +chainRecords[0].block : null;
+}
