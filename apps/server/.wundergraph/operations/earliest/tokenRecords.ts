@@ -7,10 +7,10 @@ import { flattenRecords } from '../../tokenRecordHelper';
  */
 export default createOperation.query({
   handler: async (ctx) => {
-    console.log(`Commencing latest query for TokenRecord`);
+    console.log(`Commencing earliest query for TokenRecord`);
 
     const queryResult = await ctx.operations.query({
-      operationName: "tokenRecordsLatest",
+      operationName: "tokenRecordsEarliest",
     });
 
     if (!queryResult.data) {

@@ -1,0 +1,14 @@
+query TokenSuppliesEarliest {
+  treasuryArbitrum_tokenSupplies(orderBy: block, orderDirection: asc, first: 1) {
+    ...Fragment_TokenSupplyArbitrum
+  }
+  treasuryEthereum_tokenSupplies(orderBy: block, orderDirection: asc, first: 1) {
+    ...Fragment_TokenSupplyEthereum
+  }
+  treasuryFantom_tokenSupplies(orderBy: block, orderDirection: asc, first: 1) {
+    ...Fragment_TokenSupplyFantom
+  }
+  treasuryPolygon_tokenSupplies(orderBy: block, orderDirection: asc, first: 1) {
+    ...Fragment_TokenSupplyPolygon
+  }
+}

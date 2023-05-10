@@ -8,10 +8,10 @@ import { setBlockchainProperty } from '../../tokenSupplyHelper';
  */
 export default createOperation.query({
   handler: async (ctx) => {
-    console.log(`Commencing latest query for TokenSupply`);
+    console.log(`Commencing earliest query for TokenSupply`);
 
     const queryResult = await ctx.operations.query({
-      operationName: "tokenSuppliesLatest",
+      operationName: "tokenSuppliesEarliest",
     });
 
     if (!queryResult.data) {
