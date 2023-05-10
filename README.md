@@ -43,9 +43,22 @@ During local development, you can trigger a build with `yarn build:local`.
 
 `yarn build` requires an environment variable to be set, and is used in the deploy process.
 
-### Testing
+### Running
+
+During local development, you can run an API endpoint locally with `yarn server:start`.
+
+This requires environment variables to be set, so follow the instructions in [Setup](#setup).
+
+### Unit Tests
 
 Run `yarn test` from the root or `apps/server` directories.
+
+### Testing the Olympus Frontend
+
+Running the [frontend](https://github.com/OlympusDAO/olympus-frontend/) against a different API endpoint requires jumping through some (small) hoops:
+
+1. Run the API endpoint locally. See [Running](#running).
+2. Pass the API endpoint to the frontend: `VITE_WG_PUBLIC_NODE_URL=http://localhost:9991 yarn start`
 
 ### Deployment - Wundergraph
 

@@ -10,6 +10,7 @@
   "scripts": {
     "build": "turbo build",
     "lint": "turbo lint",
+    "server:start": "cd apps/server && yarn start",
     "changelog": "cd apps/client && yarn changelog",
     "publish-package": "turbo publish-package",
     "depcheck": "syncpack",
