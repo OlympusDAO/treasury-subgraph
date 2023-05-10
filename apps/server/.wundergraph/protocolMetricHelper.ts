@@ -38,17 +38,26 @@ export const sortRecordsDescending = (records: ProtocolMetric[]): ProtocolMetric
   });
 };
 
-export const flattenRecords = (records: ProtocolMetricsLatestResponseData): ProtocolMetric[] => {
+export const flattenRecords = (records: ProtocolMetricsLatestResponseData, latestBlock: boolean): ProtocolMetric[] => {
   const combinedRecords: ProtocolMetric[] = [];
 
-  console.log(`Got ${records.treasuryArbitrum_protocolMetrics.length} Arbitrum records.`);
-  combinedRecords.push(...records.treasuryArbitrum_protocolMetrics);
-  console.log(`Got ${records.treasuryEthereum_protocolMetrics.length} Ethereum records.`);
-  combinedRecords.push(...records.treasuryEthereum_protocolMetrics);
-  console.log(`Got ${records.treasuryFantom_protocolMetrics.length} Fantom records.`);
-  combinedRecords.push(...records.treasuryFantom_protocolMetrics);
-  console.log(`Got ${records.treasuryPolygon_protocolMetrics.length} Polygon records.`);
-  combinedRecords.push(...records.treasuryPolygon_protocolMetrics);
+  const mapping = {
+    Arbitrum: records.treasuryArbitrum_protocolMetrics,
+    Ethereum: records.treasuryEthereum_protocolMetrics,
+    Fantom: records.treasuryFantom_protocolMetrics,
+    Polygon: records.treasuryPolygon_protocolMetrics,
+  };
+
+  for (const [key, value] of Object.entries(mapping)) {
+    console.log(`Got ${value.length} ${key} records.`);
+    let currentRecords: ProtocolMetric[] = value;
+
+    if (latestBlock) {
+      currentRecords = filterLatestBlockByDay(currentRecords);
+    }
+
+    combinedRecords.push(...currentRecords);
+  }
 
   return combinedRecords;
 };

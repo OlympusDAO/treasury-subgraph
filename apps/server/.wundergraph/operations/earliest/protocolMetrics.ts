@@ -19,7 +19,7 @@ export default createOperation.query({
     }
 
     // Combine across pages and endpoints
-    const flatRecords = flattenRecords(queryResult.data);
+    const flatRecords = flattenRecords(queryResult.data, false);
     console.log(`Returning ${flatRecords.length} records.`);
     return flatRecords;
   },

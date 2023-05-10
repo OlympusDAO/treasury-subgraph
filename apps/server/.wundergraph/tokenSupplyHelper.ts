@@ -44,17 +44,30 @@ export const setBlockchainProperty = (records: TokenSupply[], blockchain: string
   });
 }
 
-export const flattenRecords = (records: TokenSuppliesLatestResponseData): TokenSupply[] => {
+export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockchain: boolean, latestBlock: boolean): TokenSupply[] => {
   const combinedRecords: TokenSupply[] = [];
 
-  console.log(`Got ${records.treasuryArbitrum_tokenSupplies.length} Arbitrum records.`);
-  combinedRecords.push(...records.treasuryArbitrum_tokenSupplies);
-  console.log(`Got ${records.treasuryEthereum_tokenSupplies.length} Ethereum records.`);
-  combinedRecords.push(...records.treasuryEthereum_tokenSupplies);
-  console.log(`Got ${records.treasuryFantom_tokenSupplies.length} Fantom records.`);
-  combinedRecords.push(...records.treasuryFantom_tokenSupplies);
-  console.log(`Got ${records.treasuryPolygon_tokenSupplies.length} Polygon records.`);
-  combinedRecords.push(...records.treasuryPolygon_tokenSupplies);
+  const mapping = {
+    Arbitrum: records.treasuryArbitrum_tokenSupplies,
+    Ethereum: records.treasuryEthereum_tokenSupplies,
+    Fantom: records.treasuryFantom_tokenSupplies,
+    Polygon: records.treasuryPolygon_tokenSupplies,
+  };
+
+  for (const [key, value] of Object.entries(mapping)) {
+    console.log(`Got ${value.length} ${key} records.`);
+    let currentRecords: TokenSupply[] = value;
+
+    if (blockchain) {
+      currentRecords = setBlockchainProperty(currentRecords, key);
+    }
+
+    if (latestBlock) {
+      currentRecords = filterLatestBlockByDay(currentRecords);
+    }
+
+    combinedRecords.push(...currentRecords);
+  }
 
   return combinedRecords;
 };

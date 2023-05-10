@@ -1,7 +1,7 @@
 import { addDays } from 'date-fns';
 import { TokenSuppliesResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
-import { filterLatestBlockByDay, sortRecordsDescending } from '../../tokenSupplyHelper';
+import { flattenRecords, sortRecordsDescending } from '../../tokenSupplyHelper';
 
 type TokenSupply = TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"][0];
 
@@ -85,37 +85,10 @@ export default createOperation.query({
         },
       });
 
-      const currentTokenSupplies: TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"] = [];
-
       // Collapse the data into a single array, and add a missing property
       if (queryResult.data) {
-        console.log(`Got ${queryResult.data.treasuryArbitrum_tokenSupplies.length} Arbitrum records.`);
-        currentTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryArbitrum_tokenSupplies.map((record: TokenSupply) => {
-            return { ...record, blockchain: "Arbitrum" };
-          })));
-
-        console.log(`Got ${queryResult.data.treasuryEthereum_tokenSupplies.length} Ethereum records.`);
-        currentTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryEthereum_tokenSupplies.map((record: TokenSupply) => {
-            return { ...record, blockchain: "Ethereum" };
-          })));
-
-        console.log(`Got ${queryResult.data.treasuryFantom_tokenSupplies.length} Fantom records.`);
-        currentTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryFantom_tokenSupplies.map((record: TokenSupply) => {
-            return { ...record, blockchain: "Fantom" };
-          })));
-
-        console.log(`Got ${queryResult.data.treasuryPolygon_tokenSupplies.length} Polygon records.`);
-        currentTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryPolygon_tokenSupplies.map((record: TokenSupply) => {
-            return { ...record, blockchain: "Polygon" };
-          })));
+        combinedTokenSupplies.push(...flattenRecords(queryResult.data, true, true));
       }
-
-      // Push to the combined array
-      combinedTokenSupplies.push(...currentTokenSupplies);
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);

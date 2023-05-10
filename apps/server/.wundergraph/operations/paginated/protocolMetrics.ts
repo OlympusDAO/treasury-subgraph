@@ -1,7 +1,7 @@
 import { addDays } from 'date-fns';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { ProtocolMetricsResponseData } from '../../generated/models';
-import { sortRecordsDescending } from '../../protocolMetricHelper';
+import { flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
 
 /**
  * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
@@ -79,21 +79,10 @@ export default createOperation.query({
         },
       });
 
-      const currentProtocolMetrics: ProtocolMetricsResponseData["treasuryEthereum_protocolMetrics"] = [];
-
+      // Collapse the data into a single array
       if (queryResult.data) {
-        console.log(`Got ${queryResult.data.treasuryArbitrum_protocolMetrics.length} Arbitrum records.`);
-        currentProtocolMetrics.push(...queryResult.data.treasuryArbitrum_protocolMetrics);
-        console.log(`Got ${queryResult.data.treasuryEthereum_protocolMetrics.length} Ethereum records.`);
-        currentProtocolMetrics.push(...queryResult.data.treasuryEthereum_protocolMetrics);
-        console.log(`Got ${queryResult.data.treasuryFantom_protocolMetrics.length} Fantom records.`);
-        currentProtocolMetrics.push(...queryResult.data.treasuryFantom_protocolMetrics);
-        console.log(`Got ${queryResult.data.treasuryPolygon_protocolMetrics.length} Polygon records.`);
-        currentProtocolMetrics.push(...queryResult.data.treasuryPolygon_protocolMetrics);
+        combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true));
       }
-
-      // Push to the combined array
-      combinedProtocolMetrics.push(...currentProtocolMetrics);
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
