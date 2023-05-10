@@ -1,5 +1,5 @@
 import { createOperation } from '../../generated/wundergraph.factory';
-import { ProtocolMetricsLatestResponseData } from '../../generated/models';
+import { flattenRecords } from '../../protocolMetricHelper';
 
 /**
  * This custom query will return a flat array containing the latest ProtocolMetric objects for
@@ -9,25 +9,18 @@ export default createOperation.query({
   handler: async (ctx) => {
     console.log(`Commencing latest query for ProtocolMetric`);
 
-    // Combine across pages and endpoints
-    const combinedProtocolMetrics: ProtocolMetricsLatestResponseData["treasuryEthereum_protocolMetrics"] = [];
-
     const queryResult = await ctx.operations.query({
       operationName: "protocolMetricsLatest",
     });
 
-    if (queryResult.data) {
-      console.log(`Got ${queryResult.data.treasuryArbitrum_protocolMetrics.length} Arbitrum records.`);
-      combinedProtocolMetrics.push(...queryResult.data.treasuryArbitrum_protocolMetrics);
-      console.log(`Got ${queryResult.data.treasuryEthereum_protocolMetrics.length} Ethereum records.`);
-      combinedProtocolMetrics.push(...queryResult.data.treasuryEthereum_protocolMetrics);
-      console.log(`Got ${queryResult.data.treasuryFantom_protocolMetrics.length} Fantom records.`);
-      combinedProtocolMetrics.push(...queryResult.data.treasuryFantom_protocolMetrics);
-      console.log(`Got ${queryResult.data.treasuryPolygon_protocolMetrics.length} Polygon records.`);
-      combinedProtocolMetrics.push(...queryResult.data.treasuryPolygon_protocolMetrics);
+    if (!queryResult.data) {
+      console.log(`No data returned.`);
+      return [];
     }
 
-    console.log(`Returning ${combinedProtocolMetrics.length} records.`);
-    return combinedProtocolMetrics;
+    // Combine across pages and endpoints
+    const flatRecords = flattenRecords(queryResult.data);
+    console.log(`Returning ${flatRecords.length} records.`);
+    return flatRecords;
   },
 });

@@ -37,3 +37,18 @@ export const sortRecordsDescending = (records: ProtocolMetric[]): ProtocolMetric
     }
   });
 };
+
+export const flattenRecords = (records: ProtocolMetricsLatestResponseData): ProtocolMetric[] => {
+  const combinedRecords: ProtocolMetric[] = [];
+
+  console.log(`Got ${records.treasuryArbitrum_protocolMetrics.length} Arbitrum records.`);
+  combinedRecords.push(...records.treasuryArbitrum_protocolMetrics);
+  console.log(`Got ${records.treasuryEthereum_protocolMetrics.length} Ethereum records.`);
+  combinedRecords.push(...records.treasuryEthereum_protocolMetrics);
+  console.log(`Got ${records.treasuryFantom_protocolMetrics.length} Fantom records.`);
+  combinedRecords.push(...records.treasuryFantom_protocolMetrics);
+  console.log(`Got ${records.treasuryPolygon_protocolMetrics.length} Polygon records.`);
+  combinedRecords.push(...records.treasuryPolygon_protocolMetrics);
+
+  return combinedRecords;
+};
