@@ -8,13 +8,13 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "dotenv -- turbo build",
-    "lint": "dotenv -- turbo lint",
+    "build": "turbo build",
+    "lint": "turbo lint",
     "changelog": "cd apps/client && yarn changelog",
     "publish-package": "turbo publish-package",
     "depcheck": "syncpack",
     "depcheck:fix": "syncpack fix-mismatches",
-    "test": "dotenv -- turbo test"
+    "test": "turbo test"
   },
   "workspaces": [
     "packages/*",
