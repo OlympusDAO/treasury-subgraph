@@ -1,0 +1,69 @@
+# One fragment per type 
+
+fragment Fragment_TokenSupplyArbitrum on treasuryArbitrum_TokenSupply {
+  id
+  balance
+  block
+  blockchain
+  date
+  pool
+  poolAddress
+  source
+  sourceAddress
+  supplyBalance
+  timestamp
+  token
+  tokenAddress
+  type
+}
+
+fragment Fragment_TokenSupplyEthereum on treasuryEthereum_TokenSupply {
+  id
+  balance
+  block
+  blockchain
+  date
+  pool
+  poolAddress
+  source
+  sourceAddress
+  supplyBalance
+  timestamp
+  token
+  tokenAddress
+  type
+}
+
+fragment Fragment_TokenSupplyFantom on treasuryFantom_TokenSupply {
+  id
+  balance
+  block
+  blockchain
+  date
+  pool
+  poolAddress
+  source
+  sourceAddress
+  supplyBalance
+  timestamp
+  token
+  tokenAddress
+  type
+}
+
+fragment Fragment_TokenSupplyPolygon on treasuryPolygon_TokenSupply {
+  id
+  balance
+  block
+  blockchain
+  date
+  pool
+  poolAddress
+  source
+  sourceAddress
+  supplyBalance
+  timestamp
+  token
+  tokenAddress
+  type
+}

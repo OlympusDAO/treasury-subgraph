@@ -1,0 +1,81 @@
+# One fragment per type 
+
+fragment Fragment_TokenRecordArbitrum on treasuryArbitrum_TokenRecord {
+  id
+  balance
+  block
+  blockchain
+  category
+  date
+  isBluechip
+  isLiquid
+  multiplier
+  rate
+  source
+  sourceAddress
+  timestamp
+  token
+  tokenAddress
+  value
+  valueExcludingOhm
+}
+
+fragment Fragment_TokenRecordEthereum on treasuryEthereum_TokenRecord {
+  id
+  balance
+  block
+  blockchain
+  category
+  date
+  isBluechip
+  isLiquid
+  multiplier
+  rate
+  source
+  sourceAddress
+  timestamp
+  token
+  tokenAddress
+  value
+  valueExcludingOhm
+}
+
+fragment Fragment_TokenRecordFantom on treasuryFantom_TokenRecord {
+  id
+  balance
+  block
+  blockchain
+  category
+  date
+  isBluechip
+  isLiquid
+  multiplier
+  rate
+  source
+  sourceAddress
+  timestamp
+  token
+  tokenAddress
+  value
+  valueExcludingOhm
+}
+
+fragment Fragment_TokenRecordPolygon on treasuryPolygon_TokenRecord {
+  id
+  balance
+  block
+  blockchain
+  category
+  date
+  isBluechip
+  isLiquid
+  multiplier
+  rate
+  source
+  sourceAddress
+  timestamp
+  token
+  tokenAddress
+  value
+  valueExcludingOhm
+}

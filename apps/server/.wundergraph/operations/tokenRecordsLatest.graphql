@@ -1,78 +1,14 @@
 query TokenRecordsLatest {
   treasuryArbitrum_tokenRecords(orderBy: date, orderDirection: desc, first: 1) {
-    id
-    balance
-    block
-    blockchain
-    category
-    date
-    isBluechip
-    isLiquid
-    multiplier
-    rate
-    source
-    sourceAddress
-    timestamp
-    token
-    tokenAddress
-    value
-    valueExcludingOhm
+    ...Fragment_TokenRecordArbitrum
   }
   treasuryEthereum_tokenRecords(orderBy: date, orderDirection: desc, first: 1) {
-    id
-    balance
-    block
-    blockchain
-    category
-    date
-    isBluechip
-    isLiquid
-    multiplier
-    rate
-    source
-    sourceAddress
-    timestamp
-    token
-    tokenAddress
-    value
-    valueExcludingOhm
+    ...Fragment_TokenRecordEthereum
 }
   treasuryFantom_tokenRecords(orderBy: date, orderDirection: desc, first: 1) {
-    id
-    balance
-    block
-    blockchain
-    category
-    date
-    isBluechip
-    isLiquid
-    multiplier
-    rate
-    source
-    sourceAddress
-    timestamp
-    token
-    tokenAddress
-    value
-    valueExcludingOhm
+    ...Fragment_TokenRecordFantom
   }
   treasuryPolygon_tokenRecords(orderBy: date, orderDirection: desc, first: 1) {
-    id
-    balance
-    block
-    blockchain
-    category
-    date
-    isBluechip
-    isLiquid
-    multiplier
-    rate
-    source
-    sourceAddress
-    timestamp
-    token
-    tokenAddress
-    value
-    valueExcludingOhm
+    ...Fragment_TokenRecordPolygon
   }
 }

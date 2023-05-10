@@ -1,66 +1,14 @@
 query TokenSuppliesLatest {
   treasuryArbitrum_tokenSupplies(orderBy: date, orderDirection: desc, first: 1) {
-    id
-    balance
-    block
-    blockchain
-    date
-    pool
-    poolAddress
-    source
-    sourceAddress
-    supplyBalance
-    timestamp
-    token
-    tokenAddress
-    type
+    ...Fragment_TokenSupplyArbitrum
   }
   treasuryEthereum_tokenSupplies(orderBy: date, orderDirection: desc, first: 1) {
-    id
-    balance
-    block
-    blockchain
-    date
-    pool
-    poolAddress
-    source
-    sourceAddress
-    supplyBalance
-    timestamp
-    token
-    tokenAddress
-    type
+    ...Fragment_TokenSupplyEthereum
   }
   treasuryFantom_tokenSupplies(orderBy: date, orderDirection: desc, first: 1) {
-    id
-    balance
-    block
-    blockchain
-    date
-    pool
-    poolAddress
-    source
-    sourceAddress
-    supplyBalance
-    timestamp
-    token
-    tokenAddress
-    type
+    ...Fragment_TokenSupplyFantom
   }
   treasuryPolygon_tokenSupplies(orderBy: date, orderDirection: desc, first: 1) {
-    id
-    balance
-    block
-    blockchain
-    date
-    pool
-    poolAddress
-    source
-    sourceAddress
-    supplyBalance
-    timestamp
-    token
-    tokenAddress
-    type
+    ...Fragment_TokenSupplyPolygon
   }
 }

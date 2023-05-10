@@ -1,66 +1,14 @@
 query ProtocolMetrics($pageSize: Int! = 1000, $startDate: String!, $endDate: String!) {
-    treasuryArbitrum_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
-        id
-        block
-        currentAPY
-        currentIndex
-        date
-        gOhmPrice
-        gOhmTotalSupply
-        nextDistributedOhm
-        nextEpochRebase
-        ohmPrice
-        ohmTotalSupply
-        sOhmCirculatingSupply
-        timestamp
-        totalValueLocked
-    }
-    treasuryEthereum_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
-        id
-        block
-        currentAPY
-        currentIndex
-        date
-        gOhmPrice
-        gOhmTotalSupply
-        nextDistributedOhm
-        nextEpochRebase
-        ohmPrice
-        ohmTotalSupply
-        sOhmCirculatingSupply
-        timestamp
-        totalValueLocked
-    }
-    treasuryFantom_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
-        id
-        block
-        currentAPY
-        currentIndex
-        date
-        gOhmPrice
-        gOhmTotalSupply
-        nextDistributedOhm
-        nextEpochRebase
-        ohmPrice
-        ohmTotalSupply
-        sOhmCirculatingSupply
-        timestamp
-        totalValueLocked
-    }
-    treasuryPolygon_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
-        id
-        block
-        currentAPY
-        currentIndex
-        date
-        gOhmPrice
-        gOhmTotalSupply
-        nextDistributedOhm
-        nextEpochRebase
-        ohmPrice
-        ohmTotalSupply
-        sOhmCirculatingSupply
-        timestamp
-        totalValueLocked
-    }
+  treasuryArbitrum_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+    ...Fragment_ProtocolMetricArbitrum
+  }
+  treasuryEthereum_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+    ...Fragment_ProtocolMetricEthereum
+  }
+  treasuryFantom_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+    ...Fragment_ProtocolMetricFantom
+  }
+  treasuryPolygon_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+    ...Fragment_ProtocolMetricPolygon
+  }
 }

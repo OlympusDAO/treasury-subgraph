@@ -1,66 +1,14 @@
 query TokenSupplies($pageSize: Int! = 1000, $startDate: String!, $endDate: String!) {
   treasuryArbitrum_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
-    id
-    balance
-    block
-    blockchain
-    date
-    pool
-    poolAddress
-    source
-    sourceAddress
-    supplyBalance
-    timestamp
-    token
-    tokenAddress
-    type
+    ...Fragment_TokenSupplyArbitrum
   }
   treasuryEthereum_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
-    id
-    balance
-    block
-    blockchain
-    date
-    pool
-    poolAddress
-    source
-    sourceAddress
-    supplyBalance
-    timestamp
-    token
-    tokenAddress
-    type
+    ...Fragment_TokenSupplyEthereum
   }
   treasuryFantom_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
-    id
-    balance
-    block
-    blockchain
-    date
-    pool
-    poolAddress
-    source
-    sourceAddress
-    supplyBalance
-    timestamp
-    token
-    tokenAddress
-    type
+    ...Fragment_TokenSupplyFantom
   }
   treasuryPolygon_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
-    id
-    balance
-    block
-    blockchain
-    date
-    pool
-    poolAddress
-    source
-    sourceAddress
-    supplyBalance
-    timestamp
-    token
-    tokenAddress
-    type
+    ...Fragment_TokenSupplyPolygon
   }
 }
