@@ -14,6 +14,7 @@ export default createOperation.query({
     fantomBlock: z.number({ description: "Fantom block number" }),
     polygonBlock: z.number({ description: "Polygon block number" }),
   }),
+  internal: true,
   handler: async (ctx) => {
     console.log(`Commencing atBlock query for ProtocolMetric`);
 

@@ -8,6 +8,7 @@ import { flattenRecords } from '../../protocolMetricHelper';
  * NOTE: this is not recommended for public use, and is superceded by the Metric queries.
  */
 export default createOperation.query({
+  internal: true,
   handler: async (ctx) => {
     console.log(`Commencing earliest query for ProtocolMetric`);
 
