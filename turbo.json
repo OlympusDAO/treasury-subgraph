@@ -33,6 +33,9 @@
       "dependsOn": [
         "build:release"
       ],
+      "env": [
+        "SUBGRAPH_API_KEY"
+      ],
       "cache": false
     }
   }

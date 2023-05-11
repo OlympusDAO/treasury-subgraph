@@ -1,6 +1,7 @@
+import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenSuppliesLatestResponseData } from "./generated/models";
 
-type TokenSupply = TokenSuppliesLatestResponseData["treasuryEthereum_tokenSupplies"][0];
+export type TokenSupply = TokenSuppliesLatestResponseData["treasuryEthereum_tokenSupplies"][0];
 
 type TokenSupplyByDate = {
   date: string;
@@ -36,4 +37,38 @@ export const sortRecordsDescending = (records: TokenSupply[]): TokenSupply[] => 
       return 0;
     }
   });
+};
+
+export const setBlockchainProperty = (records: TokenSupply[], blockchain: string): TokenSupply[] => {
+  return records.map((record: TokenSupply) => {
+    return { ...record, blockchain: blockchain };
+  });
+}
+
+export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockchain: boolean, latestBlock: boolean): TokenSupply[] => {
+  const combinedRecords: TokenSupply[] = [];
+
+  const mapping = {
+    [CHAIN_ARBITRUM]: records.treasuryArbitrum_tokenSupplies,
+    [CHAIN_ETHEREUM]: records.treasuryEthereum_tokenSupplies,
+    [CHAIN_FANTOM]: records.treasuryFantom_tokenSupplies,
+    [CHAIN_POLYGON]: records.treasuryPolygon_tokenSupplies,
+  };
+
+  for (const [key, value] of Object.entries(mapping)) {
+    console.log(`Got ${value.length} ${key} records.`);
+    let currentRecords: TokenSupply[] = value;
+
+    if (blockchain) {
+      currentRecords = setBlockchainProperty(currentRecords, key);
+    }
+
+    if (latestBlock) {
+      currentRecords = filterLatestBlockByDay(currentRecords);
+    }
+
+    combinedRecords.push(...currentRecords);
+  }
+
+  return combinedRecords;
 };

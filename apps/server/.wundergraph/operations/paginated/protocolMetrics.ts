@@ -1,51 +1,15 @@
-import { addDays } from 'date-fns';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { ProtocolMetricsResponseData } from '../../generated/models';
-import { sortRecordsDescending } from '../../protocolMetricHelper';
-
-/**
- * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
- * 
- * There are on average 50 records per day (for Ethereum, which has the most records),
- * so we can query 10 days at a time to stay under the limit.
- */
-const OFFSET_DAYS = 10;
-
-const getISO8601DateString = (date: Date): string => {
-  return date.toISOString().split("T")[0];
-}
-
-const getNextEndDate = (currentDate: Date | null): Date => {
-  // If currentDate is null (first time being used), set the end date as tomorrow
-  const tomorrowDate: Date = addDays(new Date(), 1);
-  tomorrowDate.setUTCHours(0, 0, 0, 0);
-
-  return currentDate === null ? tomorrowDate : currentDate;
-}
-
-const getOffsetDays = (dateOffset?: number): number => {
-  if (!dateOffset) {
-    return OFFSET_DAYS;
-  }
-
-  return dateOffset;
-}
-
-const getNextStartDate = (offsetDays: number, finalStartDate: Date, currentDate: Date | null): Date => {
-  const newEndDate: Date = getNextEndDate(currentDate);
-
-  // Subtract OFFSET_DAYS from the end date to get the new start date
-  const newStartDate: Date = addDays(newEndDate, -offsetDays);
-
-  // If the new start date is before the final start date, use the final start date
-  return newStartDate.getTime() < finalStartDate.getTime() ? finalStartDate : newStartDate;
-};
+import { flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
+import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
 
 /**
  * This custom query will return a flat array containing ProtocolMetric objects from
  * across all endpoints.
  * 
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
+ * 
+ * NOTE: this is not recommended for public use, and is superceded by the Metric queries.
  */
 export default createOperation.query({
   input: z.object({
@@ -79,21 +43,10 @@ export default createOperation.query({
         },
       });
 
-      const currentProtocolMetrics: ProtocolMetricsResponseData["treasuryEthereum_protocolMetrics"] = [];
-
+      // Collapse the data into a single array
       if (queryResult.data) {
-        console.log(`Got ${queryResult.data.treasuryArbitrum_protocolMetrics.length} Arbitrum records.`);
-        currentProtocolMetrics.push(...queryResult.data.treasuryArbitrum_protocolMetrics);
-        console.log(`Got ${queryResult.data.treasuryEthereum_protocolMetrics.length} Ethereum records.`);
-        currentProtocolMetrics.push(...queryResult.data.treasuryEthereum_protocolMetrics);
-        console.log(`Got ${queryResult.data.treasuryFantom_protocolMetrics.length} Fantom records.`);
-        currentProtocolMetrics.push(...queryResult.data.treasuryFantom_protocolMetrics);
-        console.log(`Got ${queryResult.data.treasuryPolygon_protocolMetrics.length} Polygon records.`);
-        currentProtocolMetrics.push(...queryResult.data.treasuryPolygon_protocolMetrics);
+        combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true));
       }
-
-      // Push to the combined array
-      combinedProtocolMetrics.push(...currentProtocolMetrics);
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);

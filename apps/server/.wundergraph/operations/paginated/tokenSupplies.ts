@@ -1,47 +1,7 @@
-import { addDays } from 'date-fns';
+import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
 import { TokenSuppliesResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
-import { filterLatestBlockByDay, sortRecordsDescending } from '../../tokenSupplyHelper';
-
-type TokenSupply = TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"][0];
-
-/**
- * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
- * 
- * There are on average 50 records per day (for Ethereum, which has the most records),
- * so we can query 10 days at a time to stay under the limit.
- */
-const OFFSET_DAYS = 10;
-
-const getISO8601DateString = (date: Date): string => {
-  return date.toISOString().split("T")[0];
-}
-
-const getNextEndDate = (currentDate: Date | null): Date => {
-  // If currentDate is null (first time being used), set the end date as tomorrow
-  const tomorrowDate: Date = addDays(new Date(), 1);
-  tomorrowDate.setUTCHours(0, 0, 0, 0);
-
-  return currentDate === null ? tomorrowDate : currentDate;
-}
-
-const getOffsetDays = (dateOffset?: number): number => {
-  if (!dateOffset) {
-    return OFFSET_DAYS;
-  }
-
-  return dateOffset;
-}
-
-const getNextStartDate = (offsetDays: number, finalStartDate: Date, currentDate: Date | null): Date => {
-  const newEndDate: Date = getNextEndDate(currentDate);
-
-  // Subtract OFFSET_DAYS from the end date to get the new start date
-  const newStartDate: Date = addDays(newEndDate, -offsetDays);
-
-  // If the new start date is before the final start date, use the final start date
-  return newStartDate.getTime() < finalStartDate.getTime() ? finalStartDate : newStartDate;
-};
+import { flattenRecords, sortRecordsDescending } from '../../tokenSupplyHelper';
 
 /**
  * This custom query will return a flat array containing TokenSupply objects from
@@ -85,37 +45,10 @@ export default createOperation.query({
         },
       });
 
-      const currentTokenSupplies: TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"] = [];
-
       // Collapse the data into a single array, and add a missing property
       if (queryResult.data) {
-        console.log(`Got ${queryResult.data.treasuryArbitrum_tokenSupplies.length} Arbitrum records.`);
-        currentTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryArbitrum_tokenSupplies.map((record: TokenSupply) => {
-            return { ...record, blockchain: "Arbitrum" };
-          })));
-
-        console.log(`Got ${queryResult.data.treasuryEthereum_tokenSupplies.length} Ethereum records.`);
-        currentTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryEthereum_tokenSupplies.map((record: TokenSupply) => {
-            return { ...record, blockchain: "Ethereum" };
-          })));
-
-        console.log(`Got ${queryResult.data.treasuryFantom_tokenSupplies.length} Fantom records.`);
-        currentTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryFantom_tokenSupplies.map((record: TokenSupply) => {
-            return { ...record, blockchain: "Fantom" };
-          })));
-
-        console.log(`Got ${queryResult.data.treasuryPolygon_tokenSupplies.length} Polygon records.`);
-        currentTokenSupplies.push(...filterLatestBlockByDay(
-          queryResult.data.treasuryPolygon_tokenSupplies.map((record: TokenSupply) => {
-            return { ...record, blockchain: "Polygon" };
-          })));
+        combinedTokenSupplies.push(...flattenRecords(queryResult.data, true, true));
       }
-
-      // Push to the combined array
-      combinedTokenSupplies.push(...currentTokenSupplies);
 
       currentEndDate = currentStartDate;
       currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);

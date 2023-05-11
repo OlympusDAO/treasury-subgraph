@@ -1,66 +1,14 @@
 query ProtocolMetricsLatest {
-    treasuryArbitrum_protocolMetrics(orderBy: date, orderDirection: desc, first: 1) {
-        id
-        block
-        currentAPY
-        currentIndex
-        date
-        gOhmPrice
-        gOhmTotalSupply
-        nextDistributedOhm
-        nextEpochRebase
-        ohmPrice
-        ohmTotalSupply
-        sOhmCirculatingSupply
-        timestamp
-        totalValueLocked
-    }
-    treasuryEthereum_protocolMetrics(orderBy: date, orderDirection: desc, first: 1) {
-        id
-        block
-        currentAPY
-        currentIndex
-        date
-        gOhmPrice
-        gOhmTotalSupply
-        nextDistributedOhm
-        nextEpochRebase
-        ohmPrice
-        ohmTotalSupply
-        sOhmCirculatingSupply
-        timestamp
-        totalValueLocked
-    }
-    treasuryFantom_protocolMetrics(orderBy: date, orderDirection: desc, first: 1) {
-        id
-        block
-        currentAPY
-        currentIndex
-        date
-        gOhmPrice
-        gOhmTotalSupply
-        nextDistributedOhm
-        nextEpochRebase
-        ohmPrice
-        ohmTotalSupply
-        sOhmCirculatingSupply
-        timestamp
-        totalValueLocked
-    }
-    treasuryPolygon_protocolMetrics(orderBy: date, orderDirection: desc, first: 1) {
-        id
-        block
-        currentAPY
-        currentIndex
-        date
-        gOhmPrice
-        gOhmTotalSupply
-        nextDistributedOhm
-        nextEpochRebase
-        ohmPrice
-        ohmTotalSupply
-        sOhmCirculatingSupply
-        timestamp
-        totalValueLocked
-    }
+  treasuryArbitrum_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
+    ...Fragment_ProtocolMetricArbitrum
+  }
+  treasuryEthereum_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
+    ...Fragment_ProtocolMetricEthereum
+  }
+  treasuryFantom_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
+    ...Fragment_ProtocolMetricFantom
+  }
+  treasuryPolygon_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
+    ...Fragment_ProtocolMetricPolygon
+  }
 }
