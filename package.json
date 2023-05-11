@@ -9,6 +9,7 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
+    "build:local": "WG_PUBLIC_NODE_URL=http://localhost:9991/ dotenv -- yarn build",
     "lint": "turbo lint",
     "server:start": "cd apps/server && yarn start",
     "changelog": "cd apps/client && yarn changelog",
