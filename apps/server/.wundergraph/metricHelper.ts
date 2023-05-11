@@ -1,3 +1,4 @@
+import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { TokenRecord } from "./tokenRecordHelper";
 import { TokenSupply } from "./tokenSupplyHelper";
@@ -30,19 +31,37 @@ export type RecordContainer = {
   protocolMetrics: ProtocolMetric[];
 };
 
+type ChainValues = {
+  [CHAIN_ARBITRUM]: number;
+  [CHAIN_ETHEREUM]: number;
+  [CHAIN_FANTOM]: number;
+  [CHAIN_POLYGON]: number;
+};
+
 export type Metric = {
   date: string;
-  block: number;
-  timestamp: number;
+  /**
+   * The block for each chain.
+   */
+  blocks: ChainValues;
+  /**
+   * The OHM index at the snapshot.
+   */
   ohmIndex: number;
   ohmTotalSupply: number;
+  ohmTotalSupplyComponents: ChainValues;
   ohmCirculatingSupply: number;
+  ohmCirculatingSupplyComponents: ChainValues;
   ohmFloatingSupply: number;
+  ohmFloatingSupplyComponents: ChainValues;
   ohmBackedSupply: number;
+  ohmBackedSupplyComponents: ChainValues;
   ohmPrice: number;
   marketCap: number;
   treasuryMarketValue: number;
+  treasuryMarketValueComponents: ChainValues;
   treasuryLiquidBacking: number;
+  treasuryLiquidBackingComponents: ChainValues;
   treasuryLiquidBackingPerOhmFloating: number;
   treasuryLiquidBackingPerOhmBacked: number;
 };
@@ -266,6 +285,21 @@ export const getLiquidBackingPerOhmBacked = (tokenRecords: TokenRecord[], tokenS
 export const getLiquidBackingPerOhmFloating = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], ohmIndex: number) =>
   getTreasuryAssetValue(tokenRecords, true) / getOhmFloatingSupply(tokenSupplies, ohmIndex)[0];
 
+const filterByChain = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], chain: string): [TokenRecord[], TokenSupply[]] => {
+  const filteredRecords = tokenRecords.filter(record => record.blockchain === chain);
+  const filteredSupplies = tokenSupplies.filter(record => record.blockchain === chain);
+
+  return [filteredRecords, filteredSupplies];
+}
+
+const getBlock = (tokenRecords: TokenRecord[]): number => {
+  if (!tokenRecords.length) {
+    return 0;
+  }
+
+  return +tokenRecords[0].block;
+}
+
 export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], protocolMetrics: ProtocolMetric[]): Metric | null => {
   if (!tokenRecords.length || !tokenSupplies.length || !protocolMetrics.length) {
     return null;
@@ -275,19 +309,67 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
   const ohmPrice: number = +protocolMetrics[0].ohmPrice;
   const ohmCirculatingSupply: number = getOhmCirculatingSupply(tokenSupplies, currentOhmIndex)[0];
 
+  // Obtain per-chain arrays
+  const [arbitrumTokenRecords, arbitrumTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_ARBITRUM);
+  const [ethereumTokenRecords, ethereumTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_ETHEREUM);
+  const [fantomTokenRecords, fantomTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_FANTOM);
+  const [polygonTokenRecords, polygonTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_POLYGON);
+
+  console.log(`arbitrum supplies = ${JSON.stringify(arbitrumTokenSupplies, null, 2)}`);
+
   return {
     date: tokenRecords[0].date,
-    block: +tokenRecords[0].block,
-    timestamp: +tokenRecords[0].timestamp,
+    blocks: {
+      [CHAIN_ARBITRUM]: getBlock(arbitrumTokenRecords),
+      [CHAIN_ETHEREUM]: getBlock(ethereumTokenRecords),
+      [CHAIN_FANTOM]: getBlock(fantomTokenRecords),
+      [CHAIN_POLYGON]: getBlock(polygonTokenRecords),
+    },
     ohmIndex: currentOhmIndex,
     ohmTotalSupply: getOhmTotalSupply(tokenSupplies, currentOhmIndex)[0],
+    ohmTotalSupplyComponents: {
+      [CHAIN_ARBITRUM]: getOhmTotalSupply(arbitrumTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_ETHEREUM]: getOhmTotalSupply(ethereumTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_FANTOM]: getOhmTotalSupply(fantomTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_POLYGON]: getOhmTotalSupply(polygonTokenSupplies, currentOhmIndex)[0],
+    },
     ohmCirculatingSupply: ohmCirculatingSupply,
+    ohmCirculatingSupplyComponents: {
+      [CHAIN_ARBITRUM]: getOhmCirculatingSupply(arbitrumTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_ETHEREUM]: getOhmCirculatingSupply(ethereumTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_FANTOM]: getOhmCirculatingSupply(fantomTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_POLYGON]: getOhmCirculatingSupply(polygonTokenSupplies, currentOhmIndex)[0],
+    },
     ohmFloatingSupply: getOhmFloatingSupply(tokenSupplies, currentOhmIndex)[0],
+    ohmFloatingSupplyComponents: {
+      [CHAIN_ARBITRUM]: getOhmFloatingSupply(arbitrumTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_ETHEREUM]: getOhmFloatingSupply(ethereumTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_FANTOM]: getOhmFloatingSupply(fantomTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_POLYGON]: getOhmFloatingSupply(polygonTokenSupplies, currentOhmIndex)[0],
+    },
     ohmBackedSupply: getOhmBackedSupply(tokenSupplies, currentOhmIndex)[0],
+    ohmBackedSupplyComponents: {
+      [CHAIN_ARBITRUM]: getOhmBackedSupply(arbitrumTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_ETHEREUM]: getOhmBackedSupply(ethereumTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_FANTOM]: getOhmBackedSupply(fantomTokenSupplies, currentOhmIndex)[0],
+      [CHAIN_POLYGON]: getOhmBackedSupply(polygonTokenSupplies, currentOhmIndex)[0],
+    },
     ohmPrice: ohmPrice,
     marketCap: ohmPrice * ohmCirculatingSupply,
     treasuryMarketValue: getTreasuryAssetValue(tokenRecords, false),
+    treasuryMarketValueComponents: {
+      [CHAIN_ARBITRUM]: getTreasuryAssetValue(arbitrumTokenRecords, false),
+      [CHAIN_ETHEREUM]: getTreasuryAssetValue(ethereumTokenRecords, false),
+      [CHAIN_FANTOM]: getTreasuryAssetValue(fantomTokenRecords, false),
+      [CHAIN_POLYGON]: getTreasuryAssetValue(polygonTokenRecords, false),
+    },
     treasuryLiquidBacking: getTreasuryAssetValue(tokenRecords, true),
+    treasuryLiquidBackingComponents: {
+      [CHAIN_ARBITRUM]: getTreasuryAssetValue(arbitrumTokenRecords, true),
+      [CHAIN_ETHEREUM]: getTreasuryAssetValue(ethereumTokenRecords, true),
+      [CHAIN_FANTOM]: getTreasuryAssetValue(fantomTokenRecords, true),
+      [CHAIN_POLYGON]: getTreasuryAssetValue(polygonTokenRecords, true),
+    },
     treasuryLiquidBackingPerOhmFloating: getLiquidBackingPerOhmFloating(tokenRecords, tokenSupplies, currentOhmIndex),
     treasuryLiquidBackingPerOhmBacked: getLiquidBackingPerOhmBacked(tokenRecords, tokenSupplies, currentOhmIndex),
   }
