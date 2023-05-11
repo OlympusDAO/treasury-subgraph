@@ -988,6 +988,15 @@
     json-machete "0.18.20"
     openapi-types "12.1.0"
 
+"@omnigraph/soap@^0.93.1":
+  version "0.93.1"
+  resolved "https://registry.yarnpkg.com/@omnigraph/soap/-/soap-0.93.1.tgz#9ced20b562e0c89dcd89928bca28ac288b8288b7"
+  integrity sha512-GiGWgeUHyXI5+/51A19ygPOPz49bLM7WMIRsKW4G+UjfBcB2wUeI2q//pK2yqIFWeT71tKxvg9hIcDh7hdYacg==
+  dependencies:
+    fast-xml-parser "4.2.2"
+    graphql-compose "9.0.10"
+    graphql-scalars "^1.20.4"
+
 "@peculiar/asn1-schema@^2.3.6":
   version "2.3.6"
   resolved "https://registry.yarnpkg.com/@peculiar/asn1-schema/-/asn1-schema-2.3.6.tgz#3dd3c2ade7f702a9a94dfb395c192f5fa5d6b922"
@@ -1255,6 +1264,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.18.25.tgz#8863940fefa1234d3fcac7a4b7a48a6c992d67af"
   integrity sha512-rUDO6s9Q/El1R1I21HG4qw/LstTHCPO/oQNAwI/4b2f9EWvMnqt4d3HJwPMawfZ3UvodB8516Yg+VAq54YM+eA==
 
+"@types/node@^18.16.7":
+  version "18.16.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.7.tgz#86d0ba2541f808cb78d4dc5d3e40242a349d6db8"
+  integrity sha512-MFg7ua/bRtnA1hYE3pVyWxGd/r7aMqjNOdHvlSsXV3n8iaeGKkOaPzpJh6/ovf4bEXWcojkeMJpTsq3mzXW4IQ==
+
 "@types/object-hash@^1.3.0":
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/@types/object-hash/-/object-hash-1.3.4.tgz#079ba142be65833293673254831b5e3e847fe58b"
@@ -1364,10 +1378,10 @@
     protobufjs "^6.11.2"
     ts-proto "^1.112.1"
 
-"@wundergraph/sdk@^0.151.0":
-  version "0.151.0"
-  resolved "https://registry.yarnpkg.com/@wundergraph/sdk/-/sdk-0.151.0.tgz#af47a00f0bc6fc6ecf29d2420a13d8584edfdd3f"
-  integrity sha512-ape86fCPCaye/EX9yxCLwUnV4538D3ztF8aIbcKdz0GVjRuAQ7rAJSPSjQLvD4jM1/lkyQl5c6/iGdDq2dHCpQ==
+"@wundergraph/sdk@^0.155.0":
+  version "0.155.0"
+  resolved "https://registry.yarnpkg.com/@wundergraph/sdk/-/sdk-0.155.0.tgz#e1c4a61e044573ad9460fd52e46874d04e7984ca"
+  integrity sha512-jM3QYadcB5nu/SG6fZTQ1MGFkXbSVnb/CtzN7hrBM0KCGiSlotjWRgZuD5pq17pxpmV/RLdECkazPzGuKbumsw==
   dependencies:
     "@fastify/formbody" "^7.3.0"
     "@graphql-mesh/cross-helpers" "^0.3.4"
@@ -1377,12 +1391,13 @@
     "@graphql-tools/utils" "^9.2.1"
     "@omnigraph/json-schema" "^0.38.24"
     "@omnigraph/openapi" "^0.19.26"
+    "@omnigraph/soap" "^0.93.1"
     "@prisma/generator-helper" "^3.9.2"
     "@web-std/fetch" "^4.1.0"
     "@whatwg-node/fetch" "^0.8.4"
     "@wundergraph/protobuf" "^0.110.0"
     "@wundergraph/straightforward" "^4.2.5"
-    "@wundergraph/wunderctl" "^0.147.0"
+    "@wundergraph/wunderctl" "^0.149.0"
     axios "^0.26.1"
     axios-retry "^3.3.1"
     close-with-grace "^1.1.0"
@@ -1425,10 +1440,10 @@
     debug "^4.3.4"
     yargs "^17.7.1"
 
-"@wundergraph/wunderctl@^0.147.0":
-  version "0.147.0"
-  resolved "https://registry.yarnpkg.com/@wundergraph/wunderctl/-/wunderctl-0.147.0.tgz#76c5d3a3df5d3da8d3fcc47a27462b27226f63da"
-  integrity sha512-JE9DYA460ZQSOax1K4x0dvg87agDjKNBufQp8dY0KfqfHmwaWOo83qZmr6NjwZDKx77813up3QqkXKAHgghAcw==
+"@wundergraph/wunderctl@^0.149.0":
+  version "0.149.0"
+  resolved "https://registry.yarnpkg.com/@wundergraph/wunderctl/-/wunderctl-0.149.0.tgz#9e160b68cabb23eaa6f4d648b9f901f498958d03"
+  integrity sha512-kb1pOGkcws4PqFhCRjqNxjXxgxH5Y2lS6hlbb1UisK6sEAFYJglBC4A7fLCxGaB0Ri1is64tFVDeKFbx4LeeUg==
   dependencies:
     axios "^0.26.1"
     debug "^4.3.4"
@@ -2446,6 +2461,13 @@ fast-url-parser@^1.1.3:
   integrity sha512-5jOCVXADYNuRkKFzNJ0dCCewsZiYo0dz8QNYljkOpFC6r2U4OBmKtvm/Tsuh4w1YYdDqDb31a8TVhBJ2OJKdqQ==
   dependencies:
     punycode "^1.3.2"
+
+fast-xml-parser@4.2.2:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-4.2.2.tgz#cb7310d1e9cf42d22c687b0fae41f3c926629368"
+  integrity sha512-DLzIPtQqmvmdq3VUKR7T6omPK/VCRNqgFlGtbESfyhcH2R4I8EzK1/K6E8PkRCK2EabWrUHK32NjYRbEFnnz0Q==
+  dependencies:
+    strnum "^1.0.5"
 
 fastify-plugin@^4.0.0, fastify-plugin@^4.4.0:
   version "4.5.0"
@@ -4690,6 +4712,11 @@ strip-json-comments@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
+
+strnum@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/strnum/-/strnum-1.0.5.tgz#5c4e829fe15ad4ff0d20c3db5ac97b73c9b072db"
+  integrity sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==
 
 sucrase@^3.20.3:
   version "3.32.0"
