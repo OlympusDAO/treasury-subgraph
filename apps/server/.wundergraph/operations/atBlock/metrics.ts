@@ -1,0 +1,42 @@
+import { createOperation, z } from '../../generated/wundergraph.factory';
+import { Metric, getMetricObject } from '../../metricHelper';
+
+/**
+ * This custom query will return the Metric object for a specific block.
+ */
+export default createOperation.query({
+  input: z.object({
+    arbitrumBlock: z.number({ description: "Arbitrum block number" }),
+    ethereumBlock: z.number({ description: "Ethereum block number" }),
+    fantomBlock: z.number({ description: "Fantom block number" }),
+    polygonBlock: z.number({ description: "Polygon block number" }),
+  }),
+  handler: async (ctx) => {
+    console.log(`Commencing atBlock query for Metric`);
+
+    const input = {
+      arbitrumBlock: ctx.input.arbitrumBlock,
+      ethereumBlock: ctx.input.ethereumBlock,
+      fantomBlock: ctx.input.fantomBlock,
+      polygonBlock: ctx.input.polygonBlock,
+    };
+
+    const protocolMetricsQueryResult = await ctx.operations.query({
+      operationName: "atBlock/protocolMetrics",
+      input: input,
+    });
+
+    const tokenRecordsQueryResult = await ctx.operations.query({
+      operationName: "atBlock/tokenRecords",
+      input: input,
+    });
+
+    const tokenSuppliesQueryResult = await ctx.operations.query({
+      operationName: "atBlock/tokenSupplies",
+      input: input,
+    });
+
+    const metricRecord: Metric | null = getMetricObject(tokenRecordsQueryResult.data || [], tokenSuppliesQueryResult.data || [], protocolMetricsQueryResult.data || []);
+    return metricRecord;
+  },
+});

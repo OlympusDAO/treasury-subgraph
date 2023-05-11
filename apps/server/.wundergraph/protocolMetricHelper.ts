@@ -1,6 +1,7 @@
+import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { ProtocolMetricsLatestResponseData } from "./generated/models";
 
-type ProtocolMetric = ProtocolMetricsLatestResponseData["treasuryEthereum_protocolMetrics"][0];
+export type ProtocolMetric = ProtocolMetricsLatestResponseData["treasuryEthereum_protocolMetrics"][0];
 
 type ProtocolMetricByDate = {
   date: string;
@@ -36,4 +37,28 @@ export const sortRecordsDescending = (records: ProtocolMetric[]): ProtocolMetric
       return 0;
     }
   });
+};
+
+export const flattenRecords = (records: ProtocolMetricsLatestResponseData, latestBlock: boolean): ProtocolMetric[] => {
+  const combinedRecords: ProtocolMetric[] = [];
+
+  const mapping = {
+    [CHAIN_ARBITRUM]: records.treasuryArbitrum_protocolMetrics,
+    [CHAIN_ETHEREUM]: records.treasuryEthereum_protocolMetrics,
+    [CHAIN_FANTOM]: records.treasuryFantom_protocolMetrics,
+    [CHAIN_POLYGON]: records.treasuryPolygon_protocolMetrics,
+  };
+
+  for (const [key, value] of Object.entries(mapping)) {
+    console.log(`Got ${value.length} ${key} records.`);
+    let currentRecords: ProtocolMetric[] = value;
+
+    if (latestBlock) {
+      currentRecords = filterLatestBlockByDay(currentRecords);
+    }
+
+    combinedRecords.push(...currentRecords);
+  }
+
+  return combinedRecords;
 };

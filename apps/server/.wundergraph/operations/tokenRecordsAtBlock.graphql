@@ -1,0 +1,14 @@
+query TokenRecords($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereumBlock: BigInt!, $fantomBlock: BigInt!, $polygonBlock: BigInt!) {
+  treasuryArbitrum_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $arbitrumBlock }) {
+    ...Fragment_TokenRecordArbitrum
+  }
+  treasuryEthereum_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $ethereumBlock }) {
+    ...Fragment_TokenRecordEthereum
+  }
+  treasuryFantom_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $fantomBlock }) {
+    ...Fragment_TokenRecordFantom
+  }
+  treasuryPolygon_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $polygonBlock }) {
+    ...Fragment_TokenRecordPolygon
+  }
+}

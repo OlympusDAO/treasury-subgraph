@@ -9,10 +9,10 @@ import { flattenRecords } from '../../protocolMetricHelper';
  */
 export default createOperation.query({
   handler: async (ctx) => {
-    console.log(`Commencing latest query for ProtocolMetric`);
+    console.log(`Commencing earliest query for ProtocolMetric`);
 
     const queryResult = await ctx.operations.query({
-      operationName: "protocolMetricsLatest",
+      operationName: "protocolMetricsEarliest",
     });
 
     if (!queryResult.data) {

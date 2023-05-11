@@ -35,17 +35,32 @@ The repo is setup using [turbo](https://turbo.build/) to make handling tasks eas
 ### Setup
 
 1. Run `yarn` in the root directory.
-2. Copy `.env.sample` and replace any required values
+2. Copy `.env.sample` to `.env` and replace any required values
 
 ### Building
 
-During local development, you can trigger a build with `yarn build:local`.
+During local development, you can trigger a build with `yarn build:local`. This requires the [setup](#setup) tasks to have been completed.
 
-`yarn build` requires an environment variable to be set, and is used in the deploy process.
+`yarn build` requires an environment variable to be set, and is used in the Wundergraph Cloud deploy process.
 
-### Testing
+### Running
 
-Run `yarn test` from the root or `apps/server` directories.
+During local development, you can run an API endpoint locally with `yarn server:start`.
+
+This requires environment variables to be set, so follow the instructions in [setup](#setup).
+
+### Unit Tests
+
+Run `yarn test:local`.
+
+This requires environment variables to be set, so follow the instructions in [setup](#setup).
+
+### Testing the Olympus Frontend
+
+Running the [frontend](https://github.com/OlympusDAO/olympus-frontend/) against a different API endpoint requires jumping through some (small) hoops:
+
+1. Run the API endpoint locally. See [Running](#running).
+2. Pass the API endpoint to the frontend: `VITE_WG_PUBLIC_NODE_URL=http://localhost:9991 yarn start`
 
 ### Deployment - Wundergraph
 

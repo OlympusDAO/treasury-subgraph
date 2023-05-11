@@ -1,18 +1,16 @@
 import { createOperation } from '../../generated/wundergraph.factory';
-import { flattenRecords } from '../../protocolMetricHelper';
+import { flattenRecords } from '../../tokenSupplyHelper';
 
 /**
- * This custom query will return a flat array containing the latest ProtocolMetric objects for
+ * This custom query will return a flat array containing the latest TokenSupply objects for
  * each endpoint.
- * 
- * NOTE: this is not recommended for public use, and is superceded by the Metric queries.
  */
 export default createOperation.query({
   handler: async (ctx) => {
-    console.log(`Commencing latest query for ProtocolMetric`);
+    console.log(`Commencing earliest query for TokenSupply`);
 
     const queryResult = await ctx.operations.query({
-      operationName: "protocolMetricsLatest",
+      operationName: "tokenSuppliesEarliest",
     });
 
     if (!queryResult.data) {
@@ -21,7 +19,7 @@ export default createOperation.query({
     }
 
     // Combine across pages and endpoints
-    const flatRecords = flattenRecords(queryResult.data, false);
+    const flatRecords = flattenRecords(queryResult.data, true, false);
     console.log(`Returning ${flatRecords.length} records.`);
     return flatRecords;
   },

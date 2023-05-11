@@ -1,0 +1,69 @@
+# One fragment per type 
+
+fragment Fragment_ProtocolMetricArbitrum on treasuryArbitrum_ProtocolMetric {
+  id
+  block
+  currentAPY
+  currentIndex
+  date
+  gOhmPrice
+  gOhmTotalSupply
+  nextDistributedOhm
+  nextEpochRebase
+  ohmPrice
+  ohmTotalSupply
+  sOhmCirculatingSupply
+  timestamp
+  totalValueLocked
+}
+
+fragment Fragment_ProtocolMetricEthereum on treasuryEthereum_ProtocolMetric {
+  id
+  block
+  currentAPY
+  currentIndex
+  date
+  gOhmPrice
+  gOhmTotalSupply
+  nextDistributedOhm
+  nextEpochRebase
+  ohmPrice
+  ohmTotalSupply
+  sOhmCirculatingSupply
+  timestamp
+  totalValueLocked
+}
+
+fragment Fragment_ProtocolMetricFantom on treasuryFantom_ProtocolMetric {
+  id
+  block
+  currentAPY
+  currentIndex
+  date
+  gOhmPrice
+  gOhmTotalSupply
+  nextDistributedOhm
+  nextEpochRebase
+  ohmPrice
+  ohmTotalSupply
+  sOhmCirculatingSupply
+  timestamp
+  totalValueLocked
+}
+
+fragment Fragment_ProtocolMetricPolygon on treasuryPolygon_ProtocolMetric {
+  id
+  block
+  currentAPY
+  currentIndex
+  date
+  gOhmPrice
+  gOhmTotalSupply
+  nextDistributedOhm
+  nextEpochRebase
+  ohmPrice
+  ohmTotalSupply
+  sOhmCirculatingSupply
+  timestamp
+  totalValueLocked
+}
