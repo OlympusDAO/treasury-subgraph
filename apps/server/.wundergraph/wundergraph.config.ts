@@ -19,7 +19,8 @@ extend type TokenSupply {
 
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
-	url: `https://gateway.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/deployments/id/QmPCuWLfoH33u699BFwfDEcqaSedhyZpVNk48pQDaS2Kmy`, // Needs to be injected at runtime
+	// SUBGRAPH_API_KEY needs to be injected at runtime
+	url: `https://gateway.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/deployments/id/QmfC7nn4agkCjpgsjVdcCkKiKoGiu97yQTQSG1z7EaNnxd`, // 4.8.4
 	schemaExtension: schemaExtension,
 });
 
