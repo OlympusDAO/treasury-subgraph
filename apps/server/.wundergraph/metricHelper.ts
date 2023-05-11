@@ -315,8 +315,6 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
   const [fantomTokenRecords, fantomTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_FANTOM);
   const [polygonTokenRecords, polygonTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_POLYGON);
 
-  console.log(`arbitrum supplies = ${JSON.stringify(arbitrumTokenSupplies, null, 2)}`);
-
   return {
     date: tokenRecords[0].date,
     blocks: {
