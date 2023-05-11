@@ -2,7 +2,7 @@ import { addDays } from "date-fns";
 import { createTestServer } from "../.wundergraph/generated/testing";
 import { getISO8601DateString } from "./dateHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
-import { TokenRecordsResponseData, TokenSuppliesResponseData } from "../.wundergraph/generated/models";
+import { getFirstRecord } from "./tokenSupplyHelper";
 
 const wg = createTestServer();
 
@@ -16,26 +16,6 @@ afterAll(async () => {
 
 const getStartDate = (days: number = -5): string => {
   return getISO8601DateString(addDays(new Date(), days));
-}
-
-type TokenSupply = TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"][0];
-
-const getFirstRecordByChain = (records: TokenSupply[] | undefined, chain: string): TokenSupply | null => {
-  if (!records) {
-    return null;
-  }
-
-  const filteredRecords = records.filter((record) => record.blockchain === chain);
-  return filteredRecords.length > 0 ? filteredRecords[0] : null;
-}
-
-const getFirstBlockByChainByDate = (records: TokenSupply[] | undefined, chain: string, date: string): string | undefined => {
-  if (!records) {
-    return undefined;
-  }
-
-  const filteredRecords = records.filter((record) => record.blockchain === chain && record.date == date);
-  return filteredRecords.length > 0 ? filteredRecords[0].block : undefined;
 }
 
 describe("paginated", () => {
@@ -141,10 +121,10 @@ describe("latest", () => {
 
     // Latest records is collapsed into a flat array
     const records = result.data;
-    const arbitrumResult = getFirstRecordByChain(records, CHAIN_ARBITRUM);
-    const ethereumResult = getFirstRecordByChain(records, CHAIN_ETHEREUM);
-    const fantomResult = getFirstRecordByChain(records, CHAIN_FANTOM);
-    const polygonResult = getFirstRecordByChain(records, CHAIN_POLYGON);
+    const arbitrumResult = getFirstRecord(records, CHAIN_ARBITRUM);
+    const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
+    const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
+    const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawResult?.block);
@@ -181,10 +161,10 @@ describe("earliest", () => {
 
     // Latest records is collapsed into a flat array
     const records = result.data;
-    const arbitrumResult = getFirstRecordByChain(records, CHAIN_ARBITRUM);
-    const ethereumResult = getFirstRecordByChain(records, CHAIN_ETHEREUM);
-    const fantomResult = getFirstRecordByChain(records, CHAIN_FANTOM);
-    const polygonResult = getFirstRecordByChain(records, CHAIN_POLYGON);
+    const arbitrumResult = getFirstRecord(records, CHAIN_ARBITRUM);
+    const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
+    const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
+    const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawResult?.block);
@@ -211,10 +191,10 @@ describe("atBlock", () => {
     });
 
     // Raw data has an array property for each chain
-    const arbitrumRawBlock = getFirstBlockByChainByDate(rawResult.data, CHAIN_ARBITRUM, startDate);
-    const ethereumRawBlock = getFirstBlockByChainByDate(rawResult.data, CHAIN_ETHEREUM, startDate);
-    const fantomRawBlock = getFirstBlockByChainByDate(rawResult.data, CHAIN_FANTOM, startDate);
-    const polygonRawBlock = getFirstBlockByChainByDate(rawResult.data, CHAIN_POLYGON, startDate);
+    const arbitrumRawBlock = getFirstRecord(rawResult.data, CHAIN_ARBITRUM, startDate)?.block;
+    const ethereumRawBlock = getFirstRecord(rawResult.data, CHAIN_ETHEREUM, startDate)?.block;
+    const fantomRawBlock = getFirstRecord(rawResult.data, CHAIN_FANTOM, startDate)?.block;
+    const polygonRawBlock = getFirstRecord(rawResult.data, CHAIN_POLYGON, startDate)?.block;
 
     // Grab the results from the earliest operation
     const result = await wg.client().query({
@@ -229,10 +209,10 @@ describe("atBlock", () => {
 
     // Latest records is collapsed into a flat array
     const records = result.data;
-    const arbitrumResult = getFirstRecordByChain(records, CHAIN_ARBITRUM);
-    const ethereumResult = getFirstRecordByChain(records, CHAIN_ETHEREUM);
-    const fantomResult = getFirstRecordByChain(records, CHAIN_FANTOM);
-    const polygonResult = getFirstRecordByChain(records, CHAIN_POLYGON);
+    const arbitrumResult = getFirstRecord(records, CHAIN_ARBITRUM);
+    const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
+    const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
+    const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawBlock);

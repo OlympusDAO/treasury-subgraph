@@ -1,4 +1,4 @@
-import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
+import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY } from "./constants";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { TokenRecord } from "./tokenRecordHelper";
 import { TokenSupply } from "./tokenSupplyHelper";
@@ -69,21 +69,6 @@ export type Metric = {
 //
 //  The rest of the file should be kept in sync with TreasuryQueryHelper in olympus-frontend
 //
-
-const TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS = "OHM Bonds (Burnable Deposits)";
-const TOKEN_SUPPLY_TYPE_BONDS_PREMINTED = "OHM Bonds (Pre-minted)";
-const TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS = "OHM Bonds (Vesting Deposits)";
-const TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS = "OHM Bonds (Vesting Tokens)";
-const TOKEN_SUPPLY_TYPE_LIQUIDITY = "Liquidity";
-const TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT = "Boosted Liquidity Vault";
-const TOKEN_SUPPLY_TYPE_OFFSET = "Manual Offset";
-const TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY = "Total Supply";
-const TOKEN_SUPPLY_TYPE_TREASURY = "Treasury";
-const TOKEN_SUPPLY_TYPE_LENDING = "Lending";
-
-const CATEGORY_STABLE = "Stable";
-const CATEGORY_VOLATILE = "Volatile";
-const CATEGORY_POL = "Protocol-Owned Liquidity";
 
 let supportedTokens: string[];
 const getSupportedTokens = (): string[] => {
