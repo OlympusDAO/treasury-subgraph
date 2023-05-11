@@ -51,7 +51,9 @@ This requires environment variables to be set, so follow the instructions in [se
 
 ### Unit Tests
 
-Run `yarn test` from the root or `apps/server` directories.
+Run `yarn test:local`.
+
+This requires environment variables to be set, so follow the instructions in [setup](#setup).
 
 ### Testing the Olympus Frontend
 
