@@ -275,7 +275,6 @@ describe("metrics", () => {
       TOKEN_SUPPLY_TYPE_BONDS_PREMINTED,
       TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS,
       TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS,
-      TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT,
     ];
     const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedArbitrumSupply = getSupplyBalanceForTypes(arbitrumTokenSupplies, includedTypes, ohmIndex)[0];
@@ -331,7 +330,6 @@ describe("metrics", () => {
       TOKEN_SUPPLY_TYPE_BONDS_PREMINTED,
       TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS,
       TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS,
-      TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT,
       TOKEN_SUPPLY_TYPE_LIQUIDITY,
     ];
     const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
