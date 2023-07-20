@@ -26,7 +26,8 @@ const treasuryEthereum = introspect.graphql({
 
 const treasuryArbitrum = introspect.graphql({
 	apiNamespace: "treasuryArbitrum",
-	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-arbitrum",
+	// TODO shift to production URL
+	url: "https://api.studio.thegraph.com/query/46563/protocol-metrics-arbitrum/version/latest",
 	schemaExtension: schemaExtension,
 });
 
