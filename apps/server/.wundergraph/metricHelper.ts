@@ -375,7 +375,7 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
     marketCap: ohmPrice * ohmCirculatingSupply,
     treasuryMarketValue: getTreasuryAssetValue(tokenRecords, false),
     treasuryMarketValueComponents: {
-      [CHAIN_ARBITRUM]: getTreasuryAssetValue(arbitrumTokenRecords, false),
+      [CHAIN_ARBITRUM]: getTreasuryAssetValue(arbitrumTokenRecords, false), // TODO shift to returning records
       [CHAIN_ETHEREUM]: getTreasuryAssetValue(ethereumTokenRecords, false),
       [CHAIN_FANTOM]: getTreasuryAssetValue(fantomTokenRecords, false),
       [CHAIN_POLYGON]: getTreasuryAssetValue(polygonTokenRecords, false),
