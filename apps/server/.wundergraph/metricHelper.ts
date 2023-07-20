@@ -276,33 +276,30 @@ export const getOhmTotalSupply = (records: TokenSupply[], ohmIndex: number): [nu
 // TokenRecord metrics
 //
 
-export const filterReduce = (
+const reduce = (
   records: TokenRecord[],
-  filterPredicate: (value: TokenRecord) => unknown,
   valueExcludingOhm = false,
 ): number => {
-  return records.filter(filterPredicate).reduce((previousValue, currentRecord) => {
+  return records.reduce((previousValue, currentRecord) => {
     return previousValue + (valueExcludingOhm ? +currentRecord.valueExcludingOhm : +currentRecord.value);
   }, 0);
-};
+}
 
 export const getTreasuryAssetValue = (
   records: TokenRecord[],
   liquidBacking: boolean,
   categories = [CATEGORY_STABLE, CATEGORY_VOLATILE, CATEGORY_POL],
-): number => {
-  if (liquidBacking) {
-    return filterReduce(records, record => categories.includes(record.category) && record.isLiquid == true, true);
-  }
+): [number, TokenRecord[]] => {
+  const filteredRecords = records.filter(record => categories.includes(record.category) && (liquidBacking ? record.isLiquid == true : true));
 
-  return filterReduce(records, record => categories.includes(record.category), false);
+  return [reduce(filteredRecords, liquidBacking), filteredRecords];
 };
 
 export const getLiquidBackingPerOhmBacked = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], ohmIndex: number) =>
-  getTreasuryAssetValue(tokenRecords, true) / getOhmBackedSupply(tokenSupplies, ohmIndex)[0];
+  getTreasuryAssetValue(tokenRecords, true)[0] / getOhmBackedSupply(tokenSupplies, ohmIndex)[0];
 
 export const getLiquidBackingPerOhmFloating = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], ohmIndex: number) =>
-  getTreasuryAssetValue(tokenRecords, true) / getOhmFloatingSupply(tokenSupplies, ohmIndex)[0];
+  getTreasuryAssetValue(tokenRecords, true)[0] / getOhmFloatingSupply(tokenSupplies, ohmIndex)[0];
 
 const filterByChain = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], chain: string): [TokenRecord[], TokenSupply[]] => {
   const filteredRecords = tokenRecords.filter(record => record.blockchain === chain);
@@ -373,19 +370,19 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
     },
     ohmPrice: ohmPrice,
     marketCap: ohmPrice * ohmCirculatingSupply,
-    treasuryMarketValue: getTreasuryAssetValue(tokenRecords, false),
+    treasuryMarketValue: getTreasuryAssetValue(tokenRecords, false)[0],
     treasuryMarketValueComponents: {
-      [CHAIN_ARBITRUM]: getTreasuryAssetValue(arbitrumTokenRecords, false), // TODO shift to returning records
-      [CHAIN_ETHEREUM]: getTreasuryAssetValue(ethereumTokenRecords, false),
-      [CHAIN_FANTOM]: getTreasuryAssetValue(fantomTokenRecords, false),
-      [CHAIN_POLYGON]: getTreasuryAssetValue(polygonTokenRecords, false),
+      [CHAIN_ARBITRUM]: getTreasuryAssetValue(arbitrumTokenRecords, false)[0],
+      [CHAIN_ETHEREUM]: getTreasuryAssetValue(ethereumTokenRecords, false)[0],
+      [CHAIN_FANTOM]: getTreasuryAssetValue(fantomTokenRecords, false)[0],
+      [CHAIN_POLYGON]: getTreasuryAssetValue(polygonTokenRecords, false)[0],
     },
-    treasuryLiquidBacking: getTreasuryAssetValue(tokenRecords, true),
+    treasuryLiquidBacking: getTreasuryAssetValue(tokenRecords, true)[0],
     treasuryLiquidBackingComponents: {
-      [CHAIN_ARBITRUM]: getTreasuryAssetValue(arbitrumTokenRecords, true),
-      [CHAIN_ETHEREUM]: getTreasuryAssetValue(ethereumTokenRecords, true),
-      [CHAIN_FANTOM]: getTreasuryAssetValue(fantomTokenRecords, true),
-      [CHAIN_POLYGON]: getTreasuryAssetValue(polygonTokenRecords, true),
+      [CHAIN_ARBITRUM]: getTreasuryAssetValue(arbitrumTokenRecords, true)[0],
+      [CHAIN_ETHEREUM]: getTreasuryAssetValue(ethereumTokenRecords, true)[0],
+      [CHAIN_FANTOM]: getTreasuryAssetValue(fantomTokenRecords, true)[0],
+      [CHAIN_POLYGON]: getTreasuryAssetValue(polygonTokenRecords, true)[0],
     },
     treasuryLiquidBackingPerOhmFloating: getLiquidBackingPerOhmFloating(tokenRecords, tokenSupplies, currentOhmIndex),
     treasuryLiquidBackingPerOhmBacked: getLiquidBackingPerOhmBacked(tokenRecords, tokenSupplies, currentOhmIndex),
