@@ -27,7 +27,7 @@
     "publish-package": "yarn publish --access public --otp $YARN_OTP"
   },
   "dependencies": {
-    "@wundergraph/sdk": "^0.155.0"
+    "@wundergraph/sdk": "^0.169.0"
   },
   "devDependencies": {
     "@olympusdao/treasury-subgraph": "*",
