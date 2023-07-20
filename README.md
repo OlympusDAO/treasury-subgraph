@@ -87,3 +87,6 @@ The API server is currently hosted by Wundergraph and serves our needs.
 
 If the provider shuts down, there are [self-hosting options](https://docs.wundergraph.com/docs/self-hosted/flyio).
 
+## Wishlist / TODO
+
+- When testing/developing new subgraph versions, it would be nice to be able to provide a URL parameter with the subgraph deployment ID and have the Typescript operation use that deployment ID instead of the configured data source.
