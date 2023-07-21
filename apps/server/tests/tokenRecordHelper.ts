@@ -24,3 +24,13 @@ export const getFirstRecord = (records: TokenRecord[] | undefined, chain?: strin
 
   return filteredRecords.length > 0 ? filteredRecords[0] : null;
 };
+
+export const filterReduce = (
+  records: TokenRecord[],
+  filterPredicate: (value: TokenRecord) => unknown,
+  valueExcludingOhm = false,
+): number => {
+  return records.filter(filterPredicate).reduce((previousValue, currentRecord) => {
+    return previousValue + (valueExcludingOhm ? +currentRecord.valueExcludingOhm : +currentRecord.value);
+  }, 0);
+};

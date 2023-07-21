@@ -3,7 +3,7 @@ import { createTestServer } from "../.wundergraph/generated/testing";
 import { getISO8601DateString } from "./dateHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY } from "../.wundergraph/constants";
 import { getSupplyBalanceForTypes } from "./metricsHelper";
-import { TokenRecord, filter as filterTokenRecords, getFirstRecord as getFirstTokenRecord } from "./tokenRecordHelper";
+import { TokenRecord, filterReduce, filter as filterTokenRecords, getFirstRecord as getFirstTokenRecord } from "./tokenRecordHelper";
 import { TokenSupply, filter as filterTokenSupplies, getFirstRecord as getFirstTokenSupplies } from "./tokenSupplyHelper";
 import { ProtocolMetric } from "./protocolMetricHelper";
 
@@ -278,7 +278,6 @@ describe("atBlock", () => {
   });
 });
 
-// TODO test metric logic
 describe("metrics", () => {
   const START_DATE = getStartDate(-1);
 
@@ -528,5 +527,111 @@ describe("metrics", () => {
     expect(record?.ohmBackedSupplyComponents.Fantom).toBeCloseTo(expectedFantomSupply);
     expect(record?.ohmBackedSupplyComponents.Polygon).toBeCloseTo(expectedPolygonSupply);
   }, 10000);
+
+  test("gOHM backed supply is accurate", async () => {
+    // Grab the results from the latest operation
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: START_DATE,
+      },
+    });
+
+    // Fetch the Metric record for the same date
+    const records = result.data;
+    const record = records?.filter(record => record.date === START_DATE)[0];
+
+    expect(record).not.toBeNull();
+    // The calculation logic of the backed supply metrics is already tested, so this just checks that the derived metric is correct
+    expect(record?.gOhmBackedSupply).toBeCloseTo(record?.ohmBackedSupply! / record?.ohmIndex!);
+  });
+
+  test("treasury market value is accurate", async () => {
+    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+
+    // Raw data has an array property for each chain
+    const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
+    const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
+    const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
+
+    const marketValue = filterReduce(combinedTokenRecords, () => true);
+    const marketValueArbitrum = filterReduce(arbitrumTokenRecords, () => true);
+    const marketValueEthereum = filterReduce(ethereumTokenRecords, () => true);
+    const marketValueFantom = filterReduce(fantomTokenRecords, () => true);
+    const marketValuePolygon = filterReduce(polygonTokenRecords, () => true);
+
+    // Grab the results from the latest operation
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: START_DATE,
+      },
+    });
+
+    // Fetch the Metric record for the same date
+    const records = result.data;
+    const record = records?.filter(record => record.date === START_DATE)[0];
+
+    expect(record).not.toBeNull();
+    expect(record?.treasuryMarketValue).toBeCloseTo(marketValue);
+    expect(record?.treasuryMarketValueComponents.Arbitrum).toBeCloseTo(marketValueArbitrum);
+    expect(record?.treasuryMarketValueComponents.Ethereum).toBeCloseTo(marketValueEthereum);
+    expect(record?.treasuryMarketValueComponents.Fantom).toBeCloseTo(marketValueFantom);
+    expect(record?.treasuryMarketValueComponents.Polygon).toBeCloseTo(marketValuePolygon);
+  });
+
+  test("treasury liquid backing is accurate", async () => {
+    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+
+    // Raw data has an array property for each chain
+    const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
+    const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
+    const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
+
+    const liquidBackingValue = filterReduce(combinedTokenRecords, (value) => value.isLiquid == true, true);
+    const liquidBackingValueArbitrum = filterReduce(arbitrumTokenRecords, (value) => value.isLiquid == true, true);
+    const liquidBackingValueEthereum = filterReduce(ethereumTokenRecords, (value) => value.isLiquid == true, true);
+    const liquidBackingValueFantom = filterReduce(fantomTokenRecords, (value) => value.isLiquid == true, true);
+    const liquidBackingValuePolygon = filterReduce(polygonTokenRecords, (value) => value.isLiquid == true, true);
+
+    // Grab the results from the latest operation
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: START_DATE,
+      },
+    });
+
+    // Fetch the Metric record for the same date
+    const records = result.data;
+    const record = records?.filter(record => record.date === START_DATE)[0];
+
+    expect(record).not.toBeNull();
+    expect(record?.treasuryLiquidBacking).toBeCloseTo(liquidBackingValue);
+    expect(record?.treasuryLiquidBackingComponents.Arbitrum).toBeCloseTo(liquidBackingValueArbitrum);
+    expect(record?.treasuryLiquidBackingComponents.Ethereum).toBeCloseTo(liquidBackingValueEthereum);
+    expect(record?.treasuryLiquidBackingComponents.Fantom).toBeCloseTo(liquidBackingValueFantom);
+    expect(record?.treasuryLiquidBackingComponents.Polygon).toBeCloseTo(liquidBackingValuePolygon);
+  });
+
+  test("liquid backing metrics", async () => {
+    // Grab the results from the latest operation
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: START_DATE,
+      },
+    });
+
+    // Fetch the Metric record for the same date
+    const records = result.data;
+    const record = records?.filter(record => record.date === START_DATE)[0];
+
+    expect(record).not.toBeNull();
+    // The calculation logic of the liquid backing and backed supply metrics are already tested above, so this just checks that the derived metric is correct
+    expect(record?.treasuryLiquidBackingPerOhmBacked).toBeCloseTo(record?.treasuryLiquidBacking! / record?.ohmBackedSupply!);
+    expect(record?.treasuryLiquidBackingPerGOhmBacked).toBeCloseTo(record?.treasuryLiquidBacking! / record?.gOhmBackedSupply!);
   });
 });
