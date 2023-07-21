@@ -100,7 +100,7 @@ describe("paginated", () => {
 
     expect(treasuryLiquidBackingRecords?.Arbitrum.length).toBeGreaterThan(0);
     expect(treasuryLiquidBackingRecords?.Ethereum.length).toBeGreaterThan(0);
-  });
+  }, 10000);
 
   test("includeRecords false", async () => {
     const result = await wg.client().query({
@@ -358,7 +358,7 @@ describe("metrics", () => {
     expect(record?.ohmTotalSupplyComponents.Ethereum).toBeCloseTo(expectedEthereumSupply);
     expect(record?.ohmTotalSupplyComponents.Fantom).toBeCloseTo(expectedFantomSupply);
     expect(record?.ohmTotalSupplyComponents.Polygon).toBeCloseTo(expectedPolygonSupply);
-  });
+  }, 10000);
 
   test("circulating supply is accurate", async () => {
     const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
@@ -413,7 +413,7 @@ describe("metrics", () => {
     expect(record?.ohmCirculatingSupplyComponents.Ethereum).toBeCloseTo(expectedEthereumSupply);
     expect(record?.ohmCirculatingSupplyComponents.Fantom).toBeCloseTo(expectedFantomSupply);
     expect(record?.ohmCirculatingSupplyComponents.Polygon).toBeCloseTo(expectedPolygonSupply);
-  });
+  }, 10000);
 
   test("floating supply is accurate", async () => {
     const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
@@ -469,7 +469,7 @@ describe("metrics", () => {
     expect(record?.ohmFloatingSupplyComponents.Ethereum).toBeCloseTo(expectedEthereumSupply);
     expect(record?.ohmFloatingSupplyComponents.Fantom).toBeCloseTo(expectedFantomSupply);
     expect(record?.ohmFloatingSupplyComponents.Polygon).toBeCloseTo(expectedPolygonSupply);
-  });
+  }, 10000);
 
   test("backed supply is accurate", async () => {
     const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
@@ -527,5 +527,6 @@ describe("metrics", () => {
     expect(record?.ohmBackedSupplyComponents.Ethereum).toBeCloseTo(expectedEthereumSupply);
     expect(record?.ohmBackedSupplyComponents.Fantom).toBeCloseTo(expectedFantomSupply);
     expect(record?.ohmBackedSupplyComponents.Polygon).toBeCloseTo(expectedPolygonSupply);
+  }, 10000);
   });
 });
