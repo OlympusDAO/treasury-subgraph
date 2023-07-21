@@ -616,6 +616,29 @@ describe("metrics", () => {
     expect(record?.treasuryLiquidBackingComponents.Polygon).toBeCloseTo(liquidBackingValuePolygon);
   });
 
+  test("OHM index", async () => {
+    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+
+    const ohmIndex = +combinedProtocolMetrics.filter(record => record.date === START_DATE)[0].currentIndex;
+    console.log("protocolMetrics", JSON.stringify(combinedProtocolMetrics, null, 2));
+
+    // Grab the results from the latest operation
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: START_DATE,
+      },
+    });
+
+    // Fetch the Metric record for the same date
+    const records = result.data;
+    const record = records?.filter(record => record.date === START_DATE)[0];
+    console.log("records", JSON.stringify(records, null, 2));
+
+    expect(record).not.toBeNull();
+    expect(record?.ohmIndex).toEqual(ohmIndex);
+  });
+
   test("liquid backing metrics", async () => {
     // Grab the results from the latest operation
     const result = await wg.client().query({
