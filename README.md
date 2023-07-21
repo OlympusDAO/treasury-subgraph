@@ -13,15 +13,18 @@ The monorepo contains two components:
     - Code to configure and deploy a [Wundergraph](https://wundergraph.com/) API server that aggregates and transforms GraphQL results
     - Offers a number of 'operations' (in Wundergraph terminology):
       - Basic: unaltered ProtocolMetric records. Not recommended.
-        - protocolMetrics
         - tokenRecords
         - tokenSupplies
+      - Earliest: the earliest record from each blockchain
+        - earliest/metrics
+        - earliest/tokenRecords
+        - earliest/tokenSupplies
       - Latest: the latest record from each blockchain
-        - latest/protocolMetrics
+        - latest/metrics
         - latest/tokenRecords
         - latest/tokenSupplies
-      - Paginated: records from the `startDate` input variable until the present. Aggregates all blockchains and handles pagination.
-        - paginated/protocolMetrics
+      - Paginated: records from the `startDate` input variable until the present. Aggregates all blockchains and handles pagination. Specify `crossChainDataComplete` to restrict results up to the latest date with cross-chain data. Specify `includeRecords` to include records used to calculate each metric (large response size).
+        - paginated/metrics
         - paginated/tokenRecords
         - paginated/tokenSupplies
   - client/
