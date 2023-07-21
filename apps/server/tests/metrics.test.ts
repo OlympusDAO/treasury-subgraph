@@ -59,12 +59,16 @@ describe("latest", () => {
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenRecords[0];
     const arbitrumRawBlock: number = arbitrumRawResult?.block ? parseInt(arbitrumRawResult.block) : 0;
+    const arbitrumRawTimestamp: number = arbitrumRawResult?.timestamp ? parseInt(arbitrumRawResult.timestamp) : 0;
     const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenRecords[0];
     const ethereumRawBlock: number = ethereumRawResult?.block ? parseInt(ethereumRawResult.block) : 0;
+    const ethereumRawTimestamp: number = ethereumRawResult?.timestamp ? parseInt(ethereumRawResult.timestamp) : 0;
     const fantomRawResult = rawResult.data?.treasuryFantom_tokenRecords[0];
     const fantomRawBlock: number = fantomRawResult?.block ? parseInt(fantomRawResult.block) : 0;
+    const fantomRawTimestamp: number = fantomRawResult?.timestamp ? parseInt(fantomRawResult.timestamp) : 0;
     const polygonRawResult = rawResult.data?.treasuryPolygon_tokenRecords[0];
     const polygonRawBlock: number = polygonRawResult?.block ? parseInt(polygonRawResult.block) : 0;
+    const polygonRawTimestamp: number = polygonRawResult?.timestamp ? parseInt(polygonRawResult.timestamp) : 0;
 
     // Grab the results from the latest operation
     const result = await wg.client().query({
@@ -81,6 +85,12 @@ describe("latest", () => {
     expect(record?.blocks.Ethereum).toEqual(ethereumRawBlock);
     expect(record?.blocks.Fantom).toEqual(fantomRawBlock);
     expect(record?.blocks.Polygon).toEqual(polygonRawBlock);
+
+    // Check that the timestamp is the same
+    expect(record?.timestamps.Arbitrum).toEqual(arbitrumRawTimestamp);
+    expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
+    expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
+    expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
   });
 });
 
@@ -94,12 +104,16 @@ describe("earliest", () => {
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenRecords[0];
     const arbitrumRawBlock: number = arbitrumRawResult?.block ? parseInt(arbitrumRawResult.block) : 0;
+    const arbitrumRawTimestamp: number = arbitrumRawResult?.timestamp ? parseInt(arbitrumRawResult.timestamp) : 0;
     const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenRecords[0];
     const ethereumRawBlock: number = ethereumRawResult?.block ? parseInt(ethereumRawResult.block) : 0;
+    const ethereumRawTimestamp: number = ethereumRawResult?.timestamp ? parseInt(ethereumRawResult.timestamp) : 0;
     const fantomRawResult = rawResult.data?.treasuryFantom_tokenRecords[0];
     const fantomRawBlock: number = fantomRawResult?.block ? parseInt(fantomRawResult.block) : 0;
+    const fantomRawTimestamp: number = fantomRawResult?.timestamp ? parseInt(fantomRawResult.timestamp) : 0;
     const polygonRawResult = rawResult.data?.treasuryPolygon_tokenRecords[0];
     const polygonRawBlock: number = polygonRawResult?.block ? parseInt(polygonRawResult.block) : 0;
+    const polygonRawTimestamp: number = polygonRawResult?.timestamp ? parseInt(polygonRawResult.timestamp) : 0;
 
     // Grab the results from the earliest operation
     const result = await wg.client().query({
@@ -116,6 +130,12 @@ describe("earliest", () => {
     expect(record?.blocks.Ethereum).toEqual(ethereumRawBlock);
     expect(record?.blocks.Fantom).toEqual(fantomRawBlock);
     expect(record?.blocks.Polygon).toEqual(polygonRawBlock);
+
+    // Check that the timestamp is the same
+    expect(record?.timestamps.Arbitrum).toEqual(arbitrumRawTimestamp);
+    expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
+    expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
+    expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
   });
 });
 
@@ -134,12 +154,16 @@ describe("atBlock", () => {
     // Raw data has an array property for each chain
     const arbitrumRawResult = getFirstTokenRecord(rawResult.data, CHAIN_ARBITRUM, startDate);
     const arbitrumRawBlock: number = arbitrumRawResult?.block ? parseInt(arbitrumRawResult.block) : 0;
+    const arbitrumRawTimestamp: number = arbitrumRawResult?.timestamp ? parseInt(arbitrumRawResult.timestamp) : 0;
     const ethereumRawResult = getFirstTokenRecord(rawResult.data, CHAIN_ETHEREUM, startDate);
     const ethereumRawBlock: number = ethereumRawResult?.block ? parseInt(ethereumRawResult.block) : 0;
+    const ethereumRawTimestamp: number = ethereumRawResult?.timestamp ? parseInt(ethereumRawResult.timestamp) : 0;
     const fantomRawResult = getFirstTokenRecord(rawResult.data, CHAIN_FANTOM, startDate);
     const fantomRawBlock: number = fantomRawResult?.block ? parseInt(fantomRawResult.block) : 0;
+    const fantomRawTimestamp: number = fantomRawResult?.timestamp ? parseInt(fantomRawResult.timestamp) : 0;
     const polygonRawResult = getFirstTokenRecord(rawResult.data, CHAIN_POLYGON, startDate);
     const polygonRawBlock: number = polygonRawResult?.block ? parseInt(polygonRawResult.block) : 0;
+    const polygonRawTimestamp: number = polygonRawResult?.timestamp ? parseInt(polygonRawResult.timestamp) : 0;
 
     // Grab the results from the earliest operation
     const result = await wg.client().query({
@@ -162,6 +186,12 @@ describe("atBlock", () => {
     expect(record?.blocks.Ethereum).toEqual(ethereumRawBlock);
     expect(record?.blocks.Fantom).toEqual(fantomRawBlock);
     expect(record?.blocks.Polygon).toEqual(polygonRawBlock);
+
+    // Check that the timestamp is the same
+    expect(record?.timestamps.Arbitrum).toEqual(arbitrumRawTimestamp);
+    expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
+    expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
+    expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
   });
 });
 

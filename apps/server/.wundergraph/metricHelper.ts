@@ -45,6 +45,10 @@ export type Metric = {
    */
   blocks: ChainValues;
   /**
+   * The Unix epoch timestamp (in seconds) for each chain.
+   */
+  timestamps: ChainValues;
+  /**
    * The OHM index at the snapshot.
    */
   ohmIndex: number;
@@ -316,6 +320,14 @@ const getBlock = (tokenRecords: TokenRecord[]): number => {
   return +tokenRecords[0].block;
 }
 
+const getTimestamp = (tokenRecords: TokenRecord[]): number => {
+  if (!tokenRecords.length) {
+    return 0;
+  }
+
+  return +tokenRecords[0].timestamp;
+}
+
 export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], protocolMetrics: ProtocolMetric[]): Metric | null => {
   if (!tokenRecords.length || !tokenSupplies.length || !protocolMetrics.length) {
     return null;
@@ -338,6 +350,12 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
       [CHAIN_ETHEREUM]: getBlock(ethereumTokenRecords),
       [CHAIN_FANTOM]: getBlock(fantomTokenRecords),
       [CHAIN_POLYGON]: getBlock(polygonTokenRecords),
+    },
+    timestamps: {
+      [CHAIN_ARBITRUM]: getTimestamp(arbitrumTokenRecords),
+      [CHAIN_ETHEREUM]: getTimestamp(ethereumTokenRecords),
+      [CHAIN_FANTOM]: getTimestamp(fantomTokenRecords),
+      [CHAIN_POLYGON]: getTimestamp(polygonTokenRecords),
     },
     ohmIndex: currentOhmIndex,
     ohmTotalSupply: getOhmTotalSupply(tokenSupplies, currentOhmIndex)[0],
