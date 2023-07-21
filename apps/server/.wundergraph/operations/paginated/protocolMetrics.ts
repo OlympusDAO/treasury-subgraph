@@ -9,7 +9,7 @@ import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString }
  * 
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
  * 
- * NOTE: this is not recommended for public use, and is superceded by the Metric queries.
+ * NOTE: this is not recommended for public use, and is superseded by the Metric queries.
  */
 export default createOperation.query({
   input: z.object({
@@ -45,6 +45,8 @@ export default createOperation.query({
 
       // Collapse the data into a single array
       if (queryResult.data) {
+        // Collapse the data into a single array, and add a missing property
+        // ProtocolMetrics are only generated for the Ethereum mainnet subgraph at the moment, so there is no need for a cross-chain consistency check
         combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true));
       }
 

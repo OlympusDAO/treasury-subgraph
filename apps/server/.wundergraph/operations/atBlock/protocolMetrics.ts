@@ -5,7 +5,7 @@ import { flattenRecords } from '../../protocolMetricHelper';
  * This custom query will return a flat array containing the ProtocolMetric objects for
  * a specific block.
  * 
- * NOTE: this is not recommended for public use, and is superceded by the Metric queries.
+ * NOTE: this is not recommended for public use, and is superseded by the Metric queries.
  */
 export default createOperation.query({
   input: z.object({
