@@ -348,7 +348,7 @@ const getTimestamp = (tokenRecords: TokenRecord[]): number => {
   return +tokenRecords[0].timestamp;
 }
 
-export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], protocolMetrics: ProtocolMetric[], crossChainDataComplete = false): Metric | null => {
+export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], protocolMetrics: ProtocolMetric[]): Metric | null => {
   if (!tokenRecords.length || !tokenSupplies.length || !protocolMetrics.length) {
     return null;
   }
@@ -362,16 +362,6 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
   const [ethereumTokenRecords, ethereumTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_ETHEREUM);
   const [fantomTokenRecords, fantomTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_FANTOM);
   const [polygonTokenRecords, polygonTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_POLYGON);
-
-  // Don't return a metric object if the cross-chain data is incomplete
-  if (crossChainDataComplete === true &&
-    (
-      !isCrossChainRecordDataComplete(arbitrumTokenRecords, ethereumTokenRecords) ||
-      !isCrossChainSupplyDataComplete(arbitrumTokenSupplies, ethereumTokenSupplies)
-    )) {
-    console.log(`Cross-chain data is incomplete. Skipping Metric object.`);
-    return null;
-  }
 
   // Per-chain supply
   const ohmTotalSupplyArbitrum = getOhmTotalSupply(arbitrumTokenSupplies, currentOhmIndex);

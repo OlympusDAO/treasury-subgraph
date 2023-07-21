@@ -58,6 +58,7 @@ export default createOperation.query({
       input: {
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
+        crossChainDataComplete: ctx.input.crossChainDataComplete,
       },
     });
 
@@ -83,6 +84,7 @@ export default createOperation.query({
       input: {
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
+        crossChainDataComplete: ctx.input.crossChainDataComplete,
       },
     });
 
@@ -105,7 +107,7 @@ export default createOperation.query({
 
     // Convert into new Metric objects
     byDateRecords.forEach((recordContainer, date) => {
-      const metricRecord: Metric | null = getMetricObject(recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, ctx.input.crossChainDataComplete);
+      const metricRecord: Metric | null = getMetricObject(recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics);
       if (!metricRecord) {
         console.log(`Skipping date ${date} because it is missing data.`);
         return;
