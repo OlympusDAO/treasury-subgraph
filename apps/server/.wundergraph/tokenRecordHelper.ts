@@ -9,6 +9,12 @@ type TokenRecordByDate = {
   records: TokenRecord[];
 };
 
+/**
+ * This function determines the latest block for each day and returns only the records with that block.
+ * 
+ * @param records 
+ * @returns 
+ */
 export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] => {
   const filteredData = Object.values(records.reduce((acc: Record<string, TokenRecordByDate>, curr: TokenRecord) => {
     const { date, block } = curr;
@@ -67,4 +73,28 @@ export const getBlockByChain = (records: TokenRecord[], chain: string): number |
   const chainRecords = records.filter((record) => record.blockchain === chain);
 
   return chainRecords.length > 0 ? +chainRecords[0].block : null;
+}
+
+/**
+ * Determines whether the data across chains is complete.
+ * 
+ * It determines this by checking if the date of the records across chains is the same.
+ * 
+ * Assumptions:
+ * - The data is sorted in descending order and for the same day
+ * - Ethereum and Arbitrum have the bulk of assets, so we only check those two chains
+ * 
+ * @param arbitrumRecords 
+ * @param ethereumRecords 
+ * @returns 
+ */
+export const isCrossChainRecordDataComplete = (arbitrumRecords: TokenRecord[], ethereumRecords: TokenRecord[]): boolean => {
+  if (!arbitrumRecords.length || !ethereumRecords.length) {
+    return false;
+  }
+
+  const arbitrumDate = arbitrumRecords[0].date;
+  const ethereumDate = ethereumRecords[0].date;
+
+  return arbitrumDate === ethereumDate;
 }
