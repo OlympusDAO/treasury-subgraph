@@ -1,5 +1,5 @@
-import { createOperation, z } from '../../generated/wundergraph.factory';
-import { flattenRecords } from '../../protocolMetricHelper';
+import { createOperation, z } from '../../../generated/wundergraph.factory';
+import { flattenRecords } from '../../../protocolMetricHelper';
 
 /**
  * This custom query will return a flat array containing the ProtocolMetric objects for
@@ -18,7 +18,7 @@ export default createOperation.query({
     console.log(`Commencing atBlock query for ProtocolMetric`);
 
     const queryResult = await ctx.operations.query({
-      operationName: "protocolMetricsAtBlock",
+      operationName: "raw/internal/protocolMetricsAtBlock",
       input: {
         arbitrumBlock: ctx.input.arbitrumBlock.toString(),
         ethereumBlock: ctx.input.ethereumBlock.toString(),

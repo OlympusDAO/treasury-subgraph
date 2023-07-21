@@ -1,5 +1,5 @@
-import { createOperation } from '../../generated/wundergraph.factory';
-import { flattenRecords } from '../../protocolMetricHelper';
+import { createOperation } from '../../../generated/wundergraph.factory';
+import { flattenRecords } from '../../../protocolMetricHelper';
 
 /**
  * This custom query will return a flat array containing the latest ProtocolMetric objects for
@@ -12,7 +12,7 @@ export default createOperation.query({
     console.log(`Commencing earliest query for ProtocolMetric`);
 
     const queryResult = await ctx.operations.query({
-      operationName: "protocolMetricsEarliest",
+      operationName: "raw/internal/protocolMetricsEarliest",
     });
 
     if (!queryResult.data) {

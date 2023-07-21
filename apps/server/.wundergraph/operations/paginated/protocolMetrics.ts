@@ -1,5 +1,5 @@
 import { createOperation, z } from '../../generated/wundergraph.factory';
-import { ProtocolMetricsResponseData } from '../../generated/models';
+import { RawInternalProtocolMetricsResponseData } from '../../generated/models';
 import { flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
 
@@ -28,7 +28,7 @@ export default createOperation.query({
     const offsetDays: number = getOffsetDays(ctx.input.dateOffset);
 
     // Combine across pages and endpoints
-    const combinedProtocolMetrics: ProtocolMetricsResponseData["treasuryEthereum_protocolMetrics"] = [];
+    const combinedProtocolMetrics: RawInternalProtocolMetricsResponseData["treasuryEthereum_protocolMetrics"] = [];
 
     let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
     let currentEndDate: Date = getNextEndDate(null);
@@ -36,7 +36,7 @@ export default createOperation.query({
     while (currentStartDate.getTime() >= finalStartDate.getTime()) {
       console.log(`Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
-        operationName: "protocolMetrics",
+        operationName: "raw/internal/protocolMetrics",
         input: {
           startDate: getISO8601DateString(currentStartDate),
           endDate: getISO8601DateString(currentEndDate),
