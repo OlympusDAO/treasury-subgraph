@@ -22,7 +22,7 @@ const getStartDate = (days: number = -5): string => {
 }
 
 describe("paginated", () => {
-  test("returns recent results", async () => {
+  test("recent results", async () => {
     const result = await wg.client().query({
       operationName: "paginated/metrics",
       input: {
@@ -46,6 +46,89 @@ describe("paginated", () => {
     const records = result.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
+  });
+
+  test("crossChainDataComplete true", async () => {
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-5),
+        crossChainDataComplete: true,
+      }
+    });
+
+    const records = result.data;
+    const recordLength = records ? records.length : 0;
+    expect(recordLength).toBeGreaterThan(0);
+  });
+
+  test("includeRecords true", async () => {
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-5),
+        includeRecords: true,
+      }
+    });
+
+    const records = result.data;
+    const recordLength = records ? records.length : 0;
+    expect(recordLength).toBeGreaterThan(0);
+
+    const firstRecord = records![0];
+    const totalSupplyRecords = firstRecord.ohmTotalSupplyRecords;
+    const circulatingSupplyRecords = firstRecord.ohmCirculatingSupplyRecords;
+    const floatingSupplyRecords = firstRecord.ohmFloatingSupplyRecords;
+    const backedSupplyRecords = firstRecord.ohmBackedSupplyRecords;
+    const treasuryMarketValueRecords = firstRecord.treasuryMarketValueRecords;
+    const treasuryLiquidBackingRecords = firstRecord.treasuryLiquidBackingRecords;
+
+    expect(totalSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
+    expect(totalSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
+
+    expect(circulatingSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
+    expect(circulatingSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
+
+    expect(floatingSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
+    expect(floatingSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
+
+    expect(backedSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
+    expect(backedSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
+
+    expect(treasuryMarketValueRecords?.Arbitrum.length).toBeGreaterThan(0);
+    expect(treasuryMarketValueRecords?.Ethereum.length).toBeGreaterThan(0);
+
+    expect(treasuryLiquidBackingRecords?.Arbitrum.length).toBeGreaterThan(0);
+    expect(treasuryLiquidBackingRecords?.Ethereum.length).toBeGreaterThan(0);
+  });
+
+  test("includeRecords false", async () => {
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-5),
+        includeRecords: false,
+      }
+    });
+
+    const records = result.data;
+    const recordLength = records ? records.length : 0;
+    expect(recordLength).toBeGreaterThan(0);
+
+    const firstRecord = records![0];
+    const totalSupplyRecords = firstRecord.ohmTotalSupplyRecords;
+    const circulatingSupplyRecords = firstRecord.ohmCirculatingSupplyRecords;
+    const floatingSupplyRecords = firstRecord.ohmFloatingSupplyRecords;
+    const backedSupplyRecords = firstRecord.ohmBackedSupplyRecords;
+    const treasuryMarketValueRecords = firstRecord.treasuryMarketValueRecords;
+    const treasuryLiquidBackingRecords = firstRecord.treasuryLiquidBackingRecords;
+
+    expect(totalSupplyRecords).not.toBeDefined();
+    expect(circulatingSupplyRecords).not.toBeDefined();
+    expect(floatingSupplyRecords).not.toBeDefined();
+    expect(backedSupplyRecords).not.toBeDefined();
+    expect(treasuryMarketValueRecords).not.toBeDefined();
+    expect(treasuryLiquidBackingRecords).not.toBeDefined();
   });
 });
 
