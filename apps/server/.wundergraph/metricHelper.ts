@@ -86,6 +86,8 @@ export type Metric = {
   ohmPrice: number;
   gOhmPrice: number;
   marketCap: number;
+  sOhmCirculatingSupply: number;
+  sOhmTotalValueLocked: number;
   treasuryMarketValue: number;
   treasuryMarketValueComponents: ChainValues;
   treasuryMarketValueRecords?: ChainRecords;
@@ -377,6 +379,9 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
   const ohmBackedSupply = getOhmBackedSupply(tokenSupplies, ohmIndex);
   const liquidBacking = getTreasuryAssetValue(tokenRecords, true);
 
+  const sOhmCirculatingSupply: number = +protocolMetrics[0].sOhmCirculatingSupply;
+  const sOhmTotalValueLocked: number = +protocolMetrics[0].totalValueLocked;
+
   // Obtain per-chain arrays
   const [arbitrumTokenRecords, arbitrumTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_ARBITRUM);
   const [ethereumTokenRecords, ethereumTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_ETHEREUM);
@@ -463,6 +468,8 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
     ohmPrice: ohmPrice,
     gOhmPrice: gOhmPrice,
     marketCap: ohmPrice * ohmCirculatingSupply,
+    sOhmCirculatingSupply: sOhmCirculatingSupply,
+    sOhmTotalValueLocked: sOhmTotalValueLocked,
     treasuryMarketValue: getTreasuryAssetValue(tokenRecords, false)[0],
     treasuryMarketValueComponents: {
       [CHAIN_ARBITRUM]: marketValueArbitrum[0],
