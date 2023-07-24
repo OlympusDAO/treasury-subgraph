@@ -1,7 +1,7 @@
-import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY } from "./constants";
+import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, Chains, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY, TokenSupplyCategories } from "./constants";
 import { ProtocolMetric } from "./protocolMetricHelper";
-import { TokenRecord, isCrossChainRecordDataComplete } from "./tokenRecordHelper";
-import { TokenSupply, isCrossChainSupplyDataComplete } from "./tokenSupplyHelper";
+import { TokenRecord } from "./tokenRecordHelper";
+import { TokenSupply } from "./tokenSupplyHelper";
 
 //
 // Customised for the treasury-subgraph repo
@@ -31,25 +31,22 @@ export type RecordContainer = {
   protocolMetrics: ProtocolMetric[];
 };
 
-type ChainValues = {
-  [CHAIN_ARBITRUM]: number;
-  [CHAIN_ETHEREUM]: number;
-  [CHAIN_FANTOM]: number;
-  [CHAIN_POLYGON]: number;
-};
+type ChainValues = Record<Chains, number>;
 
-type ChainRecords = {
-  [CHAIN_ARBITRUM]: TokenRecord[];
-  [CHAIN_ETHEREUM]: TokenRecord[];
-  [CHAIN_FANTOM]: TokenRecord[];
-  [CHAIN_POLYGON]: TokenRecord[];
-};
+type ChainRecords = Record<Chains, TokenRecord[]>;
 
-type ChainSupplies = {
-  [CHAIN_ARBITRUM]: TokenSupply[];
-  [CHAIN_ETHEREUM]: TokenSupply[];
-  [CHAIN_FANTOM]: TokenSupply[];
-  [CHAIN_POLYGON]: TokenSupply[];
+type ChainSupplies = Record<Chains, TokenSupply[]>;
+
+type SupplyCategoryValues = Record<TokenSupplyCategories, number>;
+
+type SupplyCategoryRecords = Record<TokenSupplyCategories, TokenSupply[]>;
+
+type SupplyValue = {
+  balance: number;
+  supplyBalance: number;
+  chainSupplyBalances: ChainValues;
+  records: TokenSupply[];
+  chainRecords: ChainSupplies;
 };
 
 export type Metric = {
@@ -83,6 +80,7 @@ export type Metric = {
   gOhmBackedSupply: number;
   ohmBackedSupplyComponents: ChainValues;
   ohmBackedSupplyRecords?: ChainSupplies;
+  ohmSupplyCategories: SupplyCategoryValues;
   ohmPrice: number;
   gOhmPrice: number;
   marketCap: number;
@@ -136,33 +134,102 @@ const getBalanceMultiplier = (record: TokenSupply, ohmIndex: number): number => 
   throw new Error(`Unsupported token address: ${record.tokenAddress}`);
 };
 
+const getBalancesForTypes = (
+  records: TokenSupply[],
+  ohmIndex: number,
+): [number, number] => {
+  const [balance, supplyBalance] = records.reduce(
+    ([previousBalance, previousSupplyBalance], record) => {
+      const balanceMultiplier = getBalanceMultiplier(record, ohmIndex);
+
+      return [
+        previousBalance + +record.balance * balanceMultiplier,
+        previousSupplyBalance + +record.supplyBalance * balanceMultiplier,
+      ];
+    },
+    [0, 0],
+  );
+
+  return [balance, supplyBalance];
+}
+
 /**
- * Returns the sum of balances for different supply types.
- *
- * Note that this will return positive or negative balances, depending on the type.
- *
- * For example, passing [TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_TREASURY]
- * in the {includedTypes} parameter will return a number that is
- * the sum of the supplyBalance property all records with matching types.
- *
- * @param records TokenSupply records for the given day
- * @param ohmIndex The index of OHM for the given day
- * @param includedTypes
- * @returns [balance, included records]
+ * Returns the sums and records for different supply types.
+ * 
+ * This will be commonly used to bootstrap the SupplyCategoryRecords object.
+ * 
+ * @param records 
+ * @param includedTypes 
+ * @param ohmIndex 
+ * @returns 
  */
-const getSupplyBalanceForTypes = (
+const getTokenSupplyRecordsForTypes = (
   records: TokenSupply[],
   includedTypes: string[],
   ohmIndex: number,
-): [number, TokenSupply[]] => {
-  const filteredRecords = records.filter(record => isSupportedToken(record) && includedTypes.includes(record.type));
+): [number, number, TokenSupply[]] => {
+  const includedRecords = records.filter(record => includedTypes.includes(record.type) && isSupportedToken(record));
 
-  const supplyBalance = filteredRecords.reduce(
-    (previousValue, record) => previousValue + +record.supplyBalance * getBalanceMultiplier(record, ohmIndex),
-    0,
-  );
+  const [balance, supplyBalance] = getBalancesForTypes(includedRecords, ohmIndex);
 
-  return [supplyBalance, filteredRecords];
+  return [balance, supplyBalance, includedRecords];
+}
+
+/**
+ * Returns the sums and records for different supply types.
+ *
+ * For example, passing [TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_TREASURY]
+ * in the {includedTypes} parameter will return:
+ * - sum of the balance property for all records with matching types
+ * - sum of the supplyBalance property for all records with matching types
+ * - all records with matching types
+ *
+ * @param records SupplyCategoryRecords records for the given day
+ * @param includedTypes
+ * @param ohmIndex The index of OHM for the given day
+ * @returns [balance, supply balance, included records]
+ */
+const getRecordsForTypes = (
+  records: SupplyCategoryRecords,
+  includedTypes: TokenSupplyCategories[],
+  ohmIndex: number,
+): SupplyValue => {
+  // For each value in includedTypes, get the corresponding array of records and combine into a single array
+  const [includedRecords, chainSupplies] = includedTypes.reduce((previousRecords, currentType) => {
+    const currentTypeRecords: TokenSupply[] = records[currentType];
+    const previousChainRecords: ChainSupplies = previousRecords[1];
+
+    const allRecords = [...previousRecords[0], ...currentTypeRecords];
+    const allChainRecords: ChainSupplies = {
+      [Chains.ARBITRUM]: [...previousChainRecords[Chains.ARBITRUM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_ARBITRUM)],
+      [Chains.ETHEREUM]: [...previousChainRecords[Chains.ETHEREUM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_ETHEREUM)],
+      [Chains.FANTOM]: [...previousChainRecords[Chains.FANTOM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_FANTOM)],
+      [Chains.POLYGON]: [...previousChainRecords[Chains.POLYGON], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_POLYGON)],
+    };
+
+    return [allRecords, allChainRecords];
+  }, [[] as TokenSupply[], {
+    [Chains.ARBITRUM]: [] as TokenSupply[],
+    [Chains.ETHEREUM]: [] as TokenSupply[],
+    [Chains.FANTOM]: [] as TokenSupply[],
+    [Chains.POLYGON]: [] as TokenSupply[],
+  } as ChainSupplies]);
+
+  const [balance, supplyBalance] = getBalancesForTypes(includedRecords, ohmIndex);
+  const chainSupplyBalances = {
+    [Chains.ARBITRUM]: getBalancesForTypes(chainSupplies[Chains.ARBITRUM], ohmIndex)[1],
+    [Chains.ETHEREUM]: getBalancesForTypes(chainSupplies[Chains.ETHEREUM], ohmIndex)[1],
+    [Chains.FANTOM]: getBalancesForTypes(chainSupplies[Chains.FANTOM], ohmIndex)[1],
+    [Chains.POLYGON]: getBalancesForTypes(chainSupplies[Chains.POLYGON], ohmIndex)[1],
+  }
+
+  return {
+    balance,
+    supplyBalance,
+    chainSupplyBalances: chainSupplyBalances,
+    records: includedRecords,
+    chainRecords: chainSupplies,
+  };
 };
 
 /**
@@ -171,19 +238,9 @@ const getSupplyBalanceForTypes = (
  */
 const ETHEREUM_BLV_INCLUSION_BLOCK = "17620000";
 
-const isBLVIncluded = (records: TokenSupply[]): boolean => {
-  // Filter for Ethereum records
-  const ethereumRecords = records.filter(record => record.blockchain === CHAIN_ETHEREUM);
-  if (!ethereumRecords.length) {
-    return false;
-  }
-
-  // Get the block number of the first Ethereum record
-  const firstEthereumRecord = ethereumRecords[0];
-  const firstEthereumRecordBlock = firstEthereumRecord.block;
-
+const isBLVIncluded = (ethereumBlock: number): boolean => {
   // If the first Ethereum record is before the BLV inclusion block, then BLV is included in calculations
-  if (Number(firstEthereumRecordBlock) < Number(ETHEREUM_BLV_INCLUSION_BLOCK)) {
+  if (ethereumBlock < Number(ETHEREUM_BLV_INCLUSION_BLOCK)) {
     return true;
   }
 
@@ -206,21 +263,21 @@ const isBLVIncluded = (records: TokenSupply[]): boolean => {
  * @param ohmIndex The index of OHM for the given day
  * @returns
  */
-export const getOhmCirculatingSupply = (records: TokenSupply[], ohmIndex: number): [number, TokenSupply[]] => {
-  const includedTypes = [
-    TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY,
-    TOKEN_SUPPLY_TYPE_TREASURY,
-    TOKEN_SUPPLY_TYPE_OFFSET,
-    TOKEN_SUPPLY_TYPE_BONDS_PREMINTED,
-    TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS,
-    TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS,
+export const getOhmCirculatingSupply = (records: SupplyCategoryRecords, ethereumBlock: number, ohmIndex: number): SupplyValue => {
+  const includedTypes: TokenSupplyCategories[] = [
+    TokenSupplyCategories.TOTAL_SUPPLY,
+    TokenSupplyCategories.TREASURY,
+    TokenSupplyCategories.OFFSET,
+    TokenSupplyCategories.BONDS_PREMINTED,
+    TokenSupplyCategories.BONDS_VESTING_DEPOSITS,
+    TokenSupplyCategories.BONDS_DEPOSITS,
   ];
 
-  if (isBLVIncluded(records)) {
-    includedTypes.push(TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT);
+  if (isBLVIncluded(ethereumBlock)) {
+    includedTypes.push(TokenSupplyCategories.BOOSTED_LIQUIDITY_VAULT);
   }
 
-  return getSupplyBalanceForTypes(records, includedTypes, ohmIndex);
+  return getRecordsForTypes(records, includedTypes, ohmIndex);
 };
 
 /**
@@ -240,22 +297,22 @@ export const getOhmCirculatingSupply = (records: TokenSupply[], ohmIndex: number
  * @param ohmIndex The index of OHM for the given day
  * @returns
  */
-export const getOhmFloatingSupply = (records: TokenSupply[], ohmIndex: number): [number, TokenSupply[]] => {
-  const includedTypes = [
-    TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY,
-    TOKEN_SUPPLY_TYPE_TREASURY,
-    TOKEN_SUPPLY_TYPE_OFFSET,
-    TOKEN_SUPPLY_TYPE_BONDS_PREMINTED,
-    TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS,
-    TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS,
-    TOKEN_SUPPLY_TYPE_LIQUIDITY,
+export const getOhmFloatingSupply = (records: SupplyCategoryRecords, ethereumBlock: number, ohmIndex: number): SupplyValue => {
+  const includedTypes: TokenSupplyCategories[] = [
+    TokenSupplyCategories.TOTAL_SUPPLY,
+    TokenSupplyCategories.TREASURY,
+    TokenSupplyCategories.OFFSET,
+    TokenSupplyCategories.BONDS_PREMINTED,
+    TokenSupplyCategories.BONDS_VESTING_DEPOSITS,
+    TokenSupplyCategories.BONDS_DEPOSITS,
+    TokenSupplyCategories.LIQUIDITY,
   ];
 
-  if (isBLVIncluded(records)) {
-    includedTypes.push(TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT);
+  if (isBLVIncluded(ethereumBlock)) {
+    includedTypes.push(TokenSupplyCategories.BOOSTED_LIQUIDITY_VAULT);
   }
 
-  return getSupplyBalanceForTypes(records, includedTypes, ohmIndex);
+  return getRecordsForTypes(records, includedTypes, ohmIndex);
 };
 
 /**
@@ -277,20 +334,20 @@ export const getOhmFloatingSupply = (records: TokenSupply[], ohmIndex: number): 
  * @param records TokenSupply records for the given day
  * @param ohmIndex The index of OHM for the given day
  */
-export const getOhmBackedSupply = (records: TokenSupply[], ohmIndex: number): [number, TokenSupply[]] => {
-  const includedTypes = [
-    TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY,
-    TOKEN_SUPPLY_TYPE_TREASURY,
-    TOKEN_SUPPLY_TYPE_OFFSET,
-    TOKEN_SUPPLY_TYPE_BONDS_PREMINTED,
-    TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS,
-    TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS,
-    TOKEN_SUPPLY_TYPE_LIQUIDITY,
-    TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT,
-    TOKEN_SUPPLY_TYPE_LENDING,
+export const getOhmBackedSupply = (records: SupplyCategoryRecords, ohmIndex: number): SupplyValue => {
+  const includedTypes: TokenSupplyCategories[] = [
+    TokenSupplyCategories.TOTAL_SUPPLY,
+    TokenSupplyCategories.TREASURY,
+    TokenSupplyCategories.OFFSET,
+    TokenSupplyCategories.BONDS_PREMINTED,
+    TokenSupplyCategories.BONDS_VESTING_DEPOSITS,
+    TokenSupplyCategories.BONDS_DEPOSITS,
+    TokenSupplyCategories.LIQUIDITY,
+    TokenSupplyCategories.BOOSTED_LIQUIDITY_VAULT,
+    TokenSupplyCategories.LENDING,
   ];
 
-  return getSupplyBalanceForTypes(records, includedTypes, ohmIndex);
+  return getRecordsForTypes(records, includedTypes, ohmIndex);
 };
 
 /**
@@ -301,13 +358,62 @@ export const getOhmBackedSupply = (records: TokenSupply[], ohmIndex: number): [n
  * @param ohmIndex The index of OHM for the given day
  * @returns
  */
-export const getOhmTotalSupply = (records: TokenSupply[], ohmIndex: number): [number, TokenSupply[]] => {
-  return getSupplyBalanceForTypes(records, [TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY], ohmIndex);
+export const getOhmTotalSupply = (records: SupplyCategoryRecords, ohmIndex: number): SupplyValue => {
+  return getRecordsForTypes(records, [TokenSupplyCategories.TOTAL_SUPPLY], ohmIndex);
 }
 
 export const getGOhmBackedSupply = (backedSupply: number, ohmIndex: number): number => {
   return backedSupply / ohmIndex;
 }
+
+/**
+ * This function splits the TokenSupply records into categories, which makes calculating metrics
+ * more efficient.
+ * 
+ * @param records 
+ * @param ohmIndex 
+ * @returns 
+ */
+const getSupplyCategories = (records: TokenSupply[], ohmIndex: number): [SupplyCategoryValues, SupplyCategoryRecords] => {
+  const bondDeposits = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS], ohmIndex);
+  const bondPreminted = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BONDS_PREMINTED], ohmIndex);
+  const bondVestingDeposits = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS], ohmIndex);
+  const bondVestingTokens = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS], ohmIndex);
+  const liquidity = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_LIQUIDITY], ohmIndex);
+  const boostedLiquidityVault = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT], ohmIndex);
+  const offset = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_OFFSET], ohmIndex);
+  const totalSupply = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY], ohmIndex);
+  const treasury = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_TREASURY], ohmIndex);
+  const lending = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_LENDING], ohmIndex);
+
+  const supplyCategories: SupplyCategoryValues = {
+    [TokenSupplyCategories.BONDS_DEPOSITS]: bondDeposits[0],
+    [TokenSupplyCategories.BONDS_PREMINTED]: bondPreminted[0],
+    [TokenSupplyCategories.BONDS_VESTING_DEPOSITS]: bondVestingDeposits[0],
+    [TokenSupplyCategories.BONDS_VESTING_TOKENS]: bondVestingTokens[0],
+    [TokenSupplyCategories.LIQUIDITY]: liquidity[0],
+    [TokenSupplyCategories.BOOSTED_LIQUIDITY_VAULT]: boostedLiquidityVault[0],
+    [TokenSupplyCategories.OFFSET]: offset[0],
+    [TokenSupplyCategories.TOTAL_SUPPLY]: totalSupply[0],
+    [TokenSupplyCategories.TREASURY]: treasury[0],
+    [TokenSupplyCategories.LENDING]: lending[0],
+  };
+
+  const supplyCategoryRecords: SupplyCategoryRecords = {
+    [TokenSupplyCategories.BONDS_DEPOSITS]: bondDeposits[2],
+    [TokenSupplyCategories.BONDS_PREMINTED]: bondPreminted[2],
+    [TokenSupplyCategories.BONDS_VESTING_DEPOSITS]: bondVestingDeposits[2],
+    [TokenSupplyCategories.BONDS_VESTING_TOKENS]: bondVestingTokens[2],
+    [TokenSupplyCategories.LIQUIDITY]: liquidity[2],
+    [TokenSupplyCategories.BOOSTED_LIQUIDITY_VAULT]: boostedLiquidityVault[2],
+    [TokenSupplyCategories.OFFSET]: offset[2],
+    [TokenSupplyCategories.TOTAL_SUPPLY]: totalSupply[2],
+    [TokenSupplyCategories.TREASURY]: treasury[2],
+    [TokenSupplyCategories.LENDING]: lending[2],
+  };
+
+  return [supplyCategories, supplyCategoryRecords];
+};
 
 //
 // TokenRecord metrics
@@ -342,11 +448,8 @@ export const getLiquidBackingPerGOhmBacked = (liquidBacking: number, backedSuppl
   return liquidBacking / getGOhmBackedSupply(backedSupply, ohmIndex);
 }
 
-const filterByChain = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], chain: string): [TokenRecord[], TokenSupply[]] => {
-  const filteredRecords = tokenRecords.filter(record => record.blockchain === chain);
-  const filteredSupplies = tokenSupplies.filter(record => record.blockchain === chain);
-
-  return [filteredRecords, filteredSupplies];
+const filterTokenRecordsByChain = (tokenRecords: TokenRecord[], chain: string): TokenRecord[] => {
+  return tokenRecords.filter(record => record.blockchain === chain);
 }
 
 const getBlock = (tokenRecords: TokenRecord[]): number => {
@@ -370,46 +473,31 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
     return null;
   }
 
+  const block: number = +protocolMetrics[0].block;
   const ohmIndex: number = +protocolMetrics[0].currentIndex;
   const ohmApy: number = +protocolMetrics[0].currentAPY;
   const ohmPrice: number = +protocolMetrics[0].ohmPrice;
   const gOhmPrice: number = +protocolMetrics[0].gOhmPrice;
-  const ohmCirculatingSupply: number = getOhmCirculatingSupply(tokenSupplies, ohmIndex)[0];
-  const ohmFloatingSupply = getOhmFloatingSupply(tokenSupplies, ohmIndex);
-  const ohmBackedSupply = getOhmBackedSupply(tokenSupplies, ohmIndex);
+
+  const supplyCategories = getSupplyCategories(tokenSupplies, ohmIndex);
+
+  const ohmCirculatingSupply = getOhmCirculatingSupply(supplyCategories[1], block, ohmIndex);
+  const ohmFloatingSupply = getOhmFloatingSupply(supplyCategories[1], block, ohmIndex);
+  const ohmBackedSupply = getOhmBackedSupply(supplyCategories[1], ohmIndex);
+  const ohmTotalSupply = getOhmTotalSupply(supplyCategories[1], ohmIndex);
   const liquidBacking = getTreasuryAssetValue(tokenRecords, true);
 
   const sOhmCirculatingSupply: number = +protocolMetrics[0].sOhmCirculatingSupply;
   const sOhmTotalValueLocked: number = +protocolMetrics[0].totalValueLocked;
 
   // Obtain per-chain arrays
-  const [arbitrumTokenRecords, arbitrumTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_ARBITRUM);
-  const [ethereumTokenRecords, ethereumTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_ETHEREUM);
-  const [fantomTokenRecords, fantomTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_FANTOM);
-  const [polygonTokenRecords, polygonTokenSupplies] = filterByChain(tokenRecords, tokenSupplies, CHAIN_POLYGON);
-
-  // Per-chain supply
-  const ohmTotalSupplyArbitrum = getOhmTotalSupply(arbitrumTokenSupplies, ohmIndex);
-  const ohmTotalSupplyEthereum = getOhmTotalSupply(ethereumTokenSupplies, ohmIndex);
-  const ohmTotalSupplyFantom = getOhmTotalSupply(fantomTokenSupplies, ohmIndex);
-  const ohmTotalSupplyPolygon = getOhmTotalSupply(polygonTokenSupplies, ohmIndex);
-
-  const ohmCirculatingSupplyArbitrum = getOhmCirculatingSupply(arbitrumTokenSupplies, ohmIndex);
-  const ohmCirculatingSupplyEthereum = getOhmCirculatingSupply(ethereumTokenSupplies, ohmIndex);
-  const ohmCirculatingSupplyFantom = getOhmCirculatingSupply(fantomTokenSupplies, ohmIndex);
-  const ohmCirculatingSupplyPolygon = getOhmCirculatingSupply(polygonTokenSupplies, ohmIndex);
-
-  const ohmFloatingSupplyArbitrum = getOhmFloatingSupply(arbitrumTokenSupplies, ohmIndex);
-  const ohmFloatingSupplyEthereum = getOhmFloatingSupply(ethereumTokenSupplies, ohmIndex);
-  const ohmFloatingSupplyFantom = getOhmFloatingSupply(fantomTokenSupplies, ohmIndex);
-  const ohmFloatingSupplyPolygon = getOhmFloatingSupply(polygonTokenSupplies, ohmIndex);
-
-  const ohmBackedSupplyArbitrum = getOhmBackedSupply(arbitrumTokenSupplies, ohmIndex);
-  const ohmBackedSupplyEthereum = getOhmBackedSupply(ethereumTokenSupplies, ohmIndex);
-  const ohmBackedSupplyFantom = getOhmBackedSupply(fantomTokenSupplies, ohmIndex);
-  const ohmBackedSupplyPolygon = getOhmBackedSupply(polygonTokenSupplies, ohmIndex);
+  const arbitrumTokenRecords = filterTokenRecordsByChain(tokenRecords, CHAIN_ARBITRUM);
+  const ethereumTokenRecords = filterTokenRecordsByChain(tokenRecords, CHAIN_ETHEREUM);
+  const fantomTokenRecords = filterTokenRecordsByChain(tokenRecords, CHAIN_FANTOM);
+  const polygonTokenRecords = filterTokenRecordsByChain(tokenRecords, CHAIN_POLYGON);
 
   // Per-chain token records
+  // TODO merge per-chain values into a single object, like with SupplyValue
   const marketValueArbitrum = getTreasuryAssetValue(arbitrumTokenRecords, false);
   const marketValueEthereum = getTreasuryAssetValue(ethereumTokenRecords, false);
   const marketValueFantom = getTreasuryAssetValue(fantomTokenRecords, false);
@@ -423,107 +511,108 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
   return {
     date: tokenRecords[0].date,
     blocks: {
-      [CHAIN_ARBITRUM]: getBlock(arbitrumTokenRecords),
-      [CHAIN_ETHEREUM]: getBlock(ethereumTokenRecords),
-      [CHAIN_FANTOM]: getBlock(fantomTokenRecords),
-      [CHAIN_POLYGON]: getBlock(polygonTokenRecords),
+      [Chains.ARBITRUM]: getBlock(arbitrumTokenRecords),
+      [Chains.ETHEREUM]: getBlock(ethereumTokenRecords),
+      [Chains.FANTOM]: getBlock(fantomTokenRecords),
+      [Chains.POLYGON]: getBlock(polygonTokenRecords),
     },
     timestamps: {
-      [CHAIN_ARBITRUM]: getTimestamp(arbitrumTokenRecords),
-      [CHAIN_ETHEREUM]: getTimestamp(ethereumTokenRecords),
-      [CHAIN_FANTOM]: getTimestamp(fantomTokenRecords),
-      [CHAIN_POLYGON]: getTimestamp(polygonTokenRecords),
+      [Chains.ARBITRUM]: getTimestamp(arbitrumTokenRecords),
+      [Chains.ETHEREUM]: getTimestamp(ethereumTokenRecords),
+      [Chains.FANTOM]: getTimestamp(fantomTokenRecords),
+      [Chains.POLYGON]: getTimestamp(polygonTokenRecords),
     },
     ohmIndex: ohmIndex,
     ohmApy: ohmApy,
-    ohmTotalSupply: getOhmTotalSupply(tokenSupplies, ohmIndex)[0],
+    ohmTotalSupply: ohmTotalSupply.supplyBalance,
     ohmTotalSupplyComponents: {
-      [CHAIN_ARBITRUM]: ohmTotalSupplyArbitrum[0],
-      [CHAIN_ETHEREUM]: ohmTotalSupplyEthereum[0],
-      [CHAIN_FANTOM]: ohmTotalSupplyFantom[0],
-      [CHAIN_POLYGON]: ohmTotalSupplyPolygon[0],
+      [Chains.ARBITRUM]: ohmTotalSupply.chainSupplyBalances.Arbitrum,
+      [Chains.ETHEREUM]: ohmTotalSupply.chainSupplyBalances.Ethereum,
+      [Chains.FANTOM]: ohmTotalSupply.chainSupplyBalances.Fantom,
+      [Chains.POLYGON]: ohmTotalSupply.chainSupplyBalances.Polygon,
     },
-    ohmCirculatingSupply: ohmCirculatingSupply,
+    ohmCirculatingSupply: ohmCirculatingSupply.supplyBalance,
     ohmCirculatingSupplyComponents: {
-      [CHAIN_ARBITRUM]: ohmCirculatingSupplyArbitrum[0],
-      [CHAIN_ETHEREUM]: ohmCirculatingSupplyEthereum[0],
-      [CHAIN_FANTOM]: ohmCirculatingSupplyFantom[0],
-      [CHAIN_POLYGON]: ohmCirculatingSupplyPolygon[0],
+      [Chains.ARBITRUM]: ohmCirculatingSupply.chainSupplyBalances.Arbitrum,
+      [Chains.ETHEREUM]: ohmCirculatingSupply.chainSupplyBalances.Ethereum,
+      [Chains.FANTOM]: ohmCirculatingSupply.chainSupplyBalances.Fantom,
+      [Chains.POLYGON]: ohmCirculatingSupply.chainSupplyBalances.Polygon,
     },
-    ohmFloatingSupply: getOhmFloatingSupply(tokenSupplies, ohmIndex)[0],
+    ohmFloatingSupply: ohmFloatingSupply.supplyBalance,
     ohmFloatingSupplyComponents: {
-      [CHAIN_ARBITRUM]: ohmFloatingSupplyArbitrum[0],
-      [CHAIN_ETHEREUM]: ohmFloatingSupplyEthereum[0],
-      [CHAIN_FANTOM]: ohmFloatingSupplyFantom[0],
-      [CHAIN_POLYGON]: ohmFloatingSupplyPolygon[0],
+      [Chains.ARBITRUM]: ohmFloatingSupply.chainSupplyBalances.Arbitrum,
+      [Chains.ETHEREUM]: ohmFloatingSupply.chainSupplyBalances.Ethereum,
+      [Chains.FANTOM]: ohmFloatingSupply.chainSupplyBalances.Fantom,
+      [Chains.POLYGON]: ohmFloatingSupply.chainSupplyBalances.Polygon,
     },
-    ohmBackedSupply: ohmBackedSupply[0],
-    gOhmBackedSupply: getGOhmBackedSupply(ohmBackedSupply[0], ohmIndex),
+    ohmBackedSupply: ohmBackedSupply.supplyBalance,
+    gOhmBackedSupply: getGOhmBackedSupply(ohmBackedSupply.supplyBalance, ohmIndex),
     ohmBackedSupplyComponents: {
-      [CHAIN_ARBITRUM]: ohmBackedSupplyArbitrum[0],
-      [CHAIN_ETHEREUM]: ohmBackedSupplyEthereum[0],
-      [CHAIN_FANTOM]: ohmBackedSupplyFantom[0],
-      [CHAIN_POLYGON]: ohmBackedSupplyPolygon[0],
+      [Chains.ARBITRUM]: ohmBackedSupply.chainSupplyBalances.Arbitrum,
+      [Chains.ETHEREUM]: ohmBackedSupply.chainSupplyBalances.Ethereum,
+      [Chains.FANTOM]: ohmBackedSupply.chainSupplyBalances.Fantom,
+      [Chains.POLYGON]: ohmBackedSupply.chainSupplyBalances.Polygon,
     },
+    ohmSupplyCategories: supplyCategories[0],
     ohmPrice: ohmPrice,
     gOhmPrice: gOhmPrice,
-    marketCap: ohmPrice * ohmCirculatingSupply,
+    marketCap: ohmPrice * ohmCirculatingSupply.supplyBalance,
     sOhmCirculatingSupply: sOhmCirculatingSupply,
     sOhmTotalValueLocked: sOhmTotalValueLocked,
     treasuryMarketValue: getTreasuryAssetValue(tokenRecords, false)[0],
     treasuryMarketValueComponents: {
-      [CHAIN_ARBITRUM]: marketValueArbitrum[0],
-      [CHAIN_ETHEREUM]: marketValueEthereum[0],
-      [CHAIN_FANTOM]: marketValueFantom[0],
-      [CHAIN_POLYGON]: marketValuePolygon[0],
+      [Chains.ARBITRUM]: marketValueArbitrum[0],
+      [Chains.ETHEREUM]: marketValueEthereum[0],
+      [Chains.FANTOM]: marketValueFantom[0],
+      [Chains.POLYGON]: marketValuePolygon[0],
     },
     treasuryLiquidBacking: liquidBacking[0],
     treasuryLiquidBackingComponents: {
-      [CHAIN_ARBITRUM]: liquidBackingArbitrum[0],
-      [CHAIN_ETHEREUM]: liquidBackingEthereum[0],
-      [CHAIN_FANTOM]: liquidBackingFantom[0],
-      [CHAIN_POLYGON]: liquidBackingPolygon[0],
+      [Chains.ARBITRUM]: liquidBackingArbitrum[0],
+      [Chains.ETHEREUM]: liquidBackingEthereum[0],
+      [Chains.FANTOM]: liquidBackingFantom[0],
+      [Chains.POLYGON]: liquidBackingPolygon[0],
     },
-    treasuryLiquidBackingPerOhmFloating: getLiquidBackingPerOhmFloating(liquidBacking[0], ohmFloatingSupply[0]),
-    treasuryLiquidBackingPerOhmBacked: getLiquidBackingPerOhmBacked(liquidBacking[0], ohmBackedSupply[0]),
-    treasuryLiquidBackingPerGOhmBacked: getLiquidBackingPerGOhmBacked(liquidBacking[0], ohmBackedSupply[0], ohmIndex),
+    treasuryLiquidBackingPerOhmFloating: getLiquidBackingPerOhmFloating(liquidBacking[0], ohmFloatingSupply.supplyBalance),
+    treasuryLiquidBackingPerOhmBacked: getLiquidBackingPerOhmBacked(liquidBacking[0], ohmBackedSupply.supplyBalance),
+    treasuryLiquidBackingPerGOhmBacked: getLiquidBackingPerGOhmBacked(liquidBacking[0], ohmBackedSupply.supplyBalance, ohmIndex),
     // Optional properties
     ...includeRecords ? {
       ohmTotalSupplyRecords: {
-        [CHAIN_ARBITRUM]: ohmTotalSupplyArbitrum[1],
-        [CHAIN_ETHEREUM]: ohmTotalSupplyEthereum[1],
-        [CHAIN_FANTOM]: ohmTotalSupplyFantom[1],
-        [CHAIN_POLYGON]: ohmTotalSupplyPolygon[1],
+        [Chains.ARBITRUM]: ohmTotalSupply.chainRecords.Arbitrum,
+        [Chains.ETHEREUM]: ohmTotalSupply.chainRecords.Ethereum,
+        [Chains.FANTOM]: ohmTotalSupply.chainRecords.Fantom,
+        [Chains.POLYGON]: ohmTotalSupply.chainRecords.Polygon,
       },
       ohmCirculatingSupplyRecords: {
-        [CHAIN_ARBITRUM]: ohmCirculatingSupplyArbitrum[1],
-        [CHAIN_ETHEREUM]: ohmCirculatingSupplyEthereum[1],
-        [CHAIN_FANTOM]: ohmCirculatingSupplyFantom[1],
-        [CHAIN_POLYGON]: ohmCirculatingSupplyPolygon[1],
+        [Chains.ARBITRUM]: ohmCirculatingSupply.chainRecords.Arbitrum,
+        [Chains.ETHEREUM]: ohmCirculatingSupply.chainRecords.Ethereum,
+        [Chains.FANTOM]: ohmCirculatingSupply.chainRecords.Fantom,
+        [Chains.POLYGON]: ohmCirculatingSupply.chainRecords.Polygon,
       },
       ohmFloatingSupplyRecords: {
-        [CHAIN_ARBITRUM]: ohmFloatingSupplyArbitrum[1],
-        [CHAIN_ETHEREUM]: ohmFloatingSupplyEthereum[1],
-        [CHAIN_FANTOM]: ohmFloatingSupplyFantom[1],
-        [CHAIN_POLYGON]: ohmFloatingSupplyPolygon[1],
+        [Chains.ARBITRUM]: ohmFloatingSupply.chainRecords.Arbitrum,
+        [Chains.ETHEREUM]: ohmFloatingSupply.chainRecords.Ethereum,
+        [Chains.FANTOM]: ohmFloatingSupply.chainRecords.Fantom,
+        [Chains.POLYGON]: ohmFloatingSupply.chainRecords.Polygon,
       },
       ohmBackedSupplyRecords: {
-        [CHAIN_ARBITRUM]: ohmBackedSupplyArbitrum[1],
-        [CHAIN_ETHEREUM]: ohmBackedSupplyEthereum[1],
-        [CHAIN_FANTOM]: ohmBackedSupplyFantom[1],
-        [CHAIN_POLYGON]: ohmBackedSupplyPolygon[1],
+        [Chains.ARBITRUM]: ohmBackedSupply.chainRecords.Arbitrum,
+        [Chains.ETHEREUM]: ohmBackedSupply.chainRecords.Ethereum,
+        [Chains.FANTOM]: ohmBackedSupply.chainRecords.Fantom,
+        [Chains.POLYGON]: ohmBackedSupply.chainRecords.Polygon,
       },
       treasuryMarketValueRecords: {
-        [CHAIN_ARBITRUM]: marketValueArbitrum[1],
-        [CHAIN_ETHEREUM]: marketValueEthereum[1],
-        [CHAIN_FANTOM]: marketValueFantom[1],
-        [CHAIN_POLYGON]: marketValuePolygon[1],
+        [Chains.ARBITRUM]: marketValueArbitrum[1],
+        [Chains.ETHEREUM]: marketValueEthereum[1],
+        [Chains.FANTOM]: marketValueFantom[1],
+        [Chains.POLYGON]: marketValuePolygon[1],
       },
       treasuryLiquidBackingRecords: {
-        [CHAIN_ARBITRUM]: liquidBackingArbitrum[1],
-        [CHAIN_ETHEREUM]: liquidBackingEthereum[1],
-        [CHAIN_FANTOM]: liquidBackingFantom[1],
-        [CHAIN_POLYGON]: liquidBackingPolygon[1],
+        [Chains.ARBITRUM]: liquidBackingArbitrum[1],
+        [Chains.ETHEREUM]: liquidBackingEthereum[1],
+        [Chains.FANTOM]: liquidBackingFantom[1],
+        [Chains.POLYGON]: liquidBackingPolygon[1],
       },
     } : {},
   }
