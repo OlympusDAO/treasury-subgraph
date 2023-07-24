@@ -192,13 +192,13 @@ const getTokenSupplyRecordsForTypes = (
  * For example, passing [TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_TREASURY]
  * in the {includedTypes} parameter will return:
  * - sum of the balance property for all records with matching types
- * - sum of the supplyBalance property for all records with matching types
- * - all records with matching types
+ * - sum of the supplyBalance property for all records with matching types (with a per-chain breakdown)
+ * - all records with matching types (with a per-chain breakdown)
  *
  * @param records SupplyCategoryRecords records for the given day
  * @param includedTypes
  * @param ohmIndex The index of OHM for the given day
- * @returns [balance, supply balance, included records]
+ * @returns
  */
 const getRecordsForTypes = (
   records: SupplyCategoryRecords,
@@ -210,15 +210,18 @@ const getRecordsForTypes = (
     const currentTypeRecords: TokenSupply[] = records[currentType];
     const previousChainRecords: ChainSupplies = previousRecords[1];
 
-    const allRecords = [...previousRecords[0], ...currentTypeRecords];
-    const allChainRecords: ChainSupplies = {
+    // Add the records for the current type to the existing array
+    const newRecords = [...previousRecords[0], ...currentTypeRecords];
+
+    // Add the records for the current type to the existing array for each chain
+    const newChainRecords: ChainSupplies = {
       [Chains.ARBITRUM]: [...previousChainRecords[Chains.ARBITRUM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_ARBITRUM)],
       [Chains.ETHEREUM]: [...previousChainRecords[Chains.ETHEREUM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_ETHEREUM)],
       [Chains.FANTOM]: [...previousChainRecords[Chains.FANTOM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_FANTOM)],
       [Chains.POLYGON]: [...previousChainRecords[Chains.POLYGON], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_POLYGON)],
     };
 
-    return [allRecords, allChainRecords];
+    return [newRecords, newChainRecords];
   }, [[] as TokenSupply[], {
     [Chains.ARBITRUM]: [] as TokenSupply[],
     [Chains.ETHEREUM]: [] as TokenSupply[],
@@ -226,7 +229,10 @@ const getRecordsForTypes = (
     [Chains.POLYGON]: [] as TokenSupply[],
   } as ChainSupplies]);
 
+  // Sum to get the balance and supply balance
   const [balance, supplyBalance] = getBalancesForTypes(includedRecords, ohmIndex);
+
+  // Calculate the per-chain supply balances
   const chainSupplyBalances = {
     [Chains.ARBITRUM]: getBalancesForTypes(chainSupplies[Chains.ARBITRUM], ohmIndex)[1],
     [Chains.ETHEREUM]: getBalancesForTypes(chainSupplies[Chains.ETHEREUM], ohmIndex)[1],
@@ -430,6 +436,14 @@ const getSupplyCategories = (records: TokenSupply[], ohmIndex: number): [SupplyC
 // TokenRecord metrics
 //
 
+/**
+ * Calculates the market value or liquid backing for the given records.
+ * 
+ * @param records 
+ * @param liquidBacking 
+ * @param categories 
+ * @returns 
+ */
 const getTreasuryAssetValue = (
   records: TokenRecord[],
   liquidBacking: boolean,
@@ -447,22 +461,23 @@ const getTreasuryAssetValue = (
     }
 
     const currentValue: number = liquidBacking ? +currentRecord.valueExcludingOhm : +currentRecord.value;
-    const currentTotalValue = previousTotalValue + currentValue;
-    const currentRecords = [...previousAllRecords, currentRecord];
-    const currentChainValues: ChainValues = {
+
+    const newTotalValue: number = previousTotalValue + currentValue;
+    const newRecords = [...previousAllRecords, currentRecord];
+    const newChainValues: ChainValues = {
       [Chains.ARBITRUM]: previousChainValues[Chains.ARBITRUM] + (currentRecord.blockchain === CHAIN_ARBITRUM ? currentValue : 0),
       [Chains.ETHEREUM]: previousChainValues[Chains.ETHEREUM] + (currentRecord.blockchain === CHAIN_ETHEREUM ? currentValue : 0),
       [Chains.FANTOM]: previousChainValues[Chains.FANTOM] + (currentRecord.blockchain === CHAIN_FANTOM ? currentValue : 0),
       [Chains.POLYGON]: previousChainValues[Chains.POLYGON] + (currentRecord.blockchain === CHAIN_POLYGON ? currentValue : 0),
     };
-    const currentChainRecords: ChainRecords = {
+    const newChainRecords: ChainRecords = {
       [Chains.ARBITRUM]: [...previousChainRecords[Chains.ARBITRUM], ...(currentRecord.blockchain === CHAIN_ARBITRUM ? [currentRecord] : [])],
       [Chains.ETHEREUM]: [...previousChainRecords[Chains.ETHEREUM], ...(currentRecord.blockchain === CHAIN_ETHEREUM ? [currentRecord] : [])],
       [Chains.FANTOM]: [...previousChainRecords[Chains.FANTOM], ...(currentRecord.blockchain === CHAIN_FANTOM ? [currentRecord] : [])],
       [Chains.POLYGON]: [...previousChainRecords[Chains.POLYGON], ...(currentRecord.blockchain === CHAIN_POLYGON ? [currentRecord] : [])],
     };
 
-    return [currentTotalValue, currentRecords, currentChainValues, currentChainRecords];
+    return [newTotalValue, newRecords, newChainValues, newChainRecords];
   }, [
     0,
     [] as TokenRecord[],
@@ -482,6 +497,12 @@ const getTreasuryAssetValue = (
   return [totalValue, allRecords, chainValues, chainRecords];
 };
 
+/**
+ * Used to efficiently calculate the market value and liquid backing.
+ * 
+ * @param records 
+ * @returns 
+ */
 const getAssetValues = (
   records: TokenRecord[],
 ): AssetValue => {
@@ -508,10 +529,6 @@ export const getLiquidBackingPerOhmFloating = (liquidBacking: number, floatingSu
 
 export const getLiquidBackingPerGOhmBacked = (liquidBacking: number, backedSupply: number, ohmIndex: number) => {
   return liquidBacking / getGOhmBackedSupply(backedSupply, ohmIndex);
-}
-
-const filterTokenRecordsByChain = (tokenRecords: TokenRecord[], chain: string): TokenRecord[] => {
-  return tokenRecords.filter(record => record.blockchain === chain);
 }
 
 const getBlock = (tokenRecords: TokenRecord[]): number => {
@@ -552,26 +569,19 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
   const sOhmCirculatingSupply: number = +protocolMetrics[0].sOhmCirculatingSupply;
   const sOhmTotalValueLocked: number = +protocolMetrics[0].totalValueLocked;
 
-  // Obtain per-chain arrays
-  // TODO remove
-  const arbitrumTokenRecords = filterTokenRecordsByChain(tokenRecords, CHAIN_ARBITRUM);
-  const ethereumTokenRecords = filterTokenRecordsByChain(tokenRecords, CHAIN_ETHEREUM);
-  const fantomTokenRecords = filterTokenRecordsByChain(tokenRecords, CHAIN_FANTOM);
-  const polygonTokenRecords = filterTokenRecordsByChain(tokenRecords, CHAIN_POLYGON);
-
   return {
     date: tokenRecords[0].date,
     blocks: {
-      [Chains.ARBITRUM]: getBlock(arbitrumTokenRecords),
-      [Chains.ETHEREUM]: getBlock(ethereumTokenRecords),
-      [Chains.FANTOM]: getBlock(fantomTokenRecords),
-      [Chains.POLYGON]: getBlock(polygonTokenRecords),
+      [Chains.ARBITRUM]: getBlock(assetValues.marketValueChainRecords.Arbitrum),
+      [Chains.ETHEREUM]: getBlock(assetValues.marketValueChainRecords.Ethereum),
+      [Chains.FANTOM]: getBlock(assetValues.marketValueChainRecords.Fantom),
+      [Chains.POLYGON]: getBlock(assetValues.marketValueChainRecords.Polygon),
     },
     timestamps: {
-      [Chains.ARBITRUM]: getTimestamp(arbitrumTokenRecords),
-      [Chains.ETHEREUM]: getTimestamp(ethereumTokenRecords),
-      [Chains.FANTOM]: getTimestamp(fantomTokenRecords),
-      [Chains.POLYGON]: getTimestamp(polygonTokenRecords),
+      [Chains.ARBITRUM]: getTimestamp(assetValues.marketValueChainRecords.Arbitrum),
+      [Chains.ETHEREUM]: getTimestamp(assetValues.marketValueChainRecords.Ethereum),
+      [Chains.FANTOM]: getTimestamp(assetValues.marketValueChainRecords.Fantom),
+      [Chains.POLYGON]: getTimestamp(assetValues.marketValueChainRecords.Polygon),
     },
     ohmIndex: ohmIndex,
     ohmApy: ohmApy,
