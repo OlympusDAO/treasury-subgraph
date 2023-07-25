@@ -72,3 +72,27 @@ export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockch
 
   return combinedRecords;
 };
+
+/**
+ * Determines whether the data across chains is complete.
+ * 
+ * It determines this by checking if the date of the records across chains is the same.
+ * 
+ * Assumptions:
+ * - The data is sorted in descending order and for the same day
+ * - Ethereum and Arbitrum have OHM supply, so we only check those two chains
+ * 
+ * @param arbitrumRecords 
+ * @param ethereumRecords 
+ * @returns 
+ */
+export const isCrossChainSupplyDataComplete = (arbitrumRecords: TokenSupply[], ethereumRecords: TokenSupply[]): boolean => {
+  if (!arbitrumRecords.length || !ethereumRecords.length) {
+    return false;
+  }
+
+  const arbitrumDate = arbitrumRecords[0].date;
+  const ethereumDate = ethereumRecords[0].date;
+
+  return arbitrumDate === ethereumDate;
+}

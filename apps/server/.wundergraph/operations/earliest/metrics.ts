@@ -10,7 +10,8 @@ export default createOperation.query({
   handler: async (ctx) => {
     console.log(`Commencing earliest query for Metric`);
 
-    // Get the latest block for each blockchain
+    // Get the earliest block for each blockchain
+    // TODO what if the earliest date is missing cross-chain data?
     const latestQueryResult = await ctx.operations.query({
       operationName: "earliest/tokenRecords",
     });
@@ -32,7 +33,7 @@ export default createOperation.query({
     };
 
     const protocolMetricsQueryResult = await ctx.operations.query({
-      operationName: "atBlock/protocolMetrics",
+      operationName: "atBlock/internal/protocolMetrics",
       input: input,
     });
 

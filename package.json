@@ -13,7 +13,7 @@
     "lint": "turbo lint",
     "server:start": "cd apps/server && dotenv -e ../../.env -- yarn start",
     "changelog": "cd apps/client && yarn changelog",
-    "publish-package": "turbo publish-package",
+    "publish-package": "dotenv -e .env -- turbo publish-package",
     "depcheck": "syncpack",
     "depcheck:fix": "syncpack fix-mismatches",
     "test": "turbo test",
