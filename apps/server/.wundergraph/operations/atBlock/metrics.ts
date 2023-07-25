@@ -22,7 +22,7 @@ export default createOperation.query({
     };
 
     const protocolMetricsQueryResult = await ctx.operations.query({
-      operationName: "atBlock/protocolMetrics",
+      operationName: "atBlock/internal/protocolMetrics",
       input: input,
     });
 

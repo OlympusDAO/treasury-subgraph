@@ -17,16 +17,23 @@ extend type TokenSupply {
 }
 `;
 
+const resolveSubgraphUrl = (url: string): string => {
+	if (!process.env.ARBITRUM_SUBGRAPH_API_KEY) {
+		throw new Error("ARBITRUM_SUBGRAPH_API_KEY is not set");
+	}
+
+	return url.replace("[api-key]", process.env.ARBITRUM_SUBGRAPH_API_KEY);
+};
+
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
-	// SUBGRAPH_API_KEY needs to be injected at runtime
-	url: `https://gateway.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/deployments/id/QmfC7nn4agkCjpgsjVdcCkKiKoGiu97yQTQSG1z7EaNnxd`, // 4.8.4
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmRwdXDRS3JQEcrAYKWcSrDnH46xhR9unTBDDGAJFg5mCT"), // 4.9.2
 	schemaExtension: schemaExtension,
 });
 
 const treasuryArbitrum = introspect.graphql({
 	apiNamespace: "treasuryArbitrum",
-	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-arbitrum",
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmXVMuS639JzTTq9ZVkRnGFTftiYJ8c6FPrB52qCshSnFa"), // 1.5.3
 	schemaExtension: schemaExtension,
 });
 

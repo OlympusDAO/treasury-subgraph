@@ -11,6 +11,7 @@ export default createOperation.query({
     console.log(`Commencing latest query for Metric`);
 
     // Get the latest block for each blockchain
+    // TODO what if the latest date is missing cross-chain data?
     const latestQueryResult = await ctx.operations.query({
       operationName: "latest/tokenRecords",
     });
@@ -32,7 +33,7 @@ export default createOperation.query({
     };
 
     const protocolMetricsQueryResult = await ctx.operations.query({
-      operationName: "atBlock/protocolMetrics",
+      operationName: "atBlock/internal/protocolMetrics",
       input: input,
     });
 

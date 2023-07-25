@@ -45,6 +45,20 @@ describe("paginated", () => {
     expect(recordLength).toBeGreaterThan(0);
   });
 
+  test("returns results when crossChainDataComplete is true", async () => {
+    const result = await wg.client().query({
+      operationName: "paginated/tokenRecords",
+      input: {
+        startDate: getStartDate(-5),
+        crossChainDataComplete: true,
+      }
+    });
+
+    const records = result.data;
+    const recordLength = records ? records.length : 0;
+    expect(recordLength).toBeGreaterThan(0);
+  });
+
   test("returns blockchain property for Arbitrum", async () => {
     const result = await wg.client().query({
       operationName: "paginated/tokenRecords",

@@ -12,6 +12,10 @@ export default createOperation.query({
   input: z.object({
     startDate: z.string({ description: "The start date in the YYYY-MM-DD format." }),
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
+    // Provides the option to restrict to ensure consistency of dates across chains
+    crossChainDataComplete: z.boolean({ description: "If true, returns data for the most recent day in which all subgraphs have data." }).optional(),
+    // Returns the records used to calculate each metric. This is disabled by default, as it can be a lot of data.
+    includeRecords: z.boolean({ description: "If true, includes the records used to calculate each metric." }).optional(),
   }),
   handler: async (ctx) => {
     console.log(`Commencing paginated query for Metric`);
@@ -57,6 +61,7 @@ export default createOperation.query({
       input: {
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
+        crossChainDataComplete: ctx.input.crossChainDataComplete,
       },
     });
 
@@ -82,6 +87,7 @@ export default createOperation.query({
       input: {
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
+        crossChainDataComplete: ctx.input.crossChainDataComplete,
       },
     });
 
@@ -104,7 +110,7 @@ export default createOperation.query({
 
     // Convert into new Metric objects
     byDateRecords.forEach((recordContainer, date) => {
-      const metricRecord: Metric | null = getMetricObject(recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics);
+      const metricRecord: Metric | null = getMetricObject(recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, ctx.input.includeRecords);
       if (!metricRecord) {
         console.log(`Skipping date ${date} because it is missing data.`);
         return;
