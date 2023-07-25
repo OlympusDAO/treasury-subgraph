@@ -19,15 +19,13 @@ extend type TokenSupply {
 
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
-	// SUBGRAPH_API_KEY needs to be injected at runtime
-	url: `https://gateway.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/deployments/id/QmfC7nn4agkCjpgsjVdcCkKiKoGiu97yQTQSG1z7EaNnxd`, // 4.8.4
+	url: `https://gateway.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/deployments/id/QmRwdXDRS3JQEcrAYKWcSrDnH46xhR9unTBDDGAJFg5mCT`, // 4.9.2
 	schemaExtension: schemaExtension,
 });
 
 const treasuryArbitrum = introspect.graphql({
 	apiNamespace: "treasuryArbitrum",
-	// TODO shift to production URL
-	url: "https://api.studio.thegraph.com/query/46563/protocol-metrics-arbitrum/version/latest",
+	url: `https://gateway.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/deployments/id/QmXVMuS639JzTTq9ZVkRnGFTftiYJ8c6FPrB52qCshSnFa`, // 1.5.3
 	schemaExtension: schemaExtension,
 });
 
