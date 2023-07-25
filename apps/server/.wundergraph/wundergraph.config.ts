@@ -17,15 +17,23 @@ extend type TokenSupply {
 }
 `;
 
+const resolveSubgraphUrl = (url: string): string => {
+	if (!process.env.ARBITRUM_SUBGRAPH_API_KEY) {
+		throw new Error("ARBITRUM_SUBGRAPH_API_KEY is not set");
+	}
+
+	return url.replace("[api-key]", process.env.ARBITRUM_SUBGRAPH_API_KEY);
+};
+
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
-	url: `https://gateway.thegraph.com/api/${process.env.ARBITRUM_SUBGRAPH_API_KEY}/deployments/id/QmRwdXDRS3JQEcrAYKWcSrDnH46xhR9unTBDDGAJFg5mCT`, // 4.9.2
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmRwdXDRS3JQEcrAYKWcSrDnH46xhR9unTBDDGAJFg5mCT"), // 4.9.2
 	schemaExtension: schemaExtension,
 });
 
 const treasuryArbitrum = introspect.graphql({
 	apiNamespace: "treasuryArbitrum",
-	url: `https://gateway.thegraph.com/api/${process.env.ARBITRUM_SUBGRAPH_API_KEY}/deployments/id/QmXVMuS639JzTTq9ZVkRnGFTftiYJ8c6FPrB52qCshSnFa`, // 1.5.3
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmXVMuS639JzTTq9ZVkRnGFTftiYJ8c6FPrB52qCshSnFa"), // 1.5.3
 	schemaExtension: schemaExtension,
 });
 
