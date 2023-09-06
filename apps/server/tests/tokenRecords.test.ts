@@ -9,7 +9,7 @@ const wg = createTestServer();
 
 beforeAll(async () => {
   await wg.start();
-});
+}, 10 * 1000);
 
 afterAll(async () => {
   await wg.stop();
@@ -228,10 +228,10 @@ describe("atBlock", () => {
     const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
 
     // Check that the block is the same
-    expect(arbitrumResult?.block).toEqual(arbitrumRawBlock);
-    expect(ethereumResult?.block).toEqual(ethereumRawBlock);
-    expect(fantomResult?.block).toEqual(fantomRawBlock);
-    expect(polygonResult?.block).toEqual(polygonRawBlock);
+    expect(parseNumber(arbitrumResult?.block)).toEqual(arbitrumRawBlock);
+    expect(parseNumber(ethereumResult?.block)).toEqual(ethereumRawBlock);
+    expect(parseNumber(fantomResult?.block)).toEqual(fantomRawBlock);
+    expect(parseNumber(polygonResult?.block)).toEqual(polygonRawBlock);
   });
 });
 
