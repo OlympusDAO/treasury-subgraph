@@ -13,11 +13,10 @@
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
-    "turbo": "^1.9.3",
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@wundergraph/sdk": "^0.169.0",
+    "@wundergraph/sdk": "^0.177.0",
     "date-fns": "^2.30.0"
   },
   "scripts": {
