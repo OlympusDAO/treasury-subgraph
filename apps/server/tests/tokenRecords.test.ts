@@ -3,6 +3,7 @@ import { createTestServer } from "../.wundergraph/generated/testing";
 import { getISO8601DateString } from "./dateHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
 import { getFirstRecord } from "./tokenRecordHelper";
+import { parseNumber } from "./numberHelper";
 
 const wg = createTestServer();
 
@@ -200,22 +201,22 @@ describe("atBlock", () => {
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = getFirstRecord(rawResult.data, CHAIN_ARBITRUM, startDate);
-    const arbitrumRawBlock = arbitrumRawResult?.block || "0";
+    const arbitrumRawBlock = parseNumber(arbitrumRawResult?.block);
     const ethereumRawResult = getFirstRecord(rawResult.data, CHAIN_ETHEREUM, startDate);
-    const ethereumRawBlock = ethereumRawResult?.block || "0";
+    const ethereumRawBlock = parseNumber(ethereumRawResult?.block);
     const fantomRawResult = getFirstRecord(rawResult.data, CHAIN_FANTOM, startDate);
-    const fantomRawBlock = fantomRawResult?.block || "0";
+    const fantomRawBlock = parseNumber(fantomRawResult?.block);
     const polygonRawResult = getFirstRecord(rawResult.data, CHAIN_POLYGON, startDate);
-    const polygonRawBlock = polygonRawResult?.block || "0";
+    const polygonRawBlock = parseNumber(polygonRawResult?.block);
 
     // Grab the results from the earliest operation
     const result = await wg.client().query({
       operationName: "atBlock/tokenRecords",
       input: {
-        arbitrumBlock: parseInt(arbitrumRawBlock),
-        ethereumBlock: parseInt(ethereumRawBlock),
-        fantomBlock: parseInt(fantomRawBlock),
-        polygonBlock: parseInt(polygonRawBlock),
+        arbitrumBlock: arbitrumRawBlock,
+        ethereumBlock: ethereumRawBlock,
+        fantomBlock: fantomRawBlock,
+        polygonBlock: polygonRawBlock,
       }
     });
 

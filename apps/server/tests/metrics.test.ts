@@ -6,6 +6,7 @@ import { getSupplyBalanceForTypes } from "./metricsHelper";
 import { TokenRecord, filterReduce, filter as filterTokenRecords, getFirstRecord as getFirstTokenRecord } from "./tokenRecordHelper";
 import { TokenSupply, filter as filterTokenSupplies, getFirstRecord as getFirstTokenSupplies } from "./tokenSupplyHelper";
 import { ProtocolMetric } from "./protocolMetricHelper";
+import { parseNumber } from "./numberHelper";
 
 const wg = createTestServer();
 
@@ -141,17 +142,17 @@ describe("latest", () => {
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenRecords[0];
-    const arbitrumRawBlock: number = arbitrumRawResult?.block ? parseInt(arbitrumRawResult.block) : 0;
-    const arbitrumRawTimestamp: number = arbitrumRawResult?.timestamp ? parseInt(arbitrumRawResult.timestamp) : 0;
+    const arbitrumRawBlock: number = parseNumber(arbitrumRawResult?.block);
+    const arbitrumRawTimestamp: number = parseNumber(arbitrumRawResult?.timestamp);
     const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenRecords[0];
-    const ethereumRawBlock: number = ethereumRawResult?.block ? parseInt(ethereumRawResult.block) : 0;
-    const ethereumRawTimestamp: number = ethereumRawResult?.timestamp ? parseInt(ethereumRawResult.timestamp) : 0;
+    const ethereumRawBlock: number = parseNumber(ethereumRawResult?.block);
+    const ethereumRawTimestamp: number = parseNumber(ethereumRawResult?.timestamp);
     const fantomRawResult = rawResult.data?.treasuryFantom_tokenRecords[0];
-    const fantomRawBlock: number = fantomRawResult?.block ? parseInt(fantomRawResult.block) : 0;
-    const fantomRawTimestamp: number = fantomRawResult?.timestamp ? parseInt(fantomRawResult.timestamp) : 0;
+    const fantomRawBlock: number = parseNumber(fantomRawResult?.block);
+    const fantomRawTimestamp: number = parseNumber(fantomRawResult?.timestamp);
     const polygonRawResult = rawResult.data?.treasuryPolygon_tokenRecords[0];
-    const polygonRawBlock: number = polygonRawResult?.block ? parseInt(polygonRawResult.block) : 0;
-    const polygonRawTimestamp: number = polygonRawResult?.timestamp ? parseInt(polygonRawResult.timestamp) : 0;
+    const polygonRawBlock: number = parseNumber(polygonRawResult?.block);
+    const polygonRawTimestamp: number = parseNumber(polygonRawResult?.timestamp);
 
     // Grab the results from the latest operation
     const result = await wg.client().query({
@@ -186,17 +187,17 @@ describe("earliest", () => {
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenRecords[0];
-    const arbitrumRawBlock: number = arbitrumRawResult?.block ? parseInt(arbitrumRawResult.block) : 0;
-    const arbitrumRawTimestamp: number = arbitrumRawResult?.timestamp ? parseInt(arbitrumRawResult.timestamp) : 0;
+    const arbitrumRawBlock: number = parseNumber(arbitrumRawResult?.block);
+    const arbitrumRawTimestamp: number = parseNumber(arbitrumRawResult?.timestamp);
     const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenRecords[0];
-    const ethereumRawBlock: number = ethereumRawResult?.block ? parseInt(ethereumRawResult.block) : 0;
-    const ethereumRawTimestamp: number = ethereumRawResult?.timestamp ? parseInt(ethereumRawResult.timestamp) : 0;
+    const ethereumRawBlock: number = parseNumber(ethereumRawResult?.block);
+    const ethereumRawTimestamp: number = parseNumber(ethereumRawResult?.timestamp);
     const fantomRawResult = rawResult.data?.treasuryFantom_tokenRecords[0];
-    const fantomRawBlock: number = fantomRawResult?.block ? parseInt(fantomRawResult.block) : 0;
-    const fantomRawTimestamp: number = fantomRawResult?.timestamp ? parseInt(fantomRawResult.timestamp) : 0;
+    const fantomRawBlock: number = parseNumber(fantomRawResult?.block);
+    const fantomRawTimestamp: number = parseNumber(fantomRawResult?.timestamp);
     const polygonRawResult = rawResult.data?.treasuryPolygon_tokenRecords[0];
-    const polygonRawBlock: number = polygonRawResult?.block ? parseInt(polygonRawResult.block) : 0;
-    const polygonRawTimestamp: number = polygonRawResult?.timestamp ? parseInt(polygonRawResult.timestamp) : 0;
+    const polygonRawBlock: number = parseNumber(polygonRawResult?.block);
+    const polygonRawTimestamp: number = parseNumber(polygonRawResult?.timestamp);
 
     // Grab the results from the earliest operation
     const result = await wg.client().query({
@@ -236,17 +237,17 @@ describe("atBlock", () => {
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = getFirstTokenRecord(rawResult.data, CHAIN_ARBITRUM, startDate);
-    const arbitrumRawBlock: number = arbitrumRawResult?.block ? parseInt(arbitrumRawResult.block) : 0;
-    const arbitrumRawTimestamp: number = arbitrumRawResult?.timestamp ? parseInt(arbitrumRawResult.timestamp) : 0;
+    const arbitrumRawBlock: number = parseNumber(arbitrumRawResult?.block);
+    const arbitrumRawTimestamp: number = parseNumber(arbitrumRawResult?.timestamp);
     const ethereumRawResult = getFirstTokenRecord(rawResult.data, CHAIN_ETHEREUM, startDate);
-    const ethereumRawBlock: number = ethereumRawResult?.block ? parseInt(ethereumRawResult.block) : 0;
-    const ethereumRawTimestamp: number = ethereumRawResult?.timestamp ? parseInt(ethereumRawResult.timestamp) : 0;
+    const ethereumRawBlock: number = parseNumber(ethereumRawResult?.block);
+    const ethereumRawTimestamp: number = parseNumber(ethereumRawResult?.timestamp);
     const fantomRawResult = getFirstTokenRecord(rawResult.data, CHAIN_FANTOM, startDate);
-    const fantomRawBlock: number = fantomRawResult?.block ? parseInt(fantomRawResult.block) : 0;
-    const fantomRawTimestamp: number = fantomRawResult?.timestamp ? parseInt(fantomRawResult.timestamp) : 0;
+    const fantomRawBlock: number = parseNumber(fantomRawResult?.block);
+    const fantomRawTimestamp: number = parseNumber(fantomRawResult?.timestamp);
     const polygonRawResult = getFirstTokenRecord(rawResult.data, CHAIN_POLYGON, startDate);
-    const polygonRawBlock: number = polygonRawResult?.block ? parseInt(polygonRawResult.block) : 0;
-    const polygonRawTimestamp: number = polygonRawResult?.timestamp ? parseInt(polygonRawResult.timestamp) : 0;
+    const polygonRawBlock: number = parseNumber(polygonRawResult?.block);
+    const polygonRawTimestamp: number = parseNumber(polygonRawResult?.timestamp);
 
     // Grab the results from the earliest operation
     const result = await wg.client().query({
