@@ -1,3 +1,4 @@
+import { parseNumber } from "../tests/numberHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenRecordsLatestResponseData } from "./generated/models";
 
@@ -18,7 +19,7 @@ type TokenRecordByDate = {
 export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] => {
   const filteredData = Object.values(records.reduce((acc: Record<string, TokenRecordByDate>, curr: TokenRecord) => {
     const { date, block } = curr;
-    const blockNumber = parseInt(block);
+    const blockNumber = parseNumber(block);
     if (!acc[date] || acc[date].block < blockNumber) {
       acc[date] = { date, block: blockNumber, records: [curr] };
     } else if (acc[date].block === blockNumber) {

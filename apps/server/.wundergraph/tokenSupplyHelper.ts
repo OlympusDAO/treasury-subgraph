@@ -1,5 +1,6 @@
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenSuppliesLatestResponseData } from "./generated/models";
+import { parseNumber } from "./numberHelper";
 
 export type TokenSupply = TokenSuppliesLatestResponseData["treasuryEthereum_tokenSupplies"][0];
 
@@ -12,7 +13,7 @@ type TokenSupplyByDate = {
 export const filterLatestBlockByDay = (records: TokenSupply[]): TokenSupply[] => {
   const filteredData = Object.values(records.reduce((acc: Record<string, TokenSupplyByDate>, curr: TokenSupply) => {
     const { date, block } = curr;
-    const blockNumber = parseInt(block);
+    const blockNumber = parseNumber(block);
     if (!acc[date] || acc[date].block < blockNumber) {
       acc[date] = { date, block: blockNumber, records: [curr] };
     } else if (acc[date].block === blockNumber) {

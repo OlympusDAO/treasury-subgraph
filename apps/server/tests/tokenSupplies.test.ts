@@ -3,6 +3,7 @@ import { createTestServer } from "../.wundergraph/generated/testing";
 import { getISO8601DateString } from "./dateHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
 import { getFirstRecord } from "./tokenSupplyHelper";
+import { parseNumber } from "./numberHelper";
 
 const wg = createTestServer();
 
@@ -214,10 +215,10 @@ describe("atBlock", () => {
     const result = await wg.client().query({
       operationName: "atBlock/tokenSupplies",
       input: {
-        arbitrumBlock: parseInt(arbitrumRawBlock || "0"),
-        ethereumBlock: parseInt(ethereumRawBlock || "0"),
-        fantomBlock: parseInt(fantomRawBlock || "0"),
-        polygonBlock: parseInt(polygonRawBlock || "0"),
+        arbitrumBlock: parseNumber(arbitrumRawBlock),
+        ethereumBlock: parseNumber(ethereumRawBlock),
+        fantomBlock: parseNumber(fantomRawBlock),
+        polygonBlock: parseNumber(polygonRawBlock),
       }
     });
 
