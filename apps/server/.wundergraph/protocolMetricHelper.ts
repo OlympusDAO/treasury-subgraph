@@ -1,5 +1,6 @@
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { RawInternalProtocolMetricsResponseData } from "./generated/models";
+import { parseNumber } from "./numberHelper";
 
 export type ProtocolMetric = RawInternalProtocolMetricsResponseData["treasuryEthereum_protocolMetrics"][0];
 
@@ -12,7 +13,7 @@ type ProtocolMetricByDate = {
 export const filterLatestBlockByDay = (records: ProtocolMetric[]): ProtocolMetric[] => {
   const filteredData = Object.values(records.reduce((acc: Record<string, ProtocolMetricByDate>, curr: ProtocolMetric) => {
     const { date, block } = curr;
-    const blockNumber = parseInt(block);
+    const blockNumber = parseNumber(block);
     if (!acc[date] || acc[date].block < blockNumber) {
       acc[date] = { date, block: blockNumber, records: [curr] };
     } else if (acc[date].block === blockNumber) {
