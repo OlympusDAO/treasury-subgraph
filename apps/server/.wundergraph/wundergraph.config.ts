@@ -27,13 +27,13 @@ const resolveSubgraphUrl = (url: string): string => {
 
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmSvsLittpy8p9v3iJKZfvq8PysY67BSdfSbt3CHXjN7sW"), // 4.11.3
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmZ3HZvfgSTZz29q22tJpReEL4Xiprs2croPymiuyEJknK"), // 4.12.2
 	schemaExtension: schemaExtension,
 });
 
 const treasuryArbitrum = introspect.graphql({
 	apiNamespace: "treasuryArbitrum",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmXVMuS639JzTTq9ZVkRnGFTftiYJ8c6FPrB52qCshSnFa"), // 1.5.3
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmRf3fo7tVsXsj9cQZSgT3Y2R67Hv41T1Ph559oQAmTLe1"), // 1.6.4
 	schemaExtension: schemaExtension,
 });
 
