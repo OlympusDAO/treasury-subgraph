@@ -47,10 +47,11 @@ export default createOperation.query({
     crossChainDataComplete: z.boolean({ description: "If true, returns data up to the most recent day in which all subgraphs have data." }).optional(),
   }),
   handler: async (ctx) => {
-    console.log(`Commencing paginated query for TokenRecord`);
-    console.log(`Input: ${JSON.stringify(ctx.input)}`);
+    const FUNC = "paginated/tokenRecords";
+    console.log(`${FUNC}: Commencing paginated query for TokenRecord`);
+    console.log(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
     const finalStartDate: Date = new Date(ctx.input.startDate);
-    console.log(`finalStartDate: ${finalStartDate.toISOString()}`);
+    console.log(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
@@ -65,7 +66,7 @@ export default createOperation.query({
     let hasProcessedFirstDate = false;
 
     while (currentStartDate.getTime() >= finalStartDate.getTime()) {
-      console.log(`Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
+      console.log(`${FUNC}: Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
         operationName: "tokenRecords",
         input: {
@@ -88,12 +89,12 @@ export default createOperation.query({
       // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
       // There is probably a cleaner way to do this, but this works for now
       if (currentStartDate == finalStartDate) {
-        console.log(`Reached final start date.`);
+        console.log(`${FUNC}: Reached final start date.`);
         break;
       }
     }
 
-    console.log(`Returning ${combinedTokenRecords.length} records.`);
+    console.log(`${FUNC}: Returning ${combinedTokenRecords.length} records.`);
     return sortRecordsDescending(combinedTokenRecords);
   },
 });
