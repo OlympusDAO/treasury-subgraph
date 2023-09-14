@@ -18,10 +18,11 @@ export default createOperation.query({
     includeRecords: z.boolean({ description: "If true, includes the records used to calculate each metric." }).optional(),
   }),
   handler: async (ctx) => {
-    console.log(`Commencing paginated query for Metric`);
-    console.log(`Input: ${JSON.stringify(ctx.input)}`);
+    const FUNC = "paginated/metrics";
+    console.log(`${FUNC}: Commencing paginated query for Metric`);
+    console.log(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
     const finalStartDate: Date = new Date(ctx.input.startDate);
-    console.log(`finalStartDate: ${finalStartDate.toISOString()}`);
+    console.log(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
@@ -53,7 +54,7 @@ export default createOperation.query({
         byDateRecords.set(date, recordContainer);
       });
 
-      console.log(`Processed ${protocolMetricsQueryResult.data.length} ProtocolMetric records.`);
+      console.log(`${FUNC}: Processed ${protocolMetricsQueryResult.data.length} ProtocolMetric records.`);
     }
 
     const tokenRecordsQueryResult = await ctx.operations.query({
@@ -79,7 +80,7 @@ export default createOperation.query({
         byDateRecords.set(date, recordContainer);
       });
 
-      console.log(`Processed ${tokenRecordsQueryResult.data.length} TokenRecord records.`);
+      console.log(`${FUNC}: Processed ${tokenRecordsQueryResult.data.length} TokenRecord records.`);
     }
 
     const tokenSuppliesQueryResult = await ctx.operations.query({
@@ -105,14 +106,14 @@ export default createOperation.query({
         byDateRecords.set(date, recordContainer);
       });
 
-      console.log(`Processed ${tokenSuppliesQueryResult.data.length} TokenSupply records.`);
+      console.log(`${FUNC}: Processed ${tokenSuppliesQueryResult.data.length} TokenSupply records.`);
     }
 
     // Convert into new Metric objects
     byDateRecords.forEach((recordContainer, date) => {
       const metricRecord: Metric | null = getMetricObject(recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, ctx.input.includeRecords);
       if (!metricRecord) {
-        console.log(`Skipping date ${date} because it is missing data.`);
+        console.log(`${FUNC}: Skipping date ${date} because it is missing data.`);
         return;
       }
 
