@@ -60,9 +60,6 @@ configureWunderGraphApplication({
 			templates: [...templates.typescript.all]
 		},
 	],
-	cors: {
-		...cors.allowAll,
-	},
 	security: {
 		enableGraphQLEndpoint: process.env.NODE_ENV !== 'production' || process.env.GITPOD_WORKSPACE_ID !== undefined,
 	},
