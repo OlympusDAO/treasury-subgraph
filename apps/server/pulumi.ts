@@ -39,7 +39,7 @@ const getGitCommit = (throwIfUncommitted = true) => {
     const spawnOutput = spawnSync(`git status --porcelain`, { shell: true });
     console.log(`git diff returned status of ${spawnOutput.status}`);
 
-    if (spawnOutput.status && spawnOutput.status !== 0) {
+    if (spawnOutput.stdout.toString().length > 0) {
       throw new Error("Uncommitted changes found! Commit them before continuing.");
     }
   }
