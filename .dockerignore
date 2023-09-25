@@ -1,0 +1,16 @@
+.dockerignore
+**/node_modules
+npm-debug.log
+**/Dockerfile
+.git
+.gitignore
+.github
+minio
+generated
+**/dist
+**/coverage
+**/.turbo
+out/
+
+apps/client
+**/tests
