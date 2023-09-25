@@ -17,7 +17,8 @@ COPY .wundergraph ./.wundergraph
 
 # Listen to all interfaces, 127.0.0.1 might produce errors with ipv6 dual stack
 ENV WG_NODE_URL=http://127.0.0.1:9991 WG_NODE_INTERNAL_URL=http://127.0.0.1:9993 WG_NODE_HOST=0.0.0.0 WG_NODE_PORT=9991 WG_NODE_INTERNAL_PORT=9993 WG_SERVER_URL=http://127.0.0.1:9992 WG_SERVER_HOST=127.0.0.1 WG_SERVER_PORT=9992
-RUN --mount=type=secret,id=ARBITRUM_SUBGRAPH_API_KEY ARBITRUM_SUBGRAPH_API_KEY="$(cat /run/secrets/ARBITRUM_SUBGRAPH_API_KEY)" wunderctl generate --wundergraph-dir=.wundergraph
+ARG ARBITRUM_SUBGRAPH_API_KEY
+RUN ARBITRUM_SUBGRAPH_API_KEY=$ARBITRUM_SUBGRAPH_API_KEY wunderctl generate --wundergraph-dir=.wundergraph
 
 ### Server Setup ###
 
