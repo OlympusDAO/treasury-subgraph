@@ -33,6 +33,7 @@ execSync("cp ../../yarn.lock tmp/yarn.lock");
 // Create Docker repository
 const dockerRepository = new gcp.artifactregistry.Repository(projectName, {
   repositoryId: projectName,
+  project: gcpConfig.require("project"),
   location: gcpConfig.require("region"),
   format: "DOCKER",
 }, {
@@ -54,13 +55,13 @@ const getGitCommit = (throwIfUncommitted = true) => {
   return execSync("git rev-parse --short HEAD").toString().replace("\n", "");
 }
 
-const getDockerImageLabel = (projectName: string, imageVersion: string, repository: gcp.artifactregistry.Repository) => {
-  return pulumi.interpolate`gcr.io/${repository.name}/${projectName}:${imageVersion}`;
+const getDockerImageLabel = (projectName: string, imageVersion: string) => {
+  return pulumi.interpolate`gcr.io/${gcpConfig.require("project")}/${projectName}:${imageVersion}`;
 };
 
 const createDockerImage = (resourceName: string, imageVersion: string, dependsOn?: pulumi.Resource[]) => {
-  const imageCurrent = getDockerImageLabel(projectName, imageVersion, dockerRepository);
-  const imageLatest = getDockerImageLabel(projectName, "latest", dockerRepository);
+  const imageCurrent = getDockerImageLabel(projectName, imageVersion);
+  const imageLatest = getDockerImageLabel(projectName, "latest");
 
   return new docker.Image(resourceName, {
     imageName: imageCurrent,
@@ -102,6 +103,11 @@ const cloudRun = new gcp.cloudrunv2.Service(
             },
             cpuIdle: true,
           },
+          ports: [
+            {
+              containerPort: 9991,
+            }
+          ]
         }
       ]
     },
@@ -132,7 +138,7 @@ const firebaseHostingSite = new gcp.firebase.HostingSite(
   projectName,
   {
     project: firebaseProject.project,
-    siteId: `olympus-${projectStackName}`, // Will end up as olympus-treasury-subgraph-<stack>.web.app
+    siteId: `olympusdao-${projectStackName}`, // Will end up as olympus-treasury-subgraph-<stack>.web.app
   },
   {
     dependsOn: [firebaseProject],
