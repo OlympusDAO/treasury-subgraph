@@ -12,9 +12,6 @@ The monorepo contains two components:
   - server/
     - Code to configure and deploy a [Wundergraph](https://wundergraph.com/) API server that aggregates and transforms GraphQL results
     - Offers a number of 'operations' (in Wundergraph terminology):
-      - Basic: unaltered ProtocolMetric records. Not recommended.
-        - tokenRecords
-        - tokenSupplies
       - Earliest: the earliest record from each blockchain
         - earliest/metrics
         - earliest/tokenRecords
