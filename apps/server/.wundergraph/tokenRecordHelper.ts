@@ -1,7 +1,7 @@
 import { RequestLogger } from "@wundergraph/sdk/server";
-import { parseNumber } from "../tests/numberHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenRecordsLatestResponseData } from "./generated/models";
+import { parseNumber } from "./numberHelper";
 
 export type TokenRecord = TokenRecordsLatestResponseData["treasuryEthereum_tokenRecords"][0];
 
