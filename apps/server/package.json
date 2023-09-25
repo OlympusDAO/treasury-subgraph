@@ -7,6 +7,9 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
+    "@pulumi/docker": "^4.4.1",
+    "@pulumi/gcp": "^6.66.0",
+    "@pulumi/pulumi": "^3.85.0",
     "@types/jest": "^29.5.1",
     "@types/node": "^18.16.7",
     "date-fns": "^2.30.0",
@@ -20,6 +23,7 @@
     "@wundergraph/sdk": "^0.178.0",
     "date-fns": "^2.30.0"
   },
+  "main": "pulumi.ts",
   "scripts": {
     "start": "wunderctl up --logs",
     "prebuild": "echo \"WG_PUBLIC_NODE_URL is ${WG_PUBLIC_NODE_URL:?}\"",
