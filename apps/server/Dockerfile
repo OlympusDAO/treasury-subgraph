@@ -5,7 +5,7 @@ WORKDIR /app
 ### Install Dependencies ###
 
 COPY package.json /app/
-COPY yarn.lock.tmp /app/yarn.lock
+COPY tmp/yarn.lock /app/yarn.lock
 # We place the binary in /usr/bin/wunderctl so we can find it without a relative path
 ENV CI=true WG_COPY_BIN_PATH=/usr/bin/wunderctl
 RUN yarn install --frozen-lockfile --non-interactive --prefer-offline --no-audit

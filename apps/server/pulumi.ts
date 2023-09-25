@@ -22,6 +22,11 @@ const serviceFirebase = new gcp.projects.Service("firebase", {
 });
 
 /**
+ * Copy required files
+ */
+execSync("cp ../../yarn.lock tmp/yarn.lock");
+
+/**
  * Docker images
  */
 // Create Docker repository
