@@ -67,14 +67,16 @@ configureWunderGraphApplication({
 				?
 				// Restrict to OlympusDAO and Fleek domains on production
 				[
-					"https://*.olympusdao.finance",
+					"https://app.olympusdao.finance",
+					"https://staging.olympusdao.finance",
+					"https://backup.olympusdao.finance",
 					"https://*.on.fleek.co",
+					"https://olympus-staging.webflow.io",
 					"http://localhost:5173",
 				]
 				// Allow local development
 				: [
 					"http://localhost:5173",
-					new EnvironmentVariable('WG_ALLOWED_ORIGIN')
 				],
 	},
 	security: {
