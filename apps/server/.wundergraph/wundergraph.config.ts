@@ -63,7 +63,8 @@ configureWunderGraphApplication({
 	cors: {
 		...cors.allowAll,
 		allowedOrigins:
-			process.env.NODE_ENV === 'production' ?
+			process.env.NODE_ENV === 'production'
+				?
 				// Restrict to OlympusDAO and Fleek domains on production
 				[
 					"https://app.olympusdao.finance",
