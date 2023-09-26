@@ -60,6 +60,24 @@ configureWunderGraphApplication({
 			templates: [...templates.typescript.all]
 		},
 	],
+	cors: {
+		...cors.allowAll,
+		allowedOrigins:
+			process.env.NODE_ENV === 'production' ?
+				// Restrict to OlympusDAO and Fleek domains on production
+				[
+					"https://app.olympusdao.finance",
+					"https://staging.olympusdao.finance",
+					"https://backup.olympusdao.finance",
+					"https://*.on.fleek.co",
+					"https://olympus-staging.webflow.io",
+					"http://localhost:5173",
+				]
+				// Allow local development
+				: [
+					"http://localhost:5173",
+				],
+	},
 	security: {
 		enableGraphQLEndpoint: process.env.NODE_ENV !== 'production' || process.env.GITPOD_WORKSPACE_ID !== undefined,
 	},
