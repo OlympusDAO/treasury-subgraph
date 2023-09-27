@@ -4,9 +4,10 @@ import { getISO8601DateString } from "./dateHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY } from "../.wundergraph/constants";
 import { getSupplyBalanceForTypes } from "./metricsHelper";
 import { TokenRecord, filterReduce, filter as filterTokenRecords, getFirstRecord as getFirstTokenRecord } from "./tokenRecordHelper";
-import { TokenSupply, filter as filterTokenSupplies, getFirstRecord as getFirstTokenSupplies } from "./tokenSupplyHelper";
+import { TokenSupply, filter as filterTokenSupplies } from "./tokenSupplyHelper";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { parseNumber } from "./numberHelper";
+import { clearCache } from "./cacheHelper";
 
 const wg = createTestServer();
 
@@ -16,6 +17,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await wg.stop();
+});
+
+beforeEach(async () => {
+  await clearCache();
 });
 
 const getStartDate = (days: number = -5): string => {
@@ -34,7 +39,7 @@ describe("paginated", () => {
     const records = result.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
-  });
+  }, 10 * 1000);
 
   test("returns results", async () => {
     const result = await wg.client().query({

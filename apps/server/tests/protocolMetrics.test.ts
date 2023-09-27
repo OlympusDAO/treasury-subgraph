@@ -1,6 +1,7 @@
 import { addDays } from "date-fns";
 import { createTestServer } from "../.wundergraph/generated/testing";
 import { getISO8601DateString } from "./dateHelper";
+import { clearCache } from "./cacheHelper";
 
 const wg = createTestServer();
 
@@ -10,6 +11,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await wg.stop();
+});
+
+beforeEach(async () => {
+  await clearCache();
 });
 
 const getStartDate = (days: number = -5): string => {
