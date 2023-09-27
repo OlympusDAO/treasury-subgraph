@@ -69,6 +69,12 @@ Wundergraph is setup to deploy automatically:
 - `main` branch: https://olympus-treasury-subgraph.wundergraph.dev/
 - `develop` branch: https://olympus-treasury-subgraph-dev.wundergraph.dev/
 
+There is a Wundergraph project for each of these endpoints. Pull requests into the respective branch create preview deployments, which can be used for testing.
+
+For each Wundergraph project, the environment variables defined in the `.env.sample` file must also be defined.
+
+NOTE: the Upstash credentials in the production project and environment should be different to that of all other projects/environments, so that the production cache is not polluted.
+
 ### Deployment - Client NPM Package
 
 1. Run `yarn build`
