@@ -38,6 +38,26 @@ describe("paginated", () => {
     expect(recordLength).toBeGreaterThan(0);
   });
 
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "paginated/tokenSupplies",
+      input: {
+        startDate: getStartDate(-1),
+      },
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "paginated/tokenSupplies",
+      input: {
+        startDate: getStartDate(-1),
+      },
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  });
+
   test("returns results", async () => {
     const result = await wg.client().query({
       operationName: "paginated/tokenSupplies",
@@ -156,6 +176,20 @@ describe("latest", () => {
     const recordLength = records ? records.length : 0;
     expect(recordLength).toEqual(expectedCount);
   });
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "latest/tokenSupplies",
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "latest/tokenSupplies",
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  });
 });
 
 describe("earliest", () => {
@@ -195,6 +229,20 @@ describe("earliest", () => {
     // Check that the array length is the same
     const recordLength = records ? records.length : 0;
     expect(recordLength).toEqual(expectedCount);
+  });
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "earliest/tokenSupplies",
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "earliest/tokenSupplies",
+    });
+
+    expect(resultTwo.data).toEqual(records);
   });
 });
 

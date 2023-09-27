@@ -54,6 +54,26 @@ describe("paginated", () => {
     expect(recordLength).toBeGreaterThan(0);
   });
 
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-1),
+      }
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-1),
+      }
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 10 * 1000);
+
   test("crossChainDataComplete true", async () => {
     const result = await wg.client().query({
       operationName: "paginated/metrics",
@@ -180,6 +200,20 @@ describe("latest", () => {
     expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
+  }, 10 * 1000);
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "latest/metrics",
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "latest/metrics",
+    });
+
+    expect(resultTwo.data).toEqual(records);
   });
 });
 
@@ -225,6 +259,20 @@ describe("earliest", () => {
     expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
+  });
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "earliest/metrics",
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "earliest/metrics",
+    });
+
+    expect(resultTwo.data).toEqual(records);
   });
 });
 
