@@ -16,6 +16,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@upstash/redis": "^1.22.0",
     "@wundergraph/sdk": "^0.177.0",
     "date-fns": "^2.30.0"
   },

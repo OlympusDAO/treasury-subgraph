@@ -1,5 +1,6 @@
+import { getCachedData, setCachedData } from '../../cacheHelper';
 import { createOperation } from '../../generated/wundergraph.factory';
-import { flattenRecords } from '../../protocolMetricHelper';
+import { ProtocolMetric, flattenRecords } from '../../protocolMetricHelper';
 
 /**
  * This custom query will return a flat array containing the latest ProtocolMetric objects for
@@ -11,20 +12,34 @@ import { flattenRecords } from '../../protocolMetricHelper';
  */
 export default createOperation.query({
   handler: async (ctx) => {
-    console.log(`Commencing latest query for ProtocolMetric`);
+    const FUNC = "latest/protocolMetrics";
+    console.log(`${FUNC}: Commencing latest query for ProtocolMetric`);
 
+    // Return cached data if it exists
+    const cachedData = await getCachedData<ProtocolMetric[]>(FUNC);
+    if (cachedData) {
+      console.log(`${FUNC}: Returning cached data`);
+      return cachedData;
+    }
+
+    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
     const queryResult = await ctx.operations.query({
       operationName: "raw/internal/protocolMetricsLatest",
     });
 
     if (!queryResult.data) {
-      console.log(`No data returned.`);
+      console.log(`${FUNC}: No data returned.`);
       return [];
     }
 
     // Combine across pages and endpoints
     const flatRecords = flattenRecords(queryResult.data, false);
-    console.log(`Returning ${flatRecords.length} records.`);
+
+    // Update the cache
+    await setCachedData<ProtocolMetric[]>(FUNC, flatRecords);
+    console.log(`${FUNC}: Updated cache`);
+
+    console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
 });
