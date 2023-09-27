@@ -17,6 +17,15 @@ extend type TokenSupply {
 }
 `;
 
+// Validate that the required environment variables are set
+if (!process.env.UPSTASH_REDIS_URL) {
+	throw new Error("UPSTASH_REDIS_URL is not set");
+}
+
+if (!process.env.UPSTASH_REDIS_TOKEN) {
+	throw new Error("UPSTASH_REDIS_TOKEN is not set");
+}
+
 const resolveSubgraphUrl = (url: string): string => {
 	if (!process.env.ARBITRUM_SUBGRAPH_API_KEY) {
 		throw new Error("ARBITRUM_SUBGRAPH_API_KEY is not set");
