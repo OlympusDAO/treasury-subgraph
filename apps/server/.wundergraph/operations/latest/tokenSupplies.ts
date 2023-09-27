@@ -15,7 +15,7 @@ export default createOperation.query({
     console.log(`${FUNC}: Commencing latest query for TokenSupply`);
 
     // Return cached data if it exists
-    const cacheKey = getCacheKey(FUNC);
+    const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
       const cachedData = await getCachedData<TokenSupply[]>(cacheKey);
       if (cachedData) {
