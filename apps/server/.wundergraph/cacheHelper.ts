@@ -16,9 +16,16 @@ const getClient = () => {
 }
 
 export async function getCachedData<T>(key: string): Promise<T | null> {
-  const result = await getClient().get(key) as T | null;
-  if (result) {
-    console.log(`Cache hit for ${key}`);
+  let result: T | null = null;
+  try {
+    result = await getClient().get(key) as T | null;
+    if (result) {
+      console.log(`Cache hit for ${key}`);
+    }
+  }
+  // Catch any errors. Worst-case is that the cache value is not used and a query is performed instead.
+  catch (e) {
+    console.error(`Failed to get cache for ${key}`, e);
   }
 
   return result;
@@ -27,10 +34,15 @@ export async function getCachedData<T>(key: string): Promise<T | null> {
 export async function setCachedData<T>(key: string, value: T): Promise<void> {
   const client = getClient();
 
-  // Set the value and expiry for 1 hour
-  await client.set(key, value, { ex: 60 * 60 });
-
-  console.log(`Updated cache for ${key}`);
+  try {
+    // Set the value and expiry for 1 hour
+    await client.set(key, value, { ex: 60 * 60 });
+    console.log(`Updated cache for ${key}`);
+  }
+  // Catch any errors. Worst-case is that the cache is not updated
+  catch (e) {
+    console.error(`Failed to update cache for ${key}`, e);
+  }
 }
 
 export const getCacheKey = (name: string, input?: Record<string, unknown>): string => {
