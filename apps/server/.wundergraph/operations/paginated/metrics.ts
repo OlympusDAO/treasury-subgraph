@@ -1,7 +1,7 @@
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { getISO8601DateString } from '../../dateHelper';
 import { Metric, RecordContainer, getMetricObject, sortRecordsDescending } from '../../metricHelper';
-import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
+import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
 
 /**
  * This custom query will return a flat array containing Metric objects from
@@ -32,7 +32,7 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedData<Metric[]>(cacheKey);
+      const cachedData = await getCachedRecords<Metric>(cacheKey);
       if (cachedData) {
         return cachedData;
       }
@@ -138,7 +138,7 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(metricRecords);
 
     // Update the cache
-    await setCachedData<Metric[]>(cacheKey, sortedRecords);
+    await setCachedRecords<Metric>(cacheKey, sortedRecords);
 
     console.log(`${FUNC}: Returning ${sortedRecords.length} records.`);
     return sortedRecords;

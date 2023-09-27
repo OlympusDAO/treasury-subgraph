@@ -2,7 +2,7 @@ import { createOperation, z } from '../../generated/wundergraph.factory';
 import { Metric, getMetricObject } from '../../metricHelper';
 import { getBlockByChain } from '../../tokenRecordHelper';
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from '../../constants';
-import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
+import { getCacheKey, getCachedRecord, setCachedRecord } from '../../cacheHelper';
 
 /**
  * This custom query will return the latest Metric object.
@@ -18,7 +18,7 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedData<Metric>(cacheKey);
+      const cachedData = await getCachedRecord<Metric>(cacheKey);
       if (cachedData) {
         return cachedData;
       }
@@ -66,7 +66,7 @@ export default createOperation.query({
 
     // Update the cache
     if (metricRecord) {
-      await setCachedData<Metric>(cacheKey, metricRecord);
+      await setCachedRecord<Metric>(cacheKey, metricRecord);
     }
 
     return metricRecord;

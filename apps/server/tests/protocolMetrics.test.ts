@@ -34,7 +34,7 @@ describe("latest", () => {
     });
 
     expect(resultTwo.data).toEqual(records);
-  });
+  }, 20 * 1000);
 });
 
 describe("paginated", () => {
@@ -69,7 +69,28 @@ describe("paginated", () => {
     });
 
     expect(resultTwo.data).toEqual(records);
-  });
+  }, 20 * 1000);
+
+  test("cached results are equal, long timeframe", async () => {
+    // This tests both setting and getting a large amount of data, which can error out
+    const result = await wg.client().query({
+      operationName: "paginated/protocolMetrics",
+      input: {
+        startDate: getStartDate(-60),
+      },
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "paginated/protocolMetrics",
+      input: {
+        startDate: getStartDate(-60),
+      },
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 20 * 1000);
 
   test("returns results", async () => {
     const result = await wg.client().query({

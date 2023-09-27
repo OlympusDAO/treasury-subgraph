@@ -1,4 +1,4 @@
-import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
+import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { TokenRecord, flattenRecords } from '../../tokenRecordHelper';
 
@@ -17,7 +17,7 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedData<TokenRecord[]>(cacheKey);
+      const cachedData = await getCachedRecords<TokenRecord>(cacheKey);
       if (cachedData) {
         return cachedData;
       }
@@ -37,7 +37,7 @@ export default createOperation.query({
     const flatRecords = flattenRecords(queryResult.data, false);
 
     // Update the cache
-    await setCachedData<TokenRecord[]>(cacheKey, flatRecords);
+    await setCachedRecords<TokenRecord>(cacheKey, flatRecords);
 
     console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;

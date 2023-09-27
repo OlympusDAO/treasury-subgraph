@@ -72,7 +72,28 @@ describe("paginated", () => {
     });
 
     expect(resultTwo.data).toEqual(records);
-  }, 10 * 1000);
+  }, 20 * 1000);
+
+  test("cached results are equal, long timeframe", async () => {
+    // This tests both setting and getting a large amount of data, which can error out
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-60),
+      }
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-60),
+      }
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 20 * 1000);
 
   test("crossChainDataComplete true", async () => {
     const result = await wg.client().query({
@@ -214,7 +235,7 @@ describe("latest", () => {
     });
 
     expect(resultTwo.data).toEqual(records);
-  });
+  }, 20 * 1000);
 });
 
 describe("earliest", () => {
@@ -273,7 +294,7 @@ describe("earliest", () => {
     });
 
     expect(resultTwo.data).toEqual(records);
-  });
+  }, 20 * 1000);
 });
 
 describe("atBlock", () => {

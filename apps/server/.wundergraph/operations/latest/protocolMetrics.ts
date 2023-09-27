@@ -1,4 +1,4 @@
-import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
+import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { ProtocolMetric, flattenRecords } from '../../protocolMetricHelper';
 
@@ -21,7 +21,7 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedData<ProtocolMetric[]>(cacheKey);
+      const cachedData = await getCachedRecords<ProtocolMetric>(cacheKey);
       if (cachedData) {
         return cachedData;
       }
@@ -41,7 +41,7 @@ export default createOperation.query({
     const flatRecords = flattenRecords(queryResult.data, false);
 
     // Update the cache
-    await setCachedData<ProtocolMetric[]>(cacheKey, flatRecords);
+    await setCachedRecords<ProtocolMetric>(cacheKey, flatRecords);
 
     console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;

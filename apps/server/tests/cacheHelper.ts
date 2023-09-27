@@ -9,4 +9,5 @@ export const clearCache = async () => {
   });
 
   await client.flushdb();
+  console.log(`Cache cleared`);
 };

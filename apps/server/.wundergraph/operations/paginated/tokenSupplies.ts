@@ -1,4 +1,4 @@
-import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
+import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
 import { TokenSuppliesResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
@@ -65,7 +65,7 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedData<TokenSupply[]>(cacheKey);
+      const cachedData = await getCachedRecords<TokenSupply>(cacheKey);
       if (cachedData) {
         return cachedData;
       }
@@ -113,7 +113,7 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(combinedTokenSupplies);
 
     // Update the cache
-    await setCachedData<TokenSupply[]>(cacheKey, sortedRecords);
+    await setCachedRecords<TokenSupply>(cacheKey, sortedRecords);
 
     console.log(`${FUNC}: Returning ${sortedRecords.length} records.`);
     return sortedRecords;

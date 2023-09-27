@@ -2,7 +2,7 @@ import { createOperation, z } from '../../generated/wundergraph.factory';
 import { RawInternalProtocolMetricsResponseData } from '../../generated/models';
 import { ProtocolMetric, flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
-import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
+import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
 
 /**
  * This custom query will return a flat array containing ProtocolMetric objects from
@@ -31,7 +31,7 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedData<ProtocolMetric[]>(cacheKey);
+      const cachedData = await getCachedRecords<ProtocolMetric>(cacheKey);
       if (cachedData) {
         return cachedData;
       }
@@ -77,7 +77,7 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(combinedProtocolMetrics);
 
     // Update the cache
-    await setCachedData<ProtocolMetric[]>(cacheKey, sortedRecords);
+    await setCachedRecords<ProtocolMetric>(cacheKey, sortedRecords);
 
     console.log(`${FUNC}: Returning ${combinedProtocolMetrics.length} records.`);
     return sortedRecords;
