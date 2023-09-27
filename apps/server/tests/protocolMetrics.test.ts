@@ -21,6 +21,8 @@ const getStartDate = (days: number = -5): string => {
   return getISO8601DateString(addDays(new Date(), days));
 }
 
+jest.setTimeout(10 * 1000);
+
 describe("latest", () => {
   test("cached results are equal", async () => {
     const result = await wg.client().query({

@@ -27,6 +27,8 @@ const getStartDate = (days: number = -5): string => {
   return getISO8601DateString(addDays(new Date(), days));
 }
 
+jest.setTimeout(10 * 1000);
+
 describe("paginated", () => {
   test("recent results", async () => {
     const result = await wg.client().query({
@@ -39,7 +41,7 @@ describe("paginated", () => {
     const records = result.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
-  }, 10 * 1000);
+  });
 
   test("returns results", async () => {
     const result = await wg.client().query({
@@ -147,7 +149,7 @@ describe("paginated", () => {
 
     expect(treasuryLiquidBackingRecords?.Arbitrum.length).toBeGreaterThan(0);
     expect(treasuryLiquidBackingRecords?.Ethereum.length).toBeGreaterThan(0);
-  }, 10000);
+  });
 
   test("includeRecords false", async () => {
     const result = await wg.client().query({
@@ -221,7 +223,7 @@ describe("latest", () => {
     expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
-  }, 10 * 1000);
+  });
 
   test("cached results are equal", async () => {
     const result = await wg.client().query({
