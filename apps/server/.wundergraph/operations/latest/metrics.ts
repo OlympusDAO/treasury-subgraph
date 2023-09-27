@@ -1,22 +1,27 @@
-import { createOperation } from '../../generated/wundergraph.factory';
+import { createOperation, z } from '../../generated/wundergraph.factory';
 import { Metric, getMetricObject } from '../../metricHelper';
 import { getBlockByChain } from '../../tokenRecordHelper';
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from '../../constants';
-import { getCachedData, setCachedData } from '../../cacheHelper';
+import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
 
 /**
  * This custom query will return the latest Metric object.
  */
 export default createOperation.query({
+  input: z.object({
+    ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
+  }),
   handler: async (ctx) => {
     const FUNC = "latest/metrics";
     console.log(`${FUNC}: Commencing latest query for Metric`);
 
     // Return cached data if it exists
-    const cachedData = await getCachedData<Metric>(FUNC);
-    if (cachedData) {
-      console.log(`${FUNC}: Returning cached data`);
-      return cachedData;
+    const cacheKey = getCacheKey(FUNC);
+    if (!ctx.input.ignoreCache) {
+      const cachedData = await getCachedData<Metric>(cacheKey);
+      if (cachedData) {
+        return cachedData;
+      }
     }
 
     // Get the latest block for each blockchain
@@ -61,8 +66,7 @@ export default createOperation.query({
 
     // Update the cache
     if (metricRecord) {
-      await setCachedData<Metric>(FUNC, metricRecord);
-      console.log(`${FUNC}: Updated cache`);
+      await setCachedData<Metric>(cacheKey, metricRecord);
     }
 
     return metricRecord;

@@ -1,7 +1,8 @@
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { RawInternalProtocolMetricsResponseData } from '../../generated/models';
-import { flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
+import { ProtocolMetric, flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
+import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
 
 /**
  * This custom query will return a flat array containing ProtocolMetric objects from
@@ -15,6 +16,7 @@ export default createOperation.query({
   input: z.object({
     startDate: z.string({ description: "The start date in the YYYY-MM-DD format." }),
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
+    ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
   }),
   handler: async (ctx) => {
     const FUNC = "paginated/protocolMetrics";
@@ -26,6 +28,16 @@ export default createOperation.query({
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
 
+    // Return cached data if it exists
+    const cacheKey = getCacheKey(FUNC, ctx.input);
+    if (!ctx.input.ignoreCache) {
+      const cachedData = await getCachedData<ProtocolMetric[]>(cacheKey);
+      if (cachedData) {
+        return cachedData;
+      }
+    }
+
+    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
     const offsetDays: number = getOffsetDays(ctx.input.dateOffset);
 
     // Combine across pages and endpoints
@@ -62,7 +74,12 @@ export default createOperation.query({
       }
     }
 
+    const sortedRecords = sortRecordsDescending(combinedProtocolMetrics);
+
+    // Update the cache
+    await setCachedData<ProtocolMetric[]>(cacheKey, sortedRecords);
+
     console.log(`${FUNC}: Returning ${combinedProtocolMetrics.length} records.`);
-    return sortRecordsDescending(combinedProtocolMetrics);
+    return sortedRecords;
   },
 });

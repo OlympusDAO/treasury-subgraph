@@ -1,7 +1,8 @@
+import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
 import { TokenSuppliesResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
-import { flattenRecords, isCrossChainSupplyDataComplete, sortRecordsDescending } from '../../tokenSupplyHelper';
+import { TokenSupply, flattenRecords, isCrossChainSupplyDataComplete, sortRecordsDescending } from '../../tokenSupplyHelper';
 
 /**
  * Determines whether the provided records should be processed further.
@@ -49,6 +50,7 @@ export default createOperation.query({
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
     pageSize: z.number({ description: "The number of records per page. Increase the value if data is missing." }).optional(),
     crossChainDataComplete: z.boolean({ description: "If true, returns data up to the most recent day in which all subgraphs have data." }).optional(),
+    ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
   }),
   handler: async (ctx) => {
     const FUNC = "paginated/tokenSupplies";
@@ -60,6 +62,16 @@ export default createOperation.query({
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
 
+    // Return cached data if it exists
+    const cacheKey = getCacheKey(FUNC, ctx.input);
+    if (!ctx.input.ignoreCache) {
+      const cachedData = await getCachedData<TokenSupply[]>(cacheKey);
+      if (cachedData) {
+        return cachedData;
+      }
+    }
+
+    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
     const offsetDays: number = getOffsetDays(ctx.input.dateOffset);
 
     // Combine across pages and endpoints
@@ -98,7 +110,12 @@ export default createOperation.query({
       }
     }
 
-    console.log(`${FUNC}: Returning ${combinedTokenSupplies.length} records.`);
-    return sortRecordsDescending(combinedTokenSupplies);
+    const sortedRecords = sortRecordsDescending(combinedTokenSupplies);
+
+    // Update the cache
+    await setCachedData<TokenSupply[]>(cacheKey, sortedRecords);
+
+    console.log(`${FUNC}: Returning ${sortedRecords.length} records.`);
+    return sortedRecords;
   },
 });

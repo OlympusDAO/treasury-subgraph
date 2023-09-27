@@ -1,5 +1,5 @@
-import { getCachedData, setCachedData } from '../../cacheHelper';
-import { createOperation } from '../../generated/wundergraph.factory';
+import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
+import { createOperation, z } from '../../generated/wundergraph.factory';
 import { TokenSupply, flattenRecords } from '../../tokenSupplyHelper';
 
 /**
@@ -7,15 +7,20 @@ import { TokenSupply, flattenRecords } from '../../tokenSupplyHelper';
  * each endpoint.
  */
 export default createOperation.query({
+  input: z.object({
+    ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
+  }),
   handler: async (ctx) => {
     const FUNC = "latest/tokenSupplies";
     console.log(`${FUNC}: Commencing latest query for TokenSupply`);
 
     // Return cached data if it exists
-    const cachedData = await getCachedData<TokenSupply[]>(FUNC);
-    if (cachedData) {
-      console.log(`${FUNC}: Returning cached data`);
-      return cachedData;
+    const cacheKey = getCacheKey(FUNC);
+    if (!ctx.input.ignoreCache) {
+      const cachedData = await getCachedData<TokenSupply[]>(cacheKey);
+      if (cachedData) {
+        return cachedData;
+      }
     }
 
     console.log(`${FUNC}: No cached data found, querying subgraphs...`);
@@ -30,12 +35,11 @@ export default createOperation.query({
 
     // Combine across pages and endpoints
     const flatRecords = flattenRecords(queryResult.data, true, false);
-    console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
 
     // Update the cache
-    await setCachedData<TokenSupply[]>(FUNC, flatRecords);
-    console.log(`${FUNC}: Updated cache`);
+    await setCachedData<TokenSupply[]>(cacheKey, flatRecords);
 
+    console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
 });

@@ -1,6 +1,7 @@
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { getISO8601DateString } from '../../dateHelper';
 import { Metric, RecordContainer, getMetricObject, sortRecordsDescending } from '../../metricHelper';
+import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
 
 /**
  * This custom query will return a flat array containing Metric objects from
@@ -16,6 +17,7 @@ export default createOperation.query({
     crossChainDataComplete: z.boolean({ description: "If true, returns data for the most recent day in which all subgraphs have data." }).optional(),
     // Returns the records used to calculate each metric. This is disabled by default, as it can be a lot of data.
     includeRecords: z.boolean({ description: "If true, includes the records used to calculate each metric." }).optional(),
+    ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
   }),
   handler: async (ctx) => {
     const FUNC = "paginated/metrics";
@@ -27,6 +29,16 @@ export default createOperation.query({
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
 
+    // Return cached data if it exists
+    const cacheKey = getCacheKey(FUNC, ctx.input);
+    if (!ctx.input.ignoreCache) {
+      const cachedData = await getCachedData<Metric[]>(cacheKey);
+      if (cachedData) {
+        return cachedData;
+      }
+    }
+
+    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
     const finalStartDateString = getISO8601DateString(finalStartDate);
 
     const metricRecords: Metric[] = [];
@@ -37,6 +49,7 @@ export default createOperation.query({
       input: {
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
+        ignoreCache: ctx.input.ignoreCache,
       },
     });
 
@@ -63,6 +76,7 @@ export default createOperation.query({
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
         crossChainDataComplete: ctx.input.crossChainDataComplete,
+        ignoreCache: ctx.input.ignoreCache,
       },
     });
 
@@ -89,6 +103,7 @@ export default createOperation.query({
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
         crossChainDataComplete: ctx.input.crossChainDataComplete,
+        ignoreCache: ctx.input.ignoreCache,
       },
     });
 
@@ -120,6 +135,12 @@ export default createOperation.query({
       metricRecords.push(metricRecord);
     });
 
-    return sortRecordsDescending(metricRecords);
+    const sortedRecords = sortRecordsDescending(metricRecords);
+
+    // Update the cache
+    await setCachedData<Metric[]>(cacheKey, sortedRecords);
+
+    console.log(`${FUNC}: Returning ${sortedRecords.length} records.`);
+    return sortedRecords;
   },
 });

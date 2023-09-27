@@ -1,5 +1,5 @@
-import { getCachedData, setCachedData } from '../../cacheHelper';
-import { createOperation } from '../../generated/wundergraph.factory';
+import { getCacheKey, getCachedData, setCachedData } from '../../cacheHelper';
+import { createOperation, z } from '../../generated/wundergraph.factory';
 import { ProtocolMetric, flattenRecords } from '../../protocolMetricHelper';
 
 /**
@@ -11,15 +11,20 @@ import { ProtocolMetric, flattenRecords } from '../../protocolMetricHelper';
  * TODO: remove this query once the Metric queries are in use in the frontend
  */
 export default createOperation.query({
+  input: z.object({
+    ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
+  }),
   handler: async (ctx) => {
     const FUNC = "latest/protocolMetrics";
     console.log(`${FUNC}: Commencing latest query for ProtocolMetric`);
 
     // Return cached data if it exists
-    const cachedData = await getCachedData<ProtocolMetric[]>(FUNC);
-    if (cachedData) {
-      console.log(`${FUNC}: Returning cached data`);
-      return cachedData;
+    const cacheKey = getCacheKey(FUNC);
+    if (!ctx.input.ignoreCache) {
+      const cachedData = await getCachedData<ProtocolMetric[]>(cacheKey);
+      if (cachedData) {
+        return cachedData;
+      }
     }
 
     console.log(`${FUNC}: No cached data found, querying subgraphs...`);
@@ -36,8 +41,7 @@ export default createOperation.query({
     const flatRecords = flattenRecords(queryResult.data, false);
 
     // Update the cache
-    await setCachedData<ProtocolMetric[]>(FUNC, flatRecords);
-    console.log(`${FUNC}: Updated cache`);
+    await setCachedData<ProtocolMetric[]>(cacheKey, flatRecords);
 
     console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
