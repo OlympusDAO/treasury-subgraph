@@ -59,7 +59,7 @@ export const flattenRecords = (records: TokenRecordsLatestResponseData, latestBl
   };
 
   for (const [key, value] of Object.entries(mapping)) {
-    log.debug(`${FUNC}: Got ${value.length} ${key} records.`);
+    log.info(`${FUNC}: Got ${value.length} ${key} records.`);
     let currentRecords: TokenRecord[] = value;
 
     if (latestBlock) {

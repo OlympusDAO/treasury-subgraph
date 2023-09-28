@@ -59,7 +59,7 @@ export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockch
   };
 
   for (const [key, value] of Object.entries(mapping)) {
-    log.debug(`${FUNC}: Got ${value.length} ${key} records.`);
+    log.info(`${FUNC}: Got ${value.length} ${key} records.`);
     let currentRecords: TokenSupply[] = value;
 
     if (blockchain) {

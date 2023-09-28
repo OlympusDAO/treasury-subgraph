@@ -37,7 +37,7 @@ export async function getCachedRecord<T>(key: string, log: RequestLogger): Promi
   try {
     result = await getClient().get(key) as T | null;
     if (result) {
-      log.debug(`${FUNC}: Cache hit`);
+      log.info(`${FUNC}: Cache hit`);
     }
   }
   // Catch any errors. Worst-case is that the cache value is not used and a query is performed instead.
@@ -46,7 +46,7 @@ export async function getCachedRecord<T>(key: string, log: RequestLogger): Promi
   }
 
   const endTime = Date.now();
-  log.debug(`${FUNC}: ${endTime - startTime}ms elapsed`);
+  log.info(`${FUNC}: ${endTime - startTime}ms elapsed`);
 
   return result;
 }
@@ -61,25 +61,25 @@ export async function getCachedRecords<T>(key: string, log: RequestLogger): Prom
     // Get the length of the list
     const length = await client.llen(key);
     if (length === 0) {
-      log.debug(`${FUNC}: Cache miss`);
+      log.info(`${FUNC}: Cache miss`);
       return null;
     }
 
     result = [];
-    log.debug(`${FUNC}: ${length} records found in cache`);
+    log.info(`${FUNC}: ${length} records found in cache`);
 
     // Get the list in chunks of CHUNK_SIZE
     for (let i = 0; i < length; i += CHUNK_SIZE) {
       const chunkStartTime = Date.now();
-      log.debug(`${FUNC}: Getting chunk`);
+      log.info(`${FUNC}: Getting chunk`);
 
       const chunk = await client.lrange(key, i, i + CHUNK_SIZE - 1) as T[];
       result.push(...chunk);
 
-      log.debug(`${FUNC}: Chunk retrieved in ${Date.now() - chunkStartTime}ms`);
+      log.info(`${FUNC}: Chunk retrieved in ${Date.now() - chunkStartTime}ms`);
     }
 
-    log.debug(`${FUNC}: Cache hit`);
+    log.info(`${FUNC}: Cache hit`);
   }
   // Catch any errors. Worst-case is that the cache value is not used and a query is performed instead.
   catch (e) {
@@ -87,7 +87,7 @@ export async function getCachedRecords<T>(key: string, log: RequestLogger): Prom
   }
 
   const endTime = Date.now();
-  log.debug(`${FUNC}: ${endTime - startTime}ms elapsed`);
+  log.info(`${FUNC}: ${endTime - startTime}ms elapsed`);
 
   return result;
 }
@@ -100,7 +100,7 @@ export async function setCachedRecord<T>(key: string, value: T extends Array<any
   try {
     // Set the value and expiry for 1 hour
     await client.set(key, value, { ex: TTL });
-    log.debug(`${FUNC}: Updated cache`);
+    log.info(`${FUNC}: Updated cache`);
   }
   // Catch any errors. Worst-case is that the cache is not updated
   catch (e) {
@@ -108,7 +108,7 @@ export async function setCachedRecord<T>(key: string, value: T extends Array<any
   }
 
   const endTime = Date.now();
-  log.debug(`${FUNC}: ${endTime - startTime}ms elapsed`);
+  log.info(`${FUNC}: ${endTime - startTime}ms elapsed`);
 }
 
 export async function setCachedRecords<T>(key: string, records: T[], log: RequestLogger): Promise<void> {
@@ -122,16 +122,16 @@ export async function setCachedRecords<T>(key: string, records: T[], log: Reques
      * 
      * Otherwise there is a risk that records are added to the list before it is cleared, which would result in duplicate records.
      */
-    log.debug(`${FUNC}: Starting transaction`);
+    log.info(`${FUNC}: Starting transaction`);
     const pipeline = client.multi();
 
     // Clear the list
-    log.debug(`${FUNC}: Clearing cache`);
+    log.info(`${FUNC}: Clearing cache`);
     pipeline.del(key);
 
     // Divide the array into smaller chunks, to avoid the maximum request size
     const chunkedRecords = chunkArray(records, CHUNK_SIZE);
-    log.debug(`${FUNC}: ${chunkedRecords.length} chunks to insert`);
+    log.info(`${FUNC}: ${chunkedRecords.length} chunks to insert`);
     for (const chunk of chunkedRecords) {
       pipeline.rpush(key, ...chunk);
     }
@@ -142,7 +142,7 @@ export async function setCachedRecords<T>(key: string, records: T[], log: Reques
     // Execute the transaction
     await pipeline.exec();
 
-    log.debug(`${FUNC}: Updated cache`);
+    log.info(`${FUNC}: Updated cache`);
   }
   // Catch any errors. Worst-case is that the cache is not updated
   catch (e) {
@@ -150,7 +150,7 @@ export async function setCachedRecords<T>(key: string, records: T[], log: Reques
   }
 
   const endTime = Date.now();
-  log.debug(`${FUNC}: ${endTime - startTime}ms elapsed`);
+  log.info(`${FUNC}: ${endTime - startTime}ms elapsed`);
 }
 
 export const getCacheKey = (name: string, input?: Record<string, unknown>): string => {
