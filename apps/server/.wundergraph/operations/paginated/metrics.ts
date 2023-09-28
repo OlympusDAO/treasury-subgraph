@@ -21,10 +21,12 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "paginated/metrics";
-    console.log(`${FUNC}: Commencing paginated query for Metric`);
-    console.log(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
+    const log = ctx.log;
+
+    log.info(`${FUNC}: Commencing query`);
+    log.info(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
     const finalStartDate: Date = new Date(ctx.input.startDate);
-    console.log(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
+    log.info(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
@@ -32,13 +34,13 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecords<Metric>(cacheKey);
+      const cachedData = await getCachedRecords<Metric>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
     }
 
-    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
+    log.info(`${FUNC}: No cached data found, querying subgraphs...`);
     const finalStartDateString = getISO8601DateString(finalStartDate);
 
     const metricRecords: Metric[] = [];
@@ -67,7 +69,7 @@ export default createOperation.query({
         byDateRecords.set(date, recordContainer);
       });
 
-      console.log(`${FUNC}: Processed ${protocolMetricsQueryResult.data.length} ProtocolMetric records.`);
+      log.info(`${FUNC}: Processed ${protocolMetricsQueryResult.data.length} ProtocolMetric records.`);
     }
 
     const tokenRecordsQueryResult = await ctx.operations.query({
@@ -94,7 +96,7 @@ export default createOperation.query({
         byDateRecords.set(date, recordContainer);
       });
 
-      console.log(`${FUNC}: Processed ${tokenRecordsQueryResult.data.length} TokenRecord records.`);
+      log.info(`${FUNC}: Processed ${tokenRecordsQueryResult.data.length} TokenRecord records.`);
     }
 
     const tokenSuppliesQueryResult = await ctx.operations.query({
@@ -121,14 +123,14 @@ export default createOperation.query({
         byDateRecords.set(date, recordContainer);
       });
 
-      console.log(`${FUNC}: Processed ${tokenSuppliesQueryResult.data.length} TokenSupply records.`);
+      log.info(`${FUNC}: Processed ${tokenSuppliesQueryResult.data.length} TokenSupply records.`);
     }
 
     // Convert into new Metric objects
     byDateRecords.forEach((recordContainer, date) => {
       const metricRecord: Metric | null = getMetricObject(recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, ctx.input.includeRecords);
       if (!metricRecord) {
-        console.log(`${FUNC}: Skipping date ${date} because it is missing data.`);
+        log.info(`${FUNC}: Skipping date ${date} because it is missing data.`);
         return;
       }
 
@@ -138,9 +140,9 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(metricRecords);
 
     // Update the cache
-    await setCachedRecords<Metric>(cacheKey, sortedRecords);
+    await setCachedRecords<Metric>(cacheKey, sortedRecords, log);
 
-    console.log(`${FUNC}: Returning ${sortedRecords.length} records.`);
+    log.info(`${FUNC}: Returning ${sortedRecords.length} records.`);
     return sortedRecords;
   },
 });

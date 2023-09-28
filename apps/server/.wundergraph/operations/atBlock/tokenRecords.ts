@@ -14,7 +14,8 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "atBlock/tokenRecords";
-    console.log(`${FUNC}: Commencing atBlock query for TokenRecord`);
+    const log = ctx.log;
+    log.info(`${FUNC}: Commencing query`);
 
     const queryResult = await ctx.operations.query({
       operationName: "tokenRecordsAtBlock",
@@ -27,13 +28,13 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      console.log(`${FUNC}: No data returned.`);
+      log.info(`${FUNC}: No data returned.`);
       return [];
     }
 
     // Combine across pages and endpoints
-    const flatRecords = flattenRecords(queryResult.data, false);
-    console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
+    const flatRecords = flattenRecords(queryResult.data, false, log);
+    log.info(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
 });

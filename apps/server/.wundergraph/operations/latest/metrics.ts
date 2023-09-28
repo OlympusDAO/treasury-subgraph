@@ -13,12 +13,13 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "latest/metrics";
-    console.log(`${FUNC}: Commencing query`);
+    const log = ctx.log;
+    log.info(`${FUNC}: Commencing query`);
 
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecord<Metric>(cacheKey);
+      const cachedData = await getCachedRecord<Metric>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
@@ -26,7 +27,7 @@ export default createOperation.query({
 
     // Get the latest block for each blockchain
     // TODO what if the latest date is missing cross-chain data?
-    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
+    log.info(`${FUNC}: No cached data found, querying subgraphs...`);
     const latestQueryResult = await ctx.operations.query({
       operationName: "latest/tokenRecords",
     });
@@ -66,7 +67,7 @@ export default createOperation.query({
 
     // Update the cache
     if (metricRecord) {
-      await setCachedRecord<Metric>(cacheKey, metricRecord);
+      await setCachedRecord<Metric>(cacheKey, metricRecord, log);
     }
 
     return metricRecord;

@@ -9,20 +9,22 @@ import { flattenRecords } from '../../../protocolMetricHelper';
  */
 export default createOperation.query({
   handler: async (ctx) => {
-    console.log(`Commencing earliest query for ProtocolMetric`);
+    const FUNC = `earliest/internal/protocolMetrics`;
+    const log = ctx.log;
+    log.info(`${FUNC}: Commencing query`);
 
     const queryResult = await ctx.operations.query({
       operationName: "raw/internal/protocolMetricsEarliest",
     });
 
     if (!queryResult.data) {
-      console.log(`No data returned.`);
+      log.info(`${FUNC}: No data returned.`);
       return [];
     }
 
     // Combine across pages and endpoints
-    const flatRecords = flattenRecords(queryResult.data, false);
-    console.log(`Returning ${flatRecords.length} records.`);
+    const flatRecords = flattenRecords(queryResult.data, false, log);
+    log.info(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
 });

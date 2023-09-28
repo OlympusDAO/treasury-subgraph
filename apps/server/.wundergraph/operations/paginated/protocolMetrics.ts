@@ -20,10 +20,12 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "paginated/protocolMetrics";
-    console.log(`${FUNC}: Commencing paginated query for ProtocolMetric`);
-    console.log(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
+    const log = ctx.log;
+
+    log.info(`${FUNC}: Commencing query`);
+    log.info(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
     const finalStartDate: Date = new Date(ctx.input.startDate);
-    console.log(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
+    log.info(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
@@ -31,13 +33,13 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecords<ProtocolMetric>(cacheKey);
+      const cachedData = await getCachedRecords<ProtocolMetric>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
     }
 
-    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
+    log.info(`${FUNC}: No cached data found, querying subgraphs...`);
     const offsetDays: number = getOffsetDays(ctx.input.dateOffset);
 
     // Combine across pages and endpoints
@@ -47,7 +49,7 @@ export default createOperation.query({
     let currentEndDate: Date = getNextEndDate(null);
 
     while (currentStartDate.getTime() >= finalStartDate.getTime()) {
-      console.log(`${FUNC}: Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
+      log.info(`${FUNC}: Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
         operationName: "raw/internal/protocolMetrics",
         input: {
@@ -60,7 +62,7 @@ export default createOperation.query({
       if (queryResult.data) {
         // Collapse the data into a single array, and add a missing property
         // ProtocolMetrics are only generated for the Ethereum mainnet subgraph at the moment, so there is no need for a cross-chain consistency check
-        combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true));
+        combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true, log));
       }
 
       currentEndDate = currentStartDate;
@@ -69,7 +71,7 @@ export default createOperation.query({
       // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
       // There is probably a cleaner way to do this, but this works for now
       if (currentStartDate == finalStartDate) {
-        console.log(`${FUNC}: Reached final start date.`);
+        log.info(`${FUNC}: Reached final start date.`);
         break;
       }
     }
@@ -77,9 +79,9 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(combinedProtocolMetrics);
 
     // Update the cache
-    await setCachedRecords<ProtocolMetric>(cacheKey, sortedRecords);
+    await setCachedRecords<ProtocolMetric>(cacheKey, sortedRecords, log);
 
-    console.log(`${FUNC}: Returning ${combinedProtocolMetrics.length} records.`);
+    log.info(`${FUNC}: Returning ${combinedProtocolMetrics.length} records.`);
     return sortedRecords;
   },
 });

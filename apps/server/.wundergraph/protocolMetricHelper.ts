@@ -1,3 +1,4 @@
+import { RequestLogger } from "@wundergraph/sdk/server";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { RawInternalProtocolMetricsResponseData } from "./generated/models";
 import { parseNumber } from "./numberHelper";
@@ -40,7 +41,7 @@ export const sortRecordsDescending = (records: ProtocolMetric[]): ProtocolMetric
   });
 };
 
-export const flattenRecords = (records: RawInternalProtocolMetricsResponseData, latestBlock: boolean): ProtocolMetric[] => {
+export const flattenRecords = (records: RawInternalProtocolMetricsResponseData, latestBlock: boolean, log: RequestLogger): ProtocolMetric[] => {
   const FUNC = "protocolMetric/flattenRecords";
   const combinedRecords: ProtocolMetric[] = [];
 
@@ -52,7 +53,7 @@ export const flattenRecords = (records: RawInternalProtocolMetricsResponseData, 
   };
 
   for (const [key, value] of Object.entries(mapping)) {
-    console.log(`${FUNC}: Got ${value.length} ${key} records.`);
+    log.debug(`${FUNC}: Got ${value.length} ${key} records.`);
     let currentRecords: ProtocolMetric[] = value;
 
     if (latestBlock) {

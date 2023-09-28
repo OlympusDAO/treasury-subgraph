@@ -12,34 +12,35 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "latest/tokenSupplies";
-    console.log(`${FUNC}: Commencing query`);
+    const log = ctx.log;
+    log.info(`${FUNC}: Commencing query`);
 
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecords<TokenSupply>(cacheKey);
+      const cachedData = await getCachedRecords<TokenSupply>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
     }
 
-    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
+    log.info(`${FUNC}: No cached data found, querying subgraphs...`);
     const queryResult = await ctx.operations.query({
       operationName: "tokenSuppliesLatest",
     });
 
     if (!queryResult.data) {
-      console.log(`${FUNC}: No data returned.`);
+      log.info(`${FUNC}: No data returned.`);
       return [];
     }
 
     // Combine across pages and endpoints
-    const flatRecords = flattenRecords(queryResult.data, true, false);
+    const flatRecords = flattenRecords(queryResult.data, true, false, log);
 
     // Update the cache
-    await setCachedRecords<TokenSupply>(cacheKey, flatRecords);
+    await setCachedRecords<TokenSupply>(cacheKey, flatRecords, log);
 
-    console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
+    log.info(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
 });

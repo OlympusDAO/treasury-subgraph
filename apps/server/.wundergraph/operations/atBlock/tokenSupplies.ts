@@ -14,7 +14,8 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "atBlock/tokenSupplies";
-    console.log(`${FUNC}: Commencing query`);
+    const log = ctx.log;
+    log.info(`${FUNC}: Commencing query`);
 
     const queryResult = await ctx.operations.query({
       operationName: "tokenSuppliesAtBlock",
@@ -27,10 +28,10 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      console.log(`${FUNC}: No data returned`);
+      log.info(`${FUNC}: No data returned`);
       return [];
     }
 
-    return flattenRecords(queryResult.data, true, false);
+    return flattenRecords(queryResult.data, true, false, log);
   },
 });

@@ -12,7 +12,9 @@ export default createOperation.query({
     polygonBlock: z.number({ description: "Polygon block number" }),
   }),
   handler: async (ctx) => {
-    console.log(`Commencing atBlock query for Metric`);
+    const FUNC = `atBlock/metrics`;
+    const log = ctx.log;
+    log.info(`${FUNC}: Commencing query`);
 
     const input = {
       arbitrumBlock: ctx.input.arbitrumBlock,

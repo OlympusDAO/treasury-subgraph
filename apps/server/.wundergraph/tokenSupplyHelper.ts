@@ -1,3 +1,4 @@
+import { RequestLogger } from "@wundergraph/sdk/server";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenSuppliesLatestResponseData } from "./generated/models";
 import { parseNumber } from "./numberHelper";
@@ -46,7 +47,7 @@ export const setBlockchainProperty = (records: TokenSupply[], blockchain: string
   });
 }
 
-export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockchain: boolean, latestBlock: boolean): TokenSupply[] => {
+export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockchain: boolean, latestBlock: boolean, log: RequestLogger): TokenSupply[] => {
   const FUNC = "tokenSupply/flattenRecords";
   const combinedRecords: TokenSupply[] = [];
 
@@ -58,7 +59,7 @@ export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockch
   };
 
   for (const [key, value] of Object.entries(mapping)) {
-    console.log(`${FUNC}: Got ${value.length} ${key} records.`);
+    log.debug(`${FUNC}: Got ${value.length} ${key} records.`);
     let currentRecords: TokenSupply[] = value;
 
     if (blockchain) {

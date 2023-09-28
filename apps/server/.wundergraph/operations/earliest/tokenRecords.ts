@@ -12,34 +12,35 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "earliest/tokenRecords";
-    console.log(`${FUNC}: Commencing earliest query for TokenRecord`);
+    const log = ctx.log;
+    log.info(`${FUNC}: Commencing query`);
 
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecords<TokenRecord>(cacheKey);
+      const cachedData = await getCachedRecords<TokenRecord>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
     }
 
-    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
+    log.info(`${FUNC}: No cached data found, querying subgraphs...`);
     const queryResult = await ctx.operations.query({
       operationName: "tokenRecordsEarliest",
     });
 
     if (!queryResult.data) {
-      console.log(`${FUNC}: No data returned.`);
+      log.info(`${FUNC}: No data returned.`);
       return [];
     }
 
     // Combine across pages and endpoints
-    const flatRecords = flattenRecords(queryResult.data, false);
+    const flatRecords = flattenRecords(queryResult.data, false, log);
 
     // Update the cache
-    await setCachedRecords<TokenRecord>(cacheKey, flatRecords);
+    await setCachedRecords<TokenRecord>(cacheKey, flatRecords, log);
 
-    console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
+    log.info(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
 });

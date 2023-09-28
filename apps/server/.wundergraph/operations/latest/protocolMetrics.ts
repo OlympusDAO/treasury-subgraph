@@ -16,34 +16,35 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "latest/protocolMetrics";
-    console.log(`${FUNC}: Commencing query`);
+    const log = ctx.log;
+    log.info(`${FUNC}: Commencing query`);
 
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecords<ProtocolMetric>(cacheKey);
+      const cachedData = await getCachedRecords<ProtocolMetric>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
     }
 
-    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
+    log.info(`${FUNC}: No cached data found, querying subgraphs...`);
     const queryResult = await ctx.operations.query({
       operationName: "raw/internal/protocolMetricsLatest",
     });
 
     if (!queryResult.data) {
-      console.log(`${FUNC}: No data returned.`);
+      log.info(`${FUNC}: No data returned.`);
       return [];
     }
 
     // Combine across pages and endpoints
-    const flatRecords = flattenRecords(queryResult.data, false);
+    const flatRecords = flattenRecords(queryResult.data, false, log);
 
     // Update the cache
-    await setCachedRecords<ProtocolMetric>(cacheKey, flatRecords);
+    await setCachedRecords<ProtocolMetric>(cacheKey, flatRecords, log);
 
-    console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
+    log.info(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
 });

@@ -1,3 +1,4 @@
+import { RequestLogger } from '@wundergraph/sdk/server';
 import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
 import { TokenSuppliesResponseData } from '../../generated/models';
@@ -14,7 +15,7 @@ import { TokenSupply, flattenRecords, isCrossChainSupplyDataComplete, sortRecord
  * @param crossChainDataComplete 
  * @returns 
  */
-const shouldProcessRecords = (records: TokenSuppliesResponseData, hasProcessedFirstDate: boolean, crossChainDataComplete: boolean | undefined): boolean => {
+const shouldProcessRecords = (records: TokenSuppliesResponseData, hasProcessedFirstDate: boolean, log: RequestLogger, crossChainDataComplete: boolean | undefined): boolean => {
   if (hasProcessedFirstDate === true) {
     return true;
   }
@@ -27,11 +28,11 @@ const shouldProcessRecords = (records: TokenSuppliesResponseData, hasProcessedFi
   const ethereumTokenRecords = records.treasuryEthereum_tokenSupplies;
 
   if (isCrossChainSupplyDataComplete(arbitrumTokenRecords, ethereumTokenRecords)) {
-    console.log(`Cross-chain data is complete.`);
+    log.info(`Cross-chain data is complete.`);
     return true;
   }
 
-  console.log(`Cross-chain data is incomplete.`);
+  log.info(`Cross-chain data is incomplete.`);
   return false;
 }
 
@@ -54,10 +55,12 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "paginated/tokenSupplies";
-    console.log(`${FUNC}: Commencing paginated query for TokenSupply`);
-    console.log(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
+    const log = ctx.log;
+
+    log.info(`${FUNC}: Commencing query`);
+    log.info(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
     const finalStartDate: Date = new Date(ctx.input.startDate);
-    console.log(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
+    log.info(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
@@ -65,13 +68,13 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecords<TokenSupply>(cacheKey);
+      const cachedData = await getCachedRecords<TokenSupply>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
     }
 
-    console.log(`${FUNC}: No cached data found, querying subgraphs...`);
+    log.info(`${FUNC}: No cached data found, querying subgraphs...`);
     const offsetDays: number = getOffsetDays(ctx.input.dateOffset);
 
     // Combine across pages and endpoints
@@ -82,7 +85,7 @@ export default createOperation.query({
     let hasProcessedFirstDate = false;
 
     while (currentStartDate.getTime() >= finalStartDate.getTime()) {
-      console.log(`${FUNC}: Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
+      log.info(`${FUNC}: Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
         operationName: "tokenSupplies",
         input: {
@@ -91,9 +94,9 @@ export default createOperation.query({
         },
       });
 
-      if (queryResult.data && shouldProcessRecords(queryResult.data, hasProcessedFirstDate, ctx.input.crossChainDataComplete)) {
+      if (queryResult.data && shouldProcessRecords(queryResult.data, hasProcessedFirstDate, log, ctx.input.crossChainDataComplete)) {
         // Collapse the data into a single array, and add a missing property
-        combinedTokenSupplies.push(...flattenRecords(queryResult.data, true, true));
+        combinedTokenSupplies.push(...flattenRecords(queryResult.data, true, true, log));
 
         // This prevents checking for consistent cross-chain data a second time
         hasProcessedFirstDate = true;
@@ -105,7 +108,7 @@ export default createOperation.query({
       // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
       // There is probably a cleaner way to do this, but this works for now
       if (currentStartDate == finalStartDate) {
-        console.log(`${FUNC}: Reached final start date.`);
+        log.info(`${FUNC}: Reached final start date.`);
         break;
       }
     }
@@ -113,9 +116,9 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(combinedTokenSupplies);
 
     // Update the cache
-    await setCachedRecords<TokenSupply>(cacheKey, sortedRecords);
+    await setCachedRecords<TokenSupply>(cacheKey, sortedRecords, log);
 
-    console.log(`${FUNC}: Returning ${sortedRecords.length} records.`);
+    log.info(`${FUNC}: Returning ${sortedRecords.length} records.`);
     return sortedRecords;
   },
 });

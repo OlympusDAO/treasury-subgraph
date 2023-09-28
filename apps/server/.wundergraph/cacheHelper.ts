@@ -1,7 +1,8 @@
 import { Redis } from "@upstash/redis";
+import { RequestLogger } from "@wundergraph/sdk/server";
 
 const TTL = 60 * 60;
-const CHUNK_SIZE = 2000;
+const CHUNK_SIZE = 1500;
 
 const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
   const chunkedRecords: T[][] = [];
@@ -28,7 +29,7 @@ const getClient = (): Redis => {
   });
 }
 
-export async function getCachedRecord<T>(key: string): Promise<T | null> {
+export async function getCachedRecord<T>(key: string, log: RequestLogger): Promise<T | null> {
   const FUNC = `getCachedRecord: ${key}`;
   const startTime = Date.now();
 
@@ -36,21 +37,21 @@ export async function getCachedRecord<T>(key: string): Promise<T | null> {
   try {
     result = await getClient().get(key) as T | null;
     if (result) {
-      console.log(`${FUNC}: Cache hit`);
+      log.debug(`${FUNC}: Cache hit`);
     }
   }
   // Catch any errors. Worst-case is that the cache value is not used and a query is performed instead.
   catch (e) {
-    console.error(`${FUNC}: Failed to get cache`, e);
+    log.error(`${FUNC}: Failed to get cache`, e);
   }
 
   const endTime = Date.now();
-  console.log(`${FUNC}: ${endTime - startTime}ms elapsed`);
+  log.debug(`${FUNC}: ${endTime - startTime}ms elapsed`);
 
   return result;
 }
 
-export async function getCachedRecords<T>(key: string): Promise<T[] | null> {
+export async function getCachedRecords<T>(key: string, log: RequestLogger): Promise<T[] | null> {
   const FUNC = `getCachedRecords: ${key}`;
   const startTime = Date.now();
   const client = getClient();
@@ -60,38 +61,38 @@ export async function getCachedRecords<T>(key: string): Promise<T[] | null> {
     // Get the length of the list
     const length = await client.llen(key);
     if (length === 0) {
-      console.log(`${FUNC}: Cache miss`);
+      log.debug(`${FUNC}: Cache miss`);
       return null;
     }
 
     result = [];
-    console.log(`${FUNC}: ${length} records found in cache`);
+    log.debug(`${FUNC}: ${length} records found in cache`);
 
     // Get the list in chunks of CHUNK_SIZE
     for (let i = 0; i < length; i += CHUNK_SIZE) {
       const chunkStartTime = Date.now();
-      console.log(`${FUNC}: Getting chunk`);
+      log.debug(`${FUNC}: Getting chunk`);
 
       const chunk = await client.lrange(key, i, i + CHUNK_SIZE - 1) as T[];
       result.push(...chunk);
 
-      console.log(`${FUNC}: Chunk retrieved in ${Date.now() - chunkStartTime}ms`);
+      log.debug(`${FUNC}: Chunk retrieved in ${Date.now() - chunkStartTime}ms`);
     }
 
-    console.log(`${FUNC}: Cache hit`);
+    log.debug(`${FUNC}: Cache hit`);
   }
   // Catch any errors. Worst-case is that the cache value is not used and a query is performed instead.
   catch (e) {
-    console.error(`${FUNC}: Failed to get cache`, e);
+    log.error(`${FUNC}: Failed to get cache`, e);
   }
 
   const endTime = Date.now();
-  console.log(`${FUNC}: ${endTime - startTime}ms elapsed`);
+  log.debug(`${FUNC}: ${endTime - startTime}ms elapsed`);
 
   return result;
 }
 
-export async function setCachedRecord<T>(key: string, value: T extends Array<any> ? never : T): Promise<void> {
+export async function setCachedRecord<T>(key: string, value: T extends Array<any> ? never : T, log: RequestLogger): Promise<void> {
   const FUNC = `setCachedRecord: ${key}`;
   const startTime = Date.now();
   const client = getClient();
@@ -99,18 +100,18 @@ export async function setCachedRecord<T>(key: string, value: T extends Array<any
   try {
     // Set the value and expiry for 1 hour
     await client.set(key, value, { ex: TTL });
-    console.log(`${FUNC}: Updated cache`);
+    log.debug(`${FUNC}: Updated cache`);
   }
   // Catch any errors. Worst-case is that the cache is not updated
   catch (e) {
-    console.error(`${FUNC}:  Failed to update cache`, e);
+    log.error(`${FUNC}:  Failed to update cache`, e);
   }
 
   const endTime = Date.now();
-  console.log(`${FUNC}: ${endTime - startTime}ms elapsed`);
+  log.debug(`${FUNC}: ${endTime - startTime}ms elapsed`);
 }
 
-export async function setCachedRecords<T>(key: string, records: T[]): Promise<void> {
+export async function setCachedRecords<T>(key: string, records: T[], log: RequestLogger): Promise<void> {
   const FUNC = `setCachedRecords: ${key}`;
   const startTime = Date.now();
   const client = getClient();
@@ -121,16 +122,16 @@ export async function setCachedRecords<T>(key: string, records: T[]): Promise<vo
      * 
      * Otherwise there is a risk that records are added to the list before it is cleared, which would result in duplicate records.
      */
-    console.log(`${FUNC}: Starting transaction`);
+    log.debug(`${FUNC}: Starting transaction`);
     const pipeline = client.multi();
 
     // Clear the list
-    console.log(`${FUNC}: Clearing cache`);
+    log.debug(`${FUNC}: Clearing cache`);
     pipeline.del(key);
 
     // Divide the array into smaller chunks, to avoid the maximum request size
     const chunkedRecords = chunkArray(records, CHUNK_SIZE);
-    console.log(`${FUNC}: ${chunkedRecords.length} chunks to insert`);
+    log.debug(`${FUNC}: ${chunkedRecords.length} chunks to insert`);
     for (const chunk of chunkedRecords) {
       pipeline.rpush(key, ...chunk);
     }
@@ -141,15 +142,15 @@ export async function setCachedRecords<T>(key: string, records: T[]): Promise<vo
     // Execute the transaction
     await pipeline.exec();
 
-    console.log(`${FUNC}: Updated cache`);
+    log.debug(`${FUNC}: Updated cache`);
   }
   // Catch any errors. Worst-case is that the cache is not updated
   catch (e) {
-    console.error(`${FUNC}: Failed to update cache`, e);
+    log.error(`${FUNC}: Failed to update cache`, e);
   }
 
   const endTime = Date.now();
-  console.log(`${FUNC}: ${endTime - startTime}ms elapsed`);
+  log.debug(`${FUNC}: ${endTime - startTime}ms elapsed`);
 }
 
 export const getCacheKey = (name: string, input?: Record<string, unknown>): string => {
