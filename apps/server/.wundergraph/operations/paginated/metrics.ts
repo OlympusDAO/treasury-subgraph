@@ -1,6 +1,7 @@
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { getISO8601DateString } from '../../dateHelper';
 import { Metric, RecordContainer, getMetricObject, sortRecordsDescending } from '../../metricHelper';
+import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
 
 /**
  * This custom query will return a flat array containing Metric objects from
@@ -16,17 +17,30 @@ export default createOperation.query({
     crossChainDataComplete: z.boolean({ description: "If true, returns data for the most recent day in which all subgraphs have data." }).optional(),
     // Returns the records used to calculate each metric. This is disabled by default, as it can be a lot of data.
     includeRecords: z.boolean({ description: "If true, includes the records used to calculate each metric." }).optional(),
+    ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
   }),
   handler: async (ctx) => {
     const FUNC = "paginated/metrics";
-    console.log(`${FUNC}: Commencing paginated query for Metric`);
-    console.log(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
+    const log = ctx.log;
+
+    log.info(`${FUNC}: Commencing query`);
+    log.info(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
     const finalStartDate: Date = new Date(ctx.input.startDate);
-    console.log(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
+    log.info(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
 
+    // Return cached data if it exists
+    const cacheKey = getCacheKey(FUNC, ctx.input);
+    if (!ctx.input.ignoreCache) {
+      const cachedData = await getCachedRecords<Metric>(cacheKey, log);
+      if (cachedData) {
+        return cachedData;
+      }
+    }
+
+    log.info(`${FUNC}: No cached data found, querying subgraphs...`);
     const finalStartDateString = getISO8601DateString(finalStartDate);
 
     const metricRecords: Metric[] = [];
@@ -37,6 +51,7 @@ export default createOperation.query({
       input: {
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
+        ignoreCache: ctx.input.ignoreCache,
       },
     });
 
@@ -54,7 +69,7 @@ export default createOperation.query({
         byDateRecords.set(date, recordContainer);
       });
 
-      console.log(`${FUNC}: Processed ${protocolMetricsQueryResult.data.length} ProtocolMetric records.`);
+      log.info(`${FUNC}: Processed ${protocolMetricsQueryResult.data.length} ProtocolMetric records.`);
     }
 
     const tokenRecordsQueryResult = await ctx.operations.query({
@@ -63,6 +78,7 @@ export default createOperation.query({
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
         crossChainDataComplete: ctx.input.crossChainDataComplete,
+        ignoreCache: ctx.input.ignoreCache,
       },
     });
 
@@ -80,7 +96,7 @@ export default createOperation.query({
         byDateRecords.set(date, recordContainer);
       });
 
-      console.log(`${FUNC}: Processed ${tokenRecordsQueryResult.data.length} TokenRecord records.`);
+      log.info(`${FUNC}: Processed ${tokenRecordsQueryResult.data.length} TokenRecord records.`);
     }
 
     const tokenSuppliesQueryResult = await ctx.operations.query({
@@ -89,6 +105,7 @@ export default createOperation.query({
         startDate: finalStartDateString,
         dateOffset: ctx.input.dateOffset,
         crossChainDataComplete: ctx.input.crossChainDataComplete,
+        ignoreCache: ctx.input.ignoreCache,
       },
     });
 
@@ -106,20 +123,26 @@ export default createOperation.query({
         byDateRecords.set(date, recordContainer);
       });
 
-      console.log(`${FUNC}: Processed ${tokenSuppliesQueryResult.data.length} TokenSupply records.`);
+      log.info(`${FUNC}: Processed ${tokenSuppliesQueryResult.data.length} TokenSupply records.`);
     }
 
     // Convert into new Metric objects
     byDateRecords.forEach((recordContainer, date) => {
       const metricRecord: Metric | null = getMetricObject(recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, ctx.input.includeRecords);
       if (!metricRecord) {
-        console.log(`${FUNC}: Skipping date ${date} because it is missing data.`);
+        log.info(`${FUNC}: Skipping date ${date} because it is missing data.`);
         return;
       }
 
       metricRecords.push(metricRecord);
     });
 
-    return sortRecordsDescending(metricRecords);
+    const sortedRecords = sortRecordsDescending(metricRecords);
+
+    // Update the cache
+    await setCachedRecords<Metric>(cacheKey, sortedRecords, log);
+
+    log.info(`${FUNC}: Returning ${sortedRecords.length} records.`);
+    return sortedRecords;
   },
 });

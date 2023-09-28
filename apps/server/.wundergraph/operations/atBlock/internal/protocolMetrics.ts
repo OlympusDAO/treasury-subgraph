@@ -15,7 +15,9 @@ export default createOperation.query({
     polygonBlock: z.number({ description: "Polygon block number" }),
   }),
   handler: async (ctx) => {
-    console.log(`Commencing atBlock query for ProtocolMetric`);
+    const FUNC = `atBlock/internal/protocolMetrics`;
+    const log = ctx.log;
+    log.info(`${FUNC}: Commencing query`);
 
     const queryResult = await ctx.operations.query({
       operationName: "raw/internal/protocolMetricsAtBlock",
@@ -28,13 +30,13 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      console.log(`No data returned.`);
+      log.info(`${FUNC}: No data returned.`);
       return [];
     }
 
     // Combine across pages and endpoints
-    const flatRecords = flattenRecords(queryResult.data, false);
-    console.log(`Returning ${flatRecords.length} records.`);
+    const flatRecords = flattenRecords(queryResult.data, false, log);
+    log.info(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
 });

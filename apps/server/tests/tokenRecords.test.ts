@@ -4,6 +4,7 @@ import { getISO8601DateString } from "./dateHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
 import { getFirstRecord } from "./tokenRecordHelper";
 import { parseNumber } from "./numberHelper";
+import { clearCache } from "./cacheHelper";
 
 const wg = createTestServer();
 
@@ -15,9 +16,15 @@ afterAll(async () => {
   await wg.stop();
 });
 
+beforeEach(async () => {
+  await clearCache();
+});
+
 const getStartDate = (days: number = -5): string => {
   return getISO8601DateString(addDays(new Date(), days));
 }
+
+jest.setTimeout(10 * 1000);
 
 describe("paginated", () => {
   test("returns recent results", async () => {
@@ -32,6 +39,47 @@ describe("paginated", () => {
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
   });
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "paginated/tokenRecords",
+      input: {
+        startDate: getStartDate(-1),
+      },
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "paginated/tokenRecords",
+      input: {
+        startDate: getStartDate(-1),
+      },
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 20 * 1000);
+
+  test("cached results are equal, long timeframe", async () => {
+    // This tests both setting and getting a large amount of data, which can error out
+    const result = await wg.client().query({
+      operationName: "paginated/tokenRecords",
+      input: {
+        startDate: getStartDate(-60),
+      },
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "paginated/tokenRecords",
+      input: {
+        startDate: getStartDate(-60),
+      },
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 30 * 1000);
 
   test("returns results", async () => {
     const result = await wg.client().query({
@@ -148,6 +196,20 @@ describe("latest", () => {
     const recordLength = records ? records.length : 0;
     expect(recordLength).toEqual(4);
   });
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "latest/tokenRecords",
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "latest/tokenRecords",
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 20 * 1000);
 });
 
 describe("earliest", () => {
@@ -185,6 +247,20 @@ describe("earliest", () => {
     const recordLength = records ? records.length : 0;
     expect(recordLength).toEqual(4);
   });
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "earliest/tokenRecords",
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "earliest/tokenRecords",
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 20 * 1000);
 });
 
 describe("atBlock", () => {

@@ -1,7 +1,8 @@
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { RawInternalProtocolMetricsResponseData } from '../../generated/models';
-import { flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
+import { ProtocolMetric, flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
+import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
 
 /**
  * This custom query will return a flat array containing ProtocolMetric objects from
@@ -15,17 +16,30 @@ export default createOperation.query({
   input: z.object({
     startDate: z.string({ description: "The start date in the YYYY-MM-DD format." }),
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
+    ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
   }),
   handler: async (ctx) => {
     const FUNC = "paginated/protocolMetrics";
-    console.log(`${FUNC}: Commencing paginated query for ProtocolMetric`);
-    console.log(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
+    const log = ctx.log;
+
+    log.info(`${FUNC}: Commencing query`);
+    log.info(`${FUNC}: Input: ${JSON.stringify(ctx.input)}`);
     const finalStartDate: Date = new Date(ctx.input.startDate);
-    console.log(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
+    log.info(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
       throw new Error(`startDate should be in the YYYY-MM-DD format.`);
     }
 
+    // Return cached data if it exists
+    const cacheKey = getCacheKey(FUNC, ctx.input);
+    if (!ctx.input.ignoreCache) {
+      const cachedData = await getCachedRecords<ProtocolMetric>(cacheKey, log);
+      if (cachedData) {
+        return cachedData;
+      }
+    }
+
+    log.info(`${FUNC}: No cached data found, querying subgraphs...`);
     const offsetDays: number = getOffsetDays(ctx.input.dateOffset);
 
     // Combine across pages and endpoints
@@ -35,7 +49,7 @@ export default createOperation.query({
     let currentEndDate: Date = getNextEndDate(null);
 
     while (currentStartDate.getTime() >= finalStartDate.getTime()) {
-      console.log(`${FUNC}: Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
+      log.info(`${FUNC}: Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
         operationName: "raw/internal/protocolMetrics",
         input: {
@@ -48,7 +62,7 @@ export default createOperation.query({
       if (queryResult.data) {
         // Collapse the data into a single array, and add a missing property
         // ProtocolMetrics are only generated for the Ethereum mainnet subgraph at the moment, so there is no need for a cross-chain consistency check
-        combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true));
+        combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true, log));
       }
 
       currentEndDate = currentStartDate;
@@ -57,12 +71,17 @@ export default createOperation.query({
       // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
       // There is probably a cleaner way to do this, but this works for now
       if (currentStartDate == finalStartDate) {
-        console.log(`${FUNC}: Reached final start date.`);
+        log.info(`${FUNC}: Reached final start date.`);
         break;
       }
     }
 
-    console.log(`${FUNC}: Returning ${combinedProtocolMetrics.length} records.`);
-    return sortRecordsDescending(combinedProtocolMetrics);
+    const sortedRecords = sortRecordsDescending(combinedProtocolMetrics);
+
+    // Update the cache
+    await setCachedRecords<ProtocolMetric>(cacheKey, sortedRecords, log);
+
+    log.info(`${FUNC}: Returning ${combinedProtocolMetrics.length} records.`);
+    return sortedRecords;
   },
 });

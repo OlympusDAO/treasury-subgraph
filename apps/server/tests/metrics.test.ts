@@ -4,9 +4,10 @@ import { getISO8601DateString } from "./dateHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY } from "../.wundergraph/constants";
 import { getSupplyBalanceForTypes } from "./metricsHelper";
 import { TokenRecord, filterReduce, filter as filterTokenRecords, getFirstRecord as getFirstTokenRecord } from "./tokenRecordHelper";
-import { TokenSupply, filter as filterTokenSupplies, getFirstRecord as getFirstTokenSupplies } from "./tokenSupplyHelper";
+import { TokenSupply, filter as filterTokenSupplies } from "./tokenSupplyHelper";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { parseNumber } from "./numberHelper";
+import { clearCache } from "./cacheHelper";
 
 const wg = createTestServer();
 
@@ -18,9 +19,15 @@ afterAll(async () => {
   await wg.stop();
 });
 
+beforeEach(async () => {
+  await clearCache();
+});
+
 const getStartDate = (days: number = -5): string => {
   return getISO8601DateString(addDays(new Date(), days));
 }
+
+jest.setTimeout(10 * 1000);
 
 describe("paginated", () => {
   test("recent results", async () => {
@@ -48,6 +55,47 @@ describe("paginated", () => {
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
   });
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-1),
+      }
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-1),
+      }
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 20 * 1000);
+
+  test("cached results are equal, long timeframe", async () => {
+    // This tests both setting and getting a large amount of data, which can error out
+    const result = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-60),
+      }
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "paginated/metrics",
+      input: {
+        startDate: getStartDate(-60),
+      }
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 30 * 1000);
 
   test("crossChainDataComplete true", async () => {
     const result = await wg.client().query({
@@ -101,7 +149,7 @@ describe("paginated", () => {
 
     expect(treasuryLiquidBackingRecords?.Arbitrum.length).toBeGreaterThan(0);
     expect(treasuryLiquidBackingRecords?.Ethereum.length).toBeGreaterThan(0);
-  }, 10000);
+  });
 
   test("includeRecords false", async () => {
     const result = await wg.client().query({
@@ -176,6 +224,20 @@ describe("latest", () => {
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
   });
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "latest/metrics",
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "latest/metrics",
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 20 * 1000);
 });
 
 describe("earliest", () => {
@@ -221,6 +283,20 @@ describe("earliest", () => {
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
   });
+
+  test("cached results are equal", async () => {
+    const result = await wg.client().query({
+      operationName: "earliest/metrics",
+    });
+
+    const records = result.data;
+
+    const resultTwo = await wg.client().query({
+      operationName: "earliest/metrics",
+    });
+
+    expect(resultTwo.data).toEqual(records);
+  }, 20 * 1000);
 });
 
 describe("atBlock", () => {
