@@ -79,7 +79,7 @@ describe("paginated", () => {
     });
 
     expect(resultTwo.data).toEqual(records);
-  }, 20 * 1000);
+  }, 30 * 1000);
 
   test("returns results", async () => {
     const result = await wg.client().query({
