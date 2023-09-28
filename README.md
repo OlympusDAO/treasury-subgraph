@@ -28,6 +28,8 @@ The monorepo contains two components:
     - Generates a React-compatible client that can be used in [olympus-frontend](https://github.com/OlympusDAO/olympus-frontend/)
     - Publishes the client to [NPM](https://www.npmjs.com/package/@olympusdao/treasury-subgraph-client)
 
+The Wundergraph server makes use of a Redis cache hosted on Upstash. This reduces Graph Protocol query fees, but also provides a ~2x improvement in response times.
+
 ## Developer Tasks
 
 The repo is setup using [turbo](https://turbo.build/) to make handling tasks easier.
@@ -68,6 +70,12 @@ Wundergraph is setup to deploy automatically:
 
 - `main` branch: https://olympus-treasury-subgraph.wundergraph.dev/
 - `develop` branch: https://olympus-treasury-subgraph-dev.wundergraph.dev/
+
+There is a Wundergraph project for each of these endpoints. Pull requests into the respective branch create preview deployments, which can be used for testing.
+
+For each Wundergraph project, the environment variables defined in the `.env.sample` file must also be defined.
+
+NOTE: the Upstash credentials in the production project and environment should be different to that of all other projects/environments, so that the production cache is not polluted.
 
 ### Deployment - Client NPM Package
 
