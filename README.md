@@ -28,6 +28,8 @@ The monorepo contains two components:
     - Generates a React-compatible client that can be used in [olympus-frontend](https://github.com/OlympusDAO/olympus-frontend/)
     - Publishes the client to [NPM](https://www.npmjs.com/package/@olympusdao/treasury-subgraph-client)
 
+The Wundergraph server makes use of a Redis cache hosted on Upstash. This reduces Graph Protocol query fees, but also provides a ~2x improvement in response times.
+
 ## Developer Tasks
 
 The repo is setup using [turbo](https://turbo.build/) to make handling tasks easier.
