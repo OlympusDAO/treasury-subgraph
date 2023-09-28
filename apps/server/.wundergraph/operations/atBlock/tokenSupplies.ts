@@ -13,7 +13,8 @@ export default createOperation.query({
     polygonBlock: z.number({ description: "Polygon block number" }),
   }),
   handler: async (ctx) => {
-    console.log(`Commencing latest query for TokenSupply`);
+    const FUNC = "atBlock/tokenSupplies";
+    console.log(`${FUNC}: Commencing query`);
 
     const queryResult = await ctx.operations.query({
       operationName: "tokenSuppliesAtBlock",
@@ -26,7 +27,7 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      console.log(`No data returned.`);
+      console.log(`${FUNC}: No data returned`);
       return [];
     }
 

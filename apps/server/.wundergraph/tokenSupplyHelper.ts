@@ -47,6 +47,7 @@ export const setBlockchainProperty = (records: TokenSupply[], blockchain: string
 }
 
 export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockchain: boolean, latestBlock: boolean): TokenSupply[] => {
+  const FUNC = "tokenSupply/flattenRecords";
   const combinedRecords: TokenSupply[] = [];
 
   const mapping = {
@@ -57,7 +58,7 @@ export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockch
   };
 
   for (const [key, value] of Object.entries(mapping)) {
-    console.log(`Got ${value.length} ${key} records.`);
+    console.log(`${FUNC}: Got ${value.length} ${key} records.`);
     let currentRecords: TokenSupply[] = value;
 
     if (blockchain) {

@@ -47,6 +47,7 @@ export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => 
 };
 
 export const flattenRecords = (records: TokenRecordsLatestResponseData, latestBlock: boolean): TokenRecord[] => {
+  const FUNC = "tokenRecord/flattenRecords";
   const combinedRecords: TokenRecord[] = [];
 
   const mapping = {
@@ -57,7 +58,7 @@ export const flattenRecords = (records: TokenRecordsLatestResponseData, latestBl
   };
 
   for (const [key, value] of Object.entries(mapping)) {
-    console.log(`Got ${value.length} ${key} records.`);
+    console.log(`${FUNC}: Got ${value.length} ${key} records.`);
     let currentRecords: TokenRecord[] = value;
 
     if (latestBlock) {

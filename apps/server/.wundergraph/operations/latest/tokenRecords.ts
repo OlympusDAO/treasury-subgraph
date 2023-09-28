@@ -12,7 +12,7 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "latest/tokenRecords";
-    console.log(`${FUNC}: Commencing latest query for TokenRecord`);
+    console.log(`${FUNC}: Commencing query`);
 
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);

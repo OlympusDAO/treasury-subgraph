@@ -41,6 +41,7 @@ export const sortRecordsDescending = (records: ProtocolMetric[]): ProtocolMetric
 };
 
 export const flattenRecords = (records: RawInternalProtocolMetricsResponseData, latestBlock: boolean): ProtocolMetric[] => {
+  const FUNC = "protocolMetric/flattenRecords";
   const combinedRecords: ProtocolMetric[] = [];
 
   const mapping = {
@@ -51,7 +52,7 @@ export const flattenRecords = (records: RawInternalProtocolMetricsResponseData, 
   };
 
   for (const [key, value] of Object.entries(mapping)) {
-    console.log(`Got ${value.length} ${key} records.`);
+    console.log(`${FUNC}: Got ${value.length} ${key} records.`);
     let currentRecords: ProtocolMetric[] = value;
 
     if (latestBlock) {

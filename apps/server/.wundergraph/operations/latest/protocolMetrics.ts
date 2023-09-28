@@ -16,7 +16,7 @@ export default createOperation.query({
   }),
   handler: async (ctx) => {
     const FUNC = "latest/protocolMetrics";
-    console.log(`${FUNC}: Commencing latest query for ProtocolMetric`);
+    console.log(`${FUNC}: Commencing query`);
 
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);

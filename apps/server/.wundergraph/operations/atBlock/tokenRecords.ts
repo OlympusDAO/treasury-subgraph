@@ -13,7 +13,8 @@ export default createOperation.query({
     polygonBlock: z.number({ description: "Polygon block number" }),
   }),
   handler: async (ctx) => {
-    console.log(`Commencing latest query for TokenRecord`);
+    const FUNC = "atBlock/tokenRecords";
+    console.log(`${FUNC}: Commencing atBlock query for TokenRecord`);
 
     const queryResult = await ctx.operations.query({
       operationName: "tokenRecordsAtBlock",
@@ -26,13 +27,13 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      console.log(`No data returned.`);
+      console.log(`${FUNC}: No data returned.`);
       return [];
     }
 
     // Combine across pages and endpoints
     const flatRecords = flattenRecords(queryResult.data, false);
-    console.log(`Returning ${flatRecords.length} records.`);
+    console.log(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
 });
