@@ -3,8 +3,8 @@ import { createOperation, z } from '../../generated/wundergraph.factory';
 import { ProtocolMetric, flattenRecords } from '../../protocolMetricHelper';
 
 /**
- * This custom query will return a flat array containing the latest ProtocolMetric objects for
- * each endpoint.
+ * This custom query will return a flat array containing the latest ProtocolMetric object for
+ * each blockchain.
  * 
  * NOTE: this is not available for public use, and is superseded by the Metric queries.
  * 

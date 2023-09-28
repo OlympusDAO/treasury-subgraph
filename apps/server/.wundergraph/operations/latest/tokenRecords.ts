@@ -3,8 +3,8 @@ import { createOperation, z } from '../../generated/wundergraph.factory';
 import { TokenRecord, flattenRecords } from '../../tokenRecordHelper';
 
 /**
- * This custom query will return a flat array containing the latest TokenRecord objects for
- * each endpoint.
+ * This custom query will return a flat array containing the latest TokenRecord object for
+ * each blockchain.
  */
 export default createOperation.query({
   input: z.object({
