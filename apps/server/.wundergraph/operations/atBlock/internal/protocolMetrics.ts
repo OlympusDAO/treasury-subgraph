@@ -35,7 +35,7 @@ export default createOperation.query({
     }
 
     // Combine across pages and endpoints
-    const flatRecords = flattenRecords(queryResult.data, true, log);
+    const flatRecords = flattenRecords(queryResult.data, false, log);
     log.info(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
   },
