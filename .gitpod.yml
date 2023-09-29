@@ -1,0 +1,22 @@
+image:
+  file: .gitpod.Dockerfile
+
+github:
+  prebuilds:
+   branches: true
+
+tasks:
+  - name: Shell
+    # Source: https://www.gitpod.io/blog/signing-git-commits-on-gitpod-with-1-password
+    init: |
+      yarn
+    # Run these tasks outside of the prebuild, as they need the user's SSH key
+    command: |
+      git config --global gpg.format ssh && git config --global user.signingkey "$SSH_SIGNING_KEY" && git config commit.gpgsign true --global
+      mkdir -p ~/.ssh
+      touch ~/.ssh/known_hosts
+      cat .github_ssh_key.txt >> ~/.ssh/known_hosts
+      gcloud auth login
+      gcloud auth application-default login
+      gcloud auth configure-docker
+      pulumi login
