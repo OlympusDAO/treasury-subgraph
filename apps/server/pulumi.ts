@@ -69,6 +69,8 @@ const createDockerImage = (resourceName: string, imageVersion: string, dependsOn
       args: {
         BUILDKIT_INLINE_CACHE: "1",
         ARBITRUM_SUBGRAPH_API_KEY: pulumiConfig.requireSecret("ARBITRUM_SUBGRAPH_API_KEY"),
+        UPSTASH_REDIS_URL: pulumiConfig.requireSecret("UPSTASH_REDIS_URL"),
+        UPSTASH_REDIS_TOKEN: pulumiConfig.requireSecret("UPSTASH_REDIS_TOKEN"),
       },
       cacheFrom: {
         images: [imageLatest],
@@ -82,7 +84,7 @@ const createDockerImage = (resourceName: string, imageVersion: string, dependsOn
 };
 
 // Build Docker images
-const dockerImageGitCommit = createDockerImage(`${projectName}-git-commit`, getGitCommit(), [dockerRepository]);
+const dockerImageGitCommit = createDockerImage(`${projectName}-git-commit`, getGitCommit(false), [dockerRepository]);
 const dockerImageLatest = createDockerImage(`${projectName}-latest`, "latest", [dockerImageGitCommit, dockerRepository]);
 
 /**
@@ -106,6 +108,21 @@ const cloudRun = new gcp.cloudrunv2.Service(
           ports: [
             {
               containerPort: 9991,
+            }
+          ],
+          // Needed at runtime
+          envs: [
+            {
+              name: "ARBITRUM_SUBGRAPH_API_KEY",
+              value: pulumiConfig.requireSecret("ARBITRUM_SUBGRAPH_API_KEY"),
+            },
+            {
+              name: "UPSTASH_REDIS_URL",
+              value: pulumiConfig.requireSecret("UPSTASH_REDIS_URL"),
+            },
+            {
+              name: "UPSTASH_REDIS_TOKEN",
+              value: pulumiConfig.requireSecret("UPSTASH_REDIS_TOKEN"),
             }
           ]
         }
@@ -138,7 +155,7 @@ const firebaseHostingSite = new gcp.firebase.HostingSite(
   projectName,
   {
     project: firebaseProject.project,
-    siteId: `olympusdao-${projectStackName}`, // Will end up as olympus-treasury-subgraph-<stack>.web.app
+    siteId: pulumiConfig.require("firebaseDomain"), // Will end up as <domain>.web.app
   },
   {
     dependsOn: [firebaseProject],

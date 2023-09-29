@@ -1,5 +1,10 @@
 config:
+  treasury-subgraph:firebaseDomain: olympus-treasury-subgraph-dev1
   gcp:project: olympus-treasury-subgraph-dev
   gcp:region: us-central1
   treasury-subgraph:ARBITRUM_SUBGRAPH_API_KEY:
-    secure: AAABAJw0bjiyY8Kq+inoUeD5yPXd556w6JLTlgGFZg2C3/lo+/5RmnP2eQitjHbFJBVJJ7wguw355IDsVgRdZA==
+    secure: AAABANu9y2bqHvQCLQkoBUaOtj0Th/9XW6+AOsjA7u8EX+p8959Vc/90XBpJdAjFGO+5Dju+SW/4wauExy1jXw==
+  treasury-subgraph:UPSTASH_REDIS_TOKEN:
+    secure: AAABACRCskLFVZ+8OzR45vDR+VCXOIxKsmaF+R3KijMEmHQ0X5+Ooas8c9HBZFknP2ZP8Y93YqPhiYOnK+8SHwrwKfm/rE8+6k2MNaKZHvtRt0kFdtmbNTERDiPlFQXGVK87qqEY8zmvIqmesCAeXJp1sRgdwOcJsFq/lUqtdP07wIu5
+  treasury-subgraph:UPSTASH_REDIS_URL:
+    secure: AAABANj6ugWtH9ae/QZ9rlSn1IZikL31UiqfKX4HDmTR5EM+gz+EVlaLpoxyJW8A2xotlzf0Yn+jAHEh3vU8/I9FApkE25Fw84GG
