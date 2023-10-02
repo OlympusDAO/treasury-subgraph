@@ -32,6 +32,9 @@ export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] =>
   return filteredData;
 };
 
+/**
+ * Sorts records by date, id in descending order.
+ */
 export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => {
   return records.sort((a, b) => {
     const aTime = new Date(a.date).getTime();
@@ -39,11 +42,21 @@ export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => 
 
     if (aTime > bTime) {
       return -1;
-    } else if (aTime < bTime) {
-      return 1;
-    } else {
-      return 0;
     }
+
+    if (aTime < bTime) {
+      return 1;
+    }
+
+    if (a.id > b.id) {
+      return 1;
+    }
+
+    if (a.id < b.id) {
+      return -1;
+    }
+
+    return 0;
   });
 };
 
