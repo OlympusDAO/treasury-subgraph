@@ -4,9 +4,10 @@ import { RedisClientType, createClient } from "redis";
 
 const TTL = 60 * 60;
 
-const CHUNK_MULTIPLIER = 0.75;
+const UPSTASH_REQUEST_LIMIT = 1000000;
+const CHUNK_MULTIPLIER = 0.9;
 
-const UPSTASH_REQUEST_LIMIT = 1000000; // 1MB
+const CHUNK_SIZE = 1500;
 
 /**
  * Source: https://stackoverflow.com/a/76352488
@@ -62,7 +63,7 @@ const getChunkQuantity = (records: CachedJsonElement[]): number => {
 }
 
 /**
- * Determines the chunk size to use when storing an array in Upstash-hosted Redis.
+ * Determines the chunk size to use when getting an array from Upstash-hosted Redis.
  */
 const getChunkSize = async (client: RedisClientType, key: string, log: RequestLogger): Promise<number | null> => {
   const FUNC = `getChunkSize: ${key}`;
@@ -127,6 +128,9 @@ export async function getCachedRecord<T>(key: string, log: RequestLogger): Promi
     log.error(`${FUNC}: Failed to get cache`, e);
     log.error("message" in e ? e.message : "No error message available");
     log.error("stack" in e ? e.stack : "No error stack available");
+
+    // Ensure the result is empty
+    result = null;
   }
   finally {
     await client.disconnect();
@@ -163,7 +167,8 @@ export async function getCachedRecords<T>(key: string, log: RequestLogger): Prom
       return null;
     }
 
-    // Get the list in chunks of CHUNK_SIZE
+    // Get the list in chunks of chunkSize
+    // It is a known issue that with longer time periods and with nested records, this can exceed the maximum request size... in which case the cache will not be used
     for (let i = 0; i < length; i += chunkSize) {
       const chunkStartTime = Date.now();
       log.info(`${FUNC}: Getting chunk in range ${i} to ${i + chunkSize - 1}`);
@@ -181,6 +186,9 @@ export async function getCachedRecords<T>(key: string, log: RequestLogger): Prom
     log.error(`${FUNC}: Failed to get cache`);
     log.error("message" in e ? e.message : "No error message available");
     log.error("stack" in e ? e.stack : "No error stack available");
+
+    // Ensure the result is empty
+    result = null;
   }
   finally {
     await client.disconnect();
@@ -242,6 +250,7 @@ export async function setCachedRecords(key: string, records: CachedJsonElement[]
       await isolatedClient.del(key);
 
       // Divide the array into smaller chunks, to avoid the maximum request size
+      // It is a known issue that with longer time periods and with nested records, this can exceed the maximum request size... in which case the cache will not be updated
       const chunkSize = getChunkQuantity(records);
       const chunkedRecords = chunkArray(records, chunkSize);
       log.info(`${FUNC}: ${chunkedRecords.length} chunks to insert`);
