@@ -2,7 +2,7 @@ import { Redis } from "@upstash/redis";
 import { RequestLogger } from "@wundergraph/sdk/server";
 
 const TTL = 60 * 60;
-const CHUNK_SIZE = 1500;
+const CHUNK_SIZE = 1000;
 
 const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
   const chunkedRecords: T[][] = [];
