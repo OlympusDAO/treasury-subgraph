@@ -100,7 +100,7 @@ const cloudRun = new gcp.cloudrunv2.Service(
           image: dockerImageGitCommit.imageName,
           resources: {
             limits: {
-              memory: "256Mi",
+              memory: "512Mi",
               cpu: "1",
             },
             cpuIdle: true,
