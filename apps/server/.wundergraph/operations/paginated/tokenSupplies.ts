@@ -85,6 +85,8 @@ export default createOperation.query({
     let hasProcessedFirstDate = false;
 
     while (currentStartDate.getTime() >= finalStartDate.getTime()) {
+      currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
+
       log.info(`${FUNC}: Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
         operationName: "tokenSupplies",
@@ -102,15 +104,15 @@ export default createOperation.query({
         hasProcessedFirstDate = true;
       }
 
-      currentEndDate = currentStartDate;
-      currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
-
       // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
       // There is probably a cleaner way to do this, but this works for now
       if (currentStartDate == finalStartDate) {
         log.info(`${FUNC}: Reached final start date.`);
         break;
       }
+
+      currentEndDate = currentStartDate;
+      log.info(`${FUNC}: Set currentEndDate to: ${currentEndDate.toISOString()}`);
     }
 
     const sortedRecords = sortRecordsDescending(combinedTokenSupplies);
