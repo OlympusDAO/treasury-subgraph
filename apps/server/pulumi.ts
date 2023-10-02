@@ -169,51 +169,48 @@ if (!firebaseSiteId) {
 
 const firebaseSiteIdInput: pulumi.Input<string> = firebaseSiteId.apply(str => `${str}`);
 
-// This currently does not work via Pulumi
-// It has been created manually for now
-// Bug report: https://github.com/pulumi/pulumi-gcp/issues/1224
-// // Rewrite all requests to the Cloud Run instance
-// const firebaseHostingVersion = new gcp.firebase.HostingVersion(
-//   projectName,
-//   {
-//     siteId: firebaseSiteIdInput,
-//     config: {
-//       /**
-//        * Firebase hosting does not forward CORS headers to the Cloud Run instance
-//        * when using redirects, so we need to do a rewrite.
-//        *
-//        * Pulumi's implementation does not support specifying the region of the
-//        * function (or does not discover the region accurately), so we need to
-//        * ensure that both the Cloud Function and Firebase Hosting are in the
-//        * default region, which is us-central1.
-//        */
-//       rewrites: [
-//         {
-//           glob: "**",
-//           run: {
-//             region: gcpConfig.require("region"),
-//             serviceId: cloudRun.id,
-//           },
-//         },
-//       ],
-//     },
-//   },
-//   {
-//     dependsOn: [firebaseHostingSite, cloudRun],
-//   },
-// );
+// Rewrite all requests to the Cloud Run instance
+const firebaseHostingVersion = new gcp.firebase.HostingVersion(
+  projectName,
+  {
+    siteId: firebaseSiteIdInput,
+    config: {
+      /**
+       * Firebase hosting does not forward CORS headers to the Cloud Run instance
+       * when using redirects, so we need to do a rewrite.
+       *
+       * Pulumi's implementation does not support specifying the region of the
+       * function (or does not discover the region accurately), so we need to
+       * ensure that both the Cloud Function and Firebase Hosting are in the
+       * default region, which is us-central1.
+       */
+      rewrites: [
+        {
+          glob: "**",
+          run: {
+            region: gcpConfig.require("region"),
+            serviceId: cloudRun.name,
+          },
+        },
+      ],
+    },
+  },
+  {
+    dependsOn: [firebaseHostingSite, cloudRun],
+  },
+);
 
-// new gcp.firebase.HostingRelease(
-//   projectName,
-//   {
-//     siteId: firebaseSiteIdInput,
-//     versionName: firebaseHostingVersion.name,
-//     message: "Cloud Run integration",
-//   },
-//   {
-//     dependsOn: [firebaseHostingVersion],
-//   },
-// );
+new gcp.firebase.HostingRelease(
+  projectName,
+  {
+    siteId: firebaseSiteIdInput,
+    versionName: firebaseHostingVersion.name,
+    message: "Cloud Run integration",
+  },
+  {
+    dependsOn: [firebaseHostingVersion],
+  },
+);
 
 /**
  * Exports

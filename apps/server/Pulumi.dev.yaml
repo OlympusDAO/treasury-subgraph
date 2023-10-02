@@ -1,5 +1,5 @@
 config:
-  treasury-subgraph:firebaseDomain: olympus-treasury-subgraph-dev1
+  treasury-subgraph:firebaseDomain: olympus-treasury-subgraph-dev3
   gcp:project: olympus-treasury-subgraph-dev
   gcp:region: us-central1
   treasury-subgraph:ARBITRUM_SUBGRAPH_API_KEY:
