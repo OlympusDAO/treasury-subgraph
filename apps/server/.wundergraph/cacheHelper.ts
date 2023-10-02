@@ -99,10 +99,6 @@ const getClient = (): RedisClientType => {
     throw new Error("UPSTASH_REDIS_URL is not set");
   }
 
-  // if (!process.env.UPSTASH_REDIS_TOKEN) {
-  //   throw new Error("UPSTASH_REDIS_TOKEN is not set");
-  // }
-
   return createClient({
     url: process.env.UPSTASH_REDIS_URL,
   });

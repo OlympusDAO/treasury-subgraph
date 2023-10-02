@@ -70,7 +70,6 @@ const createDockerImage = (resourceName: string, imageVersion: string, dependsOn
         BUILDKIT_INLINE_CACHE: "1",
         ARBITRUM_SUBGRAPH_API_KEY: pulumiConfig.requireSecret("ARBITRUM_SUBGRAPH_API_KEY"),
         UPSTASH_REDIS_URL: pulumiConfig.requireSecret("UPSTASH_REDIS_URL"),
-        UPSTASH_REDIS_TOKEN: pulumiConfig.requireSecret("UPSTASH_REDIS_TOKEN"),
       },
       cacheFrom: {
         images: [imageLatest],
@@ -120,10 +119,6 @@ const cloudRun = new gcp.cloudrunv2.Service(
               name: "UPSTASH_REDIS_URL",
               value: pulumiConfig.requireSecret("UPSTASH_REDIS_URL"),
             },
-            {
-              name: "UPSTASH_REDIS_TOKEN",
-              value: pulumiConfig.requireSecret("UPSTASH_REDIS_TOKEN"),
-            }
           ]
         }
       ]
