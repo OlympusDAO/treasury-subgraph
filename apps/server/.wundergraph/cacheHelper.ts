@@ -3,7 +3,10 @@ import { RequestLogger } from "@wundergraph/sdk/server";
 import { RedisClientType, createClient } from "redis";
 
 const TTL = 60 * 60;
-const CHUNK_SIZE = 1000;
+
+const CHUNK_MULTIPLIER = 0.75;
+
+const UPSTASH_REQUEST_LIMIT = 1000000; // 1MB
 
 /**
  * Source: https://stackoverflow.com/a/76352488
@@ -14,6 +17,71 @@ interface CachedJSONObject {
   [key: number]: CachedJsonElement;
 }
 type CachedJSONArray = Array<CachedJsonElement>;
+
+/**
+ * Determines the chunk size to use when storing an array in Upstash-hosted Redis.
+ * 
+ * This ensures that the request size does not exceed the Upstash limit of 1MB.
+ * 
+ * For example, if the string length of the records array is 1.5 MB, then the chunk size will be 2.
+ */
+const getChunkQuantity = (records: CachedJsonElement[]): number => {
+  const size = records.reduce((acc: number, record) => {
+    if (typeof record === "string") {
+      return acc + record.length;
+    }
+
+    if (typeof record === "number") {
+      return acc + 8;
+    }
+
+    if (typeof record === "boolean") {
+      return acc + 4;
+    }
+
+    if (record === null) {
+      return acc + 4;
+    }
+
+    if (record instanceof Date) {
+      return acc + 8;
+    }
+
+    if (Array.isArray(record)) {
+      return acc + getChunkQuantity(record);
+    }
+
+    if (typeof record === "object") {
+      return acc + getChunkQuantity(Object.values(record));
+    }
+
+    return acc;
+  }, 0);
+
+  return Math.ceil(size / UPSTASH_REQUEST_LIMIT);
+}
+
+/**
+ * Determines the chunk size to use when storing an array in Upstash-hosted Redis.
+ */
+const getChunkSize = async (client: RedisClientType, key: string, log: RequestLogger): Promise<number | null> => {
+  const FUNC = `getChunkSize: ${key}`;
+  // Get the first entry in the list
+  const firstEntry = await client.lIndex(key, 0);
+  if (!firstEntry) {
+    return null;
+  }
+
+  // Get the length of the first entry
+  const firstEntryLength = firstEntry.length;
+  log.info(`${FUNC}: First entry length: ${firstEntryLength}`);
+
+  // Return the number of entries that can be stored in 1MB
+  const entriesPerRequest = Math.floor(UPSTASH_REQUEST_LIMIT * CHUNK_MULTIPLIER / firstEntryLength);
+  log.info(`${FUNC}: Entries per request: ${entriesPerRequest}`);
+
+  return entriesPerRequest;
+}
 
 const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
   const chunkedRecords: T[][] = [];
@@ -89,12 +157,18 @@ export async function getCachedRecords<T>(key: string, log: RequestLogger): Prom
     result = [];
     log.info(`${FUNC}: ${length} records found in cache`);
 
-    // Get the list in chunks of CHUNK_SIZE
-    for (let i = 0; i < length; i += CHUNK_SIZE) {
-      const chunkStartTime = Date.now();
-      log.info(`${FUNC}: Getting chunk`);
+    const chunkSize = await getChunkSize(client, key, log);
+    if (!chunkSize) {
+      log.warn(`${FUNC}: Unable to determine chunk size. Skipping.`);
+      return null;
+    }
 
-      const chunk = await client.lRange(key, i, i + CHUNK_SIZE - 1);
+    // Get the list in chunks of CHUNK_SIZE
+    for (let i = 0; i < length; i += chunkSize) {
+      const chunkStartTime = Date.now();
+      log.info(`${FUNC}: Getting chunk in range ${i} to ${i + chunkSize - 1}`);
+
+      const chunk = await client.lRange(key, i, i + chunkSize - 1);
       result.push(...(chunk.map(record => JSON.parse(record) as T)));
 
       log.info(`${FUNC}: Chunk retrieved in ${Date.now() - chunkStartTime}ms`);
@@ -167,10 +241,9 @@ export async function setCachedRecords(key: string, records: CachedJsonElement[]
       log.info(`${FUNC}: Clearing cache`);
       await isolatedClient.del(key);
 
-      // TODO chunk based on size of content
-
       // Divide the array into smaller chunks, to avoid the maximum request size
-      const chunkedRecords = chunkArray(records, CHUNK_SIZE);
+      const chunkSize = getChunkQuantity(records);
+      const chunkedRecords = chunkArray(records, chunkSize);
       log.info(`${FUNC}: ${chunkedRecords.length} chunks to insert`);
       for (const chunk of chunkedRecords) {
         await isolatedClient.rPush(key, chunk.map(record => JSON.stringify(record)));
