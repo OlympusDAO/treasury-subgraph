@@ -106,6 +106,12 @@ const getClient = (): RedisClientType => {
 
 export async function getCachedRecord<T>(key: string, log: RequestLogger): Promise<T | null> {
   const FUNC = `getCachedRecord: ${key}`;
+
+  if (!process.env.CACHE_ENABLED) {
+    log.info(`${FUNC}: Cache not enabled`);
+    return null;
+  }
+
   const startTime = Date.now();
   const client = getClient();
 
@@ -140,6 +146,12 @@ export async function getCachedRecord<T>(key: string, log: RequestLogger): Promi
 
 export async function getCachedRecords<T>(key: string, log: RequestLogger): Promise<T[] | null> {
   const FUNC = `getCachedRecords: ${key}`;
+
+  if (!process.env.CACHE_ENABLED) {
+    log.info(`${FUNC}: Cache not enabled`);
+    return null;
+  }
+
   const startTime = Date.now();
   const client = getClient();
 
@@ -198,6 +210,12 @@ export async function getCachedRecords<T>(key: string, log: RequestLogger): Prom
 
 export async function setCachedRecord(key: string, value: CachedJsonElement, log: RequestLogger): Promise<void> {
   const FUNC = `setCachedRecord: ${key}`;
+
+  if (!process.env.CACHE_ENABLED) {
+    log.info(`${FUNC}: Cache not enabled`);
+    return;
+  }
+
   const startTime = Date.now();
   const client = getClient();
 
@@ -224,6 +242,12 @@ export async function setCachedRecord(key: string, value: CachedJsonElement, log
 
 export async function setCachedRecords(key: string, records: CachedJsonElement[], log: RequestLogger): Promise<void> {
   const FUNC = `setCachedRecords: ${key}`;
+
+  if (!process.env.CACHE_ENABLED) {
+    log.info(`${FUNC}: Cache not enabled`);
+    return;
+  }
+
   const startTime = Date.now();
   const client = getClient();
 
