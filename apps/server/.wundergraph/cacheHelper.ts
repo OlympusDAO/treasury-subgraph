@@ -57,6 +57,8 @@ export async function getCachedRecord<T>(key: string, log: RequestLogger): Promi
   // Catch any errors. Worst-case is that the cache value is not used and a query is performed instead.
   catch (e) {
     log.error(`${FUNC}: Failed to get cache`, e);
+    log.error("message" in e ? e.message : "No error message available");
+    log.error("stack" in e ? e.stack : "No error stack available");
   }
   finally {
     await client.disconnect();
@@ -102,7 +104,9 @@ export async function getCachedRecords<T>(key: string, log: RequestLogger): Prom
   }
   // Catch any errors. Worst-case is that the cache value is not used and a query is performed instead.
   catch (e) {
-    log.error(`${FUNC}: Failed to get cache`, e);
+    log.error(`${FUNC}: Failed to get cache`);
+    log.error("message" in e ? e.message : "No error message available");
+    log.error("stack" in e ? e.stack : "No error stack available");
   }
   finally {
     await client.disconnect();
@@ -128,7 +132,9 @@ export async function setCachedRecord(key: string, value: CachedJsonElement, log
   }
   // Catch any errors. Worst-case is that the cache is not updated
   catch (e) {
-    log.error(`${FUNC}:  Failed to update cache`, e);
+    log.error(`${FUNC}: Failed to update cache`);
+    log.error("message" in e ? e.message : "No error message available");
+    log.error("stack" in e ? e.stack : "No error stack available");
   }
   finally {
     await client.disconnect();
