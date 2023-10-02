@@ -17,8 +17,7 @@
     "depcheck": "syncpack",
     "depcheck:fix": "syncpack fix-mismatches",
     "test": "turbo test",
-    "test:local": "WG_PUBLIC_NODE_URL=http://localhost:9991/ dotenv -- turbo test",
-    "deploy:server": "fly deploy --dockerfile apps/server/Dockerfile --build-secret ARBITRUM_SUBGRAPH_API_KEY=$ARBITRUM_SUBGRAPH_API_KEY"
+    "test:local": "WG_PUBLIC_NODE_URL=http://localhost:9991/ dotenv -- turbo test"
   },
   "workspaces": [
     "packages/*",
