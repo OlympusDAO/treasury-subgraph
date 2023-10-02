@@ -155,7 +155,7 @@ const firebaseHostingSite = new gcp.firebase.HostingSite(
   projectName,
   {
     project: firebaseProject.project,
-    siteId: pulumiConfig.require("firebaseDomain"), // Will end up as <domain>.web.app
+    siteId: `olympus-${projectStackName}`, // Will end up as olympus-treasury-subgraph-<stack>.web.app
   },
   {
     dependsOn: [firebaseProject],
