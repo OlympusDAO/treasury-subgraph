@@ -119,6 +119,10 @@ const cloudRun = new gcp.cloudrunv2.Service(
               name: "UPSTASH_REDIS_URL",
               value: pulumiConfig.requireSecret("UPSTASH_REDIS_URL"),
             },
+            {
+              name: "CACHE_ENABLED",
+              value: "false",
+            }
           ]
         }
       ]
