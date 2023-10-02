@@ -146,7 +146,9 @@ export async function setCachedRecords<T>(key: string, records: T[], log: Reques
   }
   // Catch any errors. Worst-case is that the cache is not updated
   catch (e) {
-    log.error(`${FUNC}: Failed to update cache`, e);
+    log.error(`${FUNC}: Failed to update cache`);
+    log.error("message" in e ? e.message : "No error message available");
+    log.error("stack" in e ? e.stack : "No error stack available");
   }
 
   const endTime = Date.now();
