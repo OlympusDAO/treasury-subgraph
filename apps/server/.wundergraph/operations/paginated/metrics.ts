@@ -140,7 +140,7 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(metricRecords);
 
     // Update the cache
-    await setCachedRecords<Metric>(cacheKey, sortedRecords, log);
+    await setCachedRecords(cacheKey, sortedRecords, log);
 
     log.info(`${FUNC}: Returning ${sortedRecords.length} records.`);
     return sortedRecords;

@@ -116,7 +116,7 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(combinedTokenSupplies);
 
     // Update the cache
-    await setCachedRecords<TokenSupply>(cacheKey, sortedRecords, log);
+    await setCachedRecords(cacheKey, sortedRecords, log);
 
     log.info(`${FUNC}: Returning ${sortedRecords.length} records.`);
     return sortedRecords;

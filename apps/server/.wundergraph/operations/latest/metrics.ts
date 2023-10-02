@@ -67,7 +67,7 @@ export default createOperation.query({
 
     // Update the cache
     if (metricRecord) {
-      await setCachedRecord<Metric>(cacheKey, metricRecord, log);
+      await setCachedRecord(cacheKey, metricRecord, log);
     }
 
     return metricRecord;

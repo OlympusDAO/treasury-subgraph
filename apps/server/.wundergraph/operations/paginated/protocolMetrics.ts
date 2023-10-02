@@ -79,7 +79,7 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(combinedProtocolMetrics);
 
     // Update the cache
-    await setCachedRecords<ProtocolMetric>(cacheKey, sortedRecords, log);
+    await setCachedRecords(cacheKey, sortedRecords, log);
 
     log.info(`${FUNC}: Returning ${combinedProtocolMetrics.length} records.`);
     return sortedRecords;

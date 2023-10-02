@@ -19,9 +19,9 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@upstash/redis": "^1.22.0",
     "@wundergraph/sdk": "^0.178.0",
-    "date-fns": "^2.30.0"
+    "date-fns": "^2.30.0",
+    "redis": "^4.6.10"
   },
   "main": "pulumi.ts",
   "scripts": {
