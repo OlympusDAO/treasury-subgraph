@@ -1,6 +1,10 @@
 import { createClient } from "redis";
 
 export const clearCache = async () => {
+  if (!process.env.CACHE_ENABLED) {
+    return;
+  }
+
   console.log(`Clearing the cache`);
   // Clear the cache
   const client = createClient({
