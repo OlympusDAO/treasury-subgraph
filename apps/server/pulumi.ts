@@ -338,13 +338,23 @@ new gcp.monitoring.AlertPolicy(
     userLabels: {},
     conditions: [
       {
-        displayName: "Log contains error",
+        displayName: "Log contains runtime error",
         conditionMatchedLog: {
           filter:
             pulumi.interpolate`
             resource.type = "cloud_run_revision" AND
             resource.labels.service_name = "${cloudRun.name}" AND 
-            textPayload=~"runtime error"`, // TODO add "level": "error"
+            textPayload=~"runtime error"`,
+        },
+      },
+      {
+        displayName: "Log contains error logging level",
+        conditionMatchedLog: {
+          filter:
+            pulumi.interpolate`
+            resource.type = "cloud_run_revision" AND
+            resource.labels.service_name = "${cloudRun.name}" AND 
+            textPayload=~"\"level\": \"error\""`,
         },
       },
     ],
