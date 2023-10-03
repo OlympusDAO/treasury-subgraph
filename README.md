@@ -28,7 +28,9 @@ The monorepo contains two components:
     - Generates a React-compatible client that can be used in [olympus-frontend](https://github.com/OlympusDAO/olympus-frontend/)
     - Publishes the client to [NPM](https://www.npmjs.com/package/@olympusdao/treasury-subgraph-client)
 
-The Wundergraph server makes use of a Redis cache hosted on Upstash. This reduces Graph Protocol query fees, but also provides a ~2x improvement in response times.
+The API server is currently hosted on Google Cloud Run, with Firebase Hosting to provide a static domain name.
+
+HTTP-layer caching is provided by Google Cloud Run. An attempt was made to utilise caching in Redis (on Upstash), but it performed slower than the OOTB HTTP-layer caching. It can be enabled through the `CACHE_ENABLED` environment variable.
 
 ## Developer Tasks
 
@@ -85,10 +87,6 @@ NOTE: the Upstash credentials in the production project and environment should b
     - Prefix the command with `YARN_OTP=<OTP VALUE>`
 
 NOTE: You must be a member of the `@olympusdao` org in NPM in order to publish.
-
-### Notes
-
-The API server is currently hosted on Google Cloud Run, with Firebase Hosting to provide a static domain name..
 
 ## Wishlist / TODO
 
