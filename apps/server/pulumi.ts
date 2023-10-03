@@ -396,6 +396,62 @@ new gcp.monitoring.AlertPolicy(
   },
 );
 
+// Uptime check
+const uptimeCheck = new gcp.monitoring.UptimeCheckConfig("uptime-check", {
+  displayName: "Uptime Check",
+  httpCheck: {
+    path: "/",
+    port: 443,
+    useSsl: true,
+  },
+  monitoredResource: {
+    type: "uptime_url",
+    labels: {
+      host: firebaseHostingSite.defaultUrl.apply(url => url.replace("https://", "")),
+    },
+  },
+  period: "60s",
+  timeout: "10s",
+}, {
+  dependsOn: [firebaseHostingSite],
+});
+
+new gcp.monitoring.AlertPolicy("uptime-check-alert", {
+  displayName: "Failed Uptime Check",
+  conditions: [
+    {
+      displayName: `${projectName} - Failed Uptime Check`,
+      conditionThreshold: {
+        aggregations: [
+          {
+            alignmentPeriod: "300s",
+            crossSeriesReducer: "REDUCE_COUNT_FALSE",
+            groupByFields: [
+              "resource.label.project_id",
+              "resource.label.host"
+            ],
+            perSeriesAligner: "ALIGN_NEXT_OLDER"
+          }
+        ],
+        comparison: "COMPARISON_GT",
+        duration: "0s",
+        filter:
+          pulumi.interpolate`
+          resource.type = "uptime_url" AND
+          metric.type = "monitoring.googleapis.com/uptime_check/check_passed"
+          AND metric.labels.check_id = "${uptimeCheck.id}"`,
+        thresholdValue: 1,
+        trigger: {
+          count: 1
+        }
+      }
+    }
+  ],
+  combiner: "OR",
+}, {
+  dependsOn: [uptimeCheck],
+});
+
 /**
  * Exports
  */
