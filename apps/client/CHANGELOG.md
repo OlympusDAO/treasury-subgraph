@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [v1.4.0]
+
+- Change base URL to point to new host
+
 ## [v1.3.2]
 
 - Add variable for ignoring cache
