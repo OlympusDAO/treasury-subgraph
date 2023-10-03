@@ -88,9 +88,7 @@ NOTE: You must be a member of the `@olympusdao` org in NPM in order to publish.
 
 ### Notes
 
-The API server is currently hosted by Wundergraph and serves our needs.
-
-If the provider shuts down, there are [self-hosting options](https://docs.wundergraph.com/docs/self-hosted/flyio).
+The API server is currently hosted on Google Cloud Run, with Firebase Hosting to provide a static domain name..
 
 ## Wishlist / TODO
 
