@@ -4,7 +4,6 @@ export const clearCache = async () => {
   const FUNC = "clearCache";
 
   if (!process.env.CACHE_ENABLED) {
-    console.log(`${FUNC}: Cache is not enabled`);
     return;
   }
 

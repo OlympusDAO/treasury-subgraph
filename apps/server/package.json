@@ -32,6 +32,7 @@
     "build:local": "WG_PUBLIC_NODE_URL=http://localhost:9991 yarn build",
     "pretest": "yarn build:local",
     "test": "jest --runInBand",
+    "test:ci": "WG_LOG_LEVEL=error jest --runInBand --ci",
     "test:local": "dotenv -e ../../.env jest"
   }
 }
