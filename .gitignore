@@ -2,5 +2,6 @@
 .turbo
 **/dist/
 .env
+.env.prod
 **/coverage/
 out/

@@ -64,24 +64,21 @@ Running the [frontend](https://github.com/OlympusDAO/olympus-frontend/) against 
 1. Run the API endpoint locally. See [Running](#running).
 2. Pass the API endpoint to the frontend: `VITE_WG_PUBLIC_NODE_URL=http://localhost:9991 yarn start`
 
-### Deployment - Wundergraph
+### Deployment - Wundergraph Server
 
-Wundergraph is setup to deploy automatically:
+Orchestration is performed using Pulumi. To deploy, follow these steps:
 
-- `main` branch: https://olympus-treasury-subgraph.wundergraph.dev/
-- `develop` branch: https://olympus-treasury-subgraph-dev.wundergraph.dev/
-
-There is a Wundergraph project for each of these endpoints. Pull requests into the respective branch create preview deployments, which can be used for testing.
-
-For each Wundergraph project, the environment variables defined in the `.env.sample` file must also be defined.
+1. Change to the `apps/server` directory.
+2. Authenticate with Pulumi, using `pulumi login`
+3. Run `pulumi up --stack <dev | prod>`
 
 NOTE: the Upstash credentials in the production project and environment should be different to that of all other projects/environments, so that the production cache is not polluted.
 
 ### Deployment - Client NPM Package
 
-1. Run `yarn build`
+1. Set the required values in `.env.prod`
 2. Update the `version` in `apps/client/package.json`
-3. Update the changelog using `yarn changelog`
+3. Update the changelog
 4. Login using yarn to authenticate with the NPM package registry: `yarn login`
 5. Run the following command: `yarn publish-package`
 

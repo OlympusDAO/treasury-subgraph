@@ -28,7 +28,7 @@
     "start": "wunderctl up --logs",
     "prebuild": "echo \"WG_PUBLIC_NODE_URL is ${WG_PUBLIC_NODE_URL:?}\"",
     "build": "wunderctl generate",
-    "build:release": "WG_PUBLIC_NODE_URL=https://olympus-treasury-subgraph.wundergraph.dev/ yarn build",
+    "build:release": "WG_PUBLIC_NODE_URL=https://olympus-treasury-subgraph-prod.web.app yarn build",
     "build:local": "WG_PUBLIC_NODE_URL=http://localhost:9991 yarn build",
     "pretest": "yarn build:local",
     "test": "jest --runInBand",
