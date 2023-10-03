@@ -37,7 +37,7 @@ export default createOperation.query({
     const flatRecords = flattenRecords(queryResult.data, false, log);
 
     // Update the cache
-    await setCachedRecords<TokenRecord>(cacheKey, flatRecords, log);
+    await setCachedRecords(cacheKey, flatRecords, log);
 
     log.info(`${FUNC}: Returning ${flatRecords.length} records.`);
     return flatRecords;
