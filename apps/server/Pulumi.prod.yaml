@@ -1,0 +1,9 @@
+config:
+  gcp:project: olympus-treasury-subgraph
+  gcp:region: us-central1
+  treasury-subgraph:ARBITRUM_SUBGRAPH_API_KEY:
+    secure: AAABAA2jotZBlyggfQgSvBlh0g+4KjGBfHPpZmQckHxAn1I+iykqmonghv2SE3Ldju2N+SW4IoshiBnfXjem8Q==
+  treasury-subgraph:UPSTASH_REDIS_URL:
+    secure: AAABAPa8WKwP25f7WTxQj1ohbjgSUgSxhMEhLWBgAdy8xoldEQKcYIMKFbr8remE7KeXhsJ98nJm63GeGpNWET9vbHRQ5tMNriLb9pG7U32e23UKI1L/ulOAxiG5pWCoAxHFM83UoOdWktHkRbOm8pE16gKgGTsdKQ==
+  treasury-subgraph:alertEmail:
+    secure: AAABALjkYYaoIAetvnc/PFOk6EPVzMzX4vfee5G8/sRqKFkljFJozJsbWNimfVtK5w==

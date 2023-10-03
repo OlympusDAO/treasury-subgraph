@@ -1,7 +1,7 @@
 import { RequestLogger } from "@wundergraph/sdk/server";
-import { parseNumber } from "../tests/numberHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenRecordsLatestResponseData } from "./generated/models";
+import { parseNumber } from "./numberHelper";
 
 export type TokenRecord = TokenRecordsLatestResponseData["treasuryEthereum_tokenRecords"][0];
 
@@ -32,6 +32,9 @@ export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] =>
   return filteredData;
 };
 
+/**
+ * Sorts records by date, id in descending order.
+ */
 export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => {
   return records.sort((a, b) => {
     const aTime = new Date(a.date).getTime();
@@ -39,11 +42,21 @@ export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => 
 
     if (aTime > bTime) {
       return -1;
-    } else if (aTime < bTime) {
-      return 1;
-    } else {
-      return 0;
     }
+
+    if (aTime < bTime) {
+      return 1;
+    }
+
+    if (a.id > b.id) {
+      return 1;
+    }
+
+    if (a.id < b.id) {
+      return -1;
+    }
+
+    return 0;
   });
 };
 

@@ -1,4 +1,4 @@
-import { configureWunderGraphApplication, cors, EnvironmentVariable, introspect, templates } from '@wundergraph/sdk';
+import { configureWunderGraphApplication, cors, introspect, templates } from '@wundergraph/sdk';
 import server from './wundergraph.server';
 import operations from './wundergraph.operations';
 
@@ -20,10 +20,6 @@ extend type TokenSupply {
 // Validate that the required environment variables are set
 if (!process.env.UPSTASH_REDIS_URL) {
 	throw new Error("UPSTASH_REDIS_URL is not set");
-}
-
-if (!process.env.UPSTASH_REDIS_TOKEN) {
-	throw new Error("UPSTASH_REDIS_TOKEN is not set");
 }
 
 const resolveSubgraphUrl = (url: string): string => {

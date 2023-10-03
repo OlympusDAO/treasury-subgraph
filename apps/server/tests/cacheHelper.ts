@@ -1,13 +1,22 @@
-import { Redis } from "@upstash/redis";
+import { createClient } from "redis";
 
 export const clearCache = async () => {
-  console.log(`Clearing the cache`);
+  const FUNC = "clearCache";
+
+  if (!process.env.CACHE_ENABLED) {
+    return;
+  }
+
+  console.log(`${FUNC}: Clearing the cache`);
   // Clear the cache
-  const client = new Redis({
-    url: process.env.UPSTASH_REDIS_URL || "",
-    token: process.env.UPSTASH_REDIS_TOKEN || "",
+  const client = createClient({
+    url: process.env.UPSTASH_REDIS_URL || ""
   });
 
-  await client.flushdb();
-  console.log(`Cache cleared`);
+  await client.connect();
+
+  await client.flushDb();
+
+  await client.disconnect();
+  console.log(`${FUNC}: Cache cleared`);
 };

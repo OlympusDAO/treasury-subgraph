@@ -49,6 +49,8 @@ export default createOperation.query({
     let currentEndDate: Date = getNextEndDate(null);
 
     while (currentStartDate.getTime() >= finalStartDate.getTime()) {
+      currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
+
       log.info(`${FUNC}: Querying for ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}`);
       const queryResult = await ctx.operations.query({
         operationName: "raw/internal/protocolMetrics",
@@ -65,21 +67,21 @@ export default createOperation.query({
         combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true, log));
       }
 
-      currentEndDate = currentStartDate;
-      currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
-
       // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
       // There is probably a cleaner way to do this, but this works for now
       if (currentStartDate == finalStartDate) {
         log.info(`${FUNC}: Reached final start date.`);
         break;
       }
+
+      currentEndDate = currentStartDate;
+      log.info(`${FUNC}: Set currentEndDate to: ${currentEndDate.toISOString()}`);
     }
 
     const sortedRecords = sortRecordsDescending(combinedProtocolMetrics);
 
     // Update the cache
-    await setCachedRecords<ProtocolMetric>(cacheKey, sortedRecords, log);
+    await setCachedRecords(cacheKey, sortedRecords, log);
 
     log.info(`${FUNC}: Returning ${combinedProtocolMetrics.length} records.`);
     return sortedRecords;

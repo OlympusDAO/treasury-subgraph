@@ -40,7 +40,24 @@ describe("paginated", () => {
     expect(recordLength).toBeGreaterThan(0);
   });
 
-  test("cached results are equal", async () => {
+  test("returns recent results beyond first page", async () => {
+    const startDateString = getStartDate(-20); // default date offset of 10
+    const result = await wg.client().query({
+      operationName: "paginated/tokenSupplies",
+      input: {
+        startDate: startDateString,
+      }
+    });
+
+    const records = result.data;
+    const recordsNotNull = records ? records : [];
+    // Most recent date
+    expect(recordsNotNull[0].date).toEqual(getISO8601DateString(new Date()));
+    // Last date
+    expect(recordsNotNull[recordsNotNull.length - 1].date).toEqual(startDateString);
+  });
+
+  test("subsequent results are equal", async () => {
     const result = await wg.client().query({
       operationName: "paginated/tokenSupplies",
       input: {
@@ -60,7 +77,7 @@ describe("paginated", () => {
     expect(resultTwo.data).toEqual(records);
   }, 20 * 1000);
 
-  test("cached results are equal, long timeframe", async () => {
+  test("subsequent results are equal, long timeframe", async () => {
     // This tests both setting and getting a large amount of data, which can error out
     const result = await wg.client().query({
       operationName: "paginated/tokenSupplies",
@@ -200,7 +217,7 @@ describe("latest", () => {
     expect(recordLength).toEqual(expectedCount);
   });
 
-  test("cached results are equal", async () => {
+  test("subsequent results are equal", async () => {
     const result = await wg.client().query({
       operationName: "latest/tokenSupplies",
     });
@@ -254,7 +271,7 @@ describe("earliest", () => {
     expect(recordLength).toEqual(expectedCount);
   });
 
-  test("cached results are equal", async () => {
+  test("subsequent results are equal", async () => {
     const result = await wg.client().query({
       operationName: "earliest/tokenSupplies",
     });

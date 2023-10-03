@@ -140,7 +140,10 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(metricRecords);
 
     // Update the cache
-    await setCachedRecords<Metric>(cacheKey, sortedRecords, log);
+    // Only if includeRecords is false, as the size becomes too large
+    if (!ctx.input.includeRecords) {
+      await setCachedRecords(cacheKey, sortedRecords, log);
+    }
 
     log.info(`${FUNC}: Returning ${sortedRecords.length} records.`);
     return sortedRecords;
