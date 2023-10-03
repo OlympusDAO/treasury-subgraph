@@ -77,9 +77,9 @@ NOTE: the Upstash credentials in the production project and environment should b
 ### Deployment - Client NPM Package
 
 1. Set the required values in `.env.prod`
-2. Update the `version` in `apps/client/package.json`
-3. Update the changelog
-4. Login using yarn to authenticate with the NPM package registry: `yarn login`
+2. Authenticate with the NPM package registry: `npm login`
+3. Update the `version` in `apps/client/package.json`
+4. Update the changelog
 5. Run the following command: `yarn publish-package`
 
     - Prefix the command with `YARN_OTP=<OTP VALUE>`
