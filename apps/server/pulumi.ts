@@ -135,18 +135,16 @@ const cloudRun = new gcp.cloudrunv2.Service(
 );
 
 // Enable the Cloud Run service to be invoked by Firebase Hosting
-const noauthIAMPolicy = gcp.organizations.getIAMPolicy({
-  bindings: [{
-    role: "roles/run.invoker",
-    members: ["allUsers"],
-  }],
-});
-
-const noauthIamPolicy = new gcp.cloudrun.IamPolicy("noauthIamPolicy", {
+new gcp.cloudrun.IamBinding("unauthenticated", {
   location: gcpConfig.require("region"),
   project: gcpConfig.require("project"),
   service: cloudRun.name,
-  policyData: noauthIAMPolicy.then(noauthIAMPolicy => noauthIAMPolicy.policyData),
+  role: "roles/run.invoker",
+  members: [
+    "allUsers",
+  ],
+}, {
+  dependsOn: [cloudRun],
 });
 
 /**
