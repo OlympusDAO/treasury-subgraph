@@ -5,3 +5,5 @@ config:
     secure: AAABANu9y2bqHvQCLQkoBUaOtj0Th/9XW6+AOsjA7u8EX+p8959Vc/90XBpJdAjFGO+5Dju+SW/4wauExy1jXw==
   treasury-subgraph:UPSTASH_REDIS_URL:
     secure: AAABAEOhgYj2VTHR6eZhRebis0Guu1zvc52zFDg88t6KaOXmsqOaO4zaTyYvLgr/AtLK24j152Zr3sQWaGYPxV6A5Ruy9HBJvNlmpz72KdbtFScnXVxaIne5kNsD8IyY7acDdRTPnWvpxWM7NJYYv/yLoaSPEY/OZ6uf
+  treasury-subgraph:alertEmail:
+    secure: AAABACiBHzUJSM9qSnArY3sqXsXk5mjRFiWCJaxFG1Ez5wGM/axGInA4rk4L7Mpr4w==

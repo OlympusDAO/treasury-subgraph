@@ -228,6 +228,175 @@ new gcp.firebase.HostingRelease(
 );
 
 /**
+ * Alerts
+ */
+// Notification channel
+const notificationEmail = new gcp.monitoring.NotificationChannel(
+  "email",
+  {
+    displayName: "Email",
+    type: "email",
+    labels: {
+      email_address: pulumiConfig.requireSecret("alertEmail"),
+    },
+  },
+);
+
+// High Latency
+new gcp.monitoring.AlertPolicy(
+  "high-latency",
+  {
+    displayName: `${projectName} - High Request Latency`,
+    userLabels: {},
+    conditions: [
+      {
+        displayName: `50% above 30s Latency`,
+        conditionThreshold: {
+          filter:
+            pulumi.interpolate`
+            resource.type = "cloud_run_revision" AND 
+            resource.labels.service_name = "${cloudRun.name}" AND 
+            metric.type = "run.googleapis.com/request_latencies"
+            `,
+          aggregations: [
+            {
+              alignmentPeriod: "300s",
+              perSeriesAligner: "ALIGN_PERCENTILE_99",
+            },
+          ],
+          comparison: "COMPARISON_GT",
+          duration: "0s",
+          trigger: {
+            percent: 50,
+          },
+          thresholdValue: 30000, // 30 seconds
+        },
+      },
+    ],
+    alertStrategy: {
+      autoClose: "604800s",
+    },
+    combiner: "AND",
+    enabled: true,
+    notificationChannels: [notificationEmail.name],
+  },
+  {
+    dependsOn: [cloudRun, notificationEmail],
+  },
+);
+
+// HTTP Errors
+new gcp.monitoring.AlertPolicy(
+  "http-errors",
+  {
+    displayName: `${projectName} - HTTP Errors`,
+    userLabels: {},
+    conditions: [
+      {
+        displayName: `Error Count`,
+        conditionThreshold: {
+          filter:
+            pulumi.interpolate`
+            resource.type = "cloud_run_revision" AND 
+            resource.labels.service_name = "${cloudRun.name}" AND 
+            metric.type = "run.googleapis.com/request_count" AND 
+            metric.labels.response_code_class != "2xx"
+            `,
+          aggregations: [
+            {
+              alignmentPeriod: "300s",
+              crossSeriesReducer: "REDUCE_NONE",
+              perSeriesAligner: "ALIGN_COUNT",
+            },
+          ],
+          comparison: "COMPARISON_GT",
+          duration: "0s",
+          trigger: {
+            count: 1,
+          },
+          thresholdValue: 5,
+        },
+      },
+    ],
+    alertStrategy: {
+      autoClose: "604800s",
+    },
+    combiner: "OR",
+    enabled: true,
+    notificationChannels: [notificationEmail.name],
+  },
+  {
+    dependsOn: [cloudRun, notificationEmail],
+  },
+);
+
+// Log Errors
+new gcp.monitoring.AlertPolicy(
+  "log-errors",
+  {
+    displayName: `${projectName} - Unexpected Errors`,
+    userLabels: {},
+    conditions: [
+      {
+        displayName: "Log contains error",
+        conditionMatchedLog: {
+          filter:
+            pulumi.interpolate`
+            resource.type = "cloud_run_revision" AND
+            resource.labels.service_name = "${cloudRun.name}" AND 
+            textPayload=~"runtime error"`, // TODO add "level": "error"
+        },
+      },
+    ],
+    alertStrategy: {
+      notificationRateLimit: {
+        period: "3600s",
+      },
+      autoClose: "604800s",
+    },
+    combiner: "OR",
+    enabled: true,
+    notificationChannels: [notificationEmail.name],
+  },
+  {
+    dependsOn: [cloudRun, notificationEmail],
+  },
+);
+
+// Memory limit errors
+new gcp.monitoring.AlertPolicy(
+  "memory-limit-errors",
+  {
+    displayName: `${projectName} - Memory Limit Errors`,
+    userLabels: {},
+    conditions: [
+      {
+        displayName: "Log contains memory limit error",
+        conditionMatchedLog: {
+          filter:
+            pulumi.interpolate`
+            resource.type = "cloud_run_revision" AND
+            resource.labels.service_name = "${cloudRun.name}" AND 
+            textPayload=~"memory limit"`,
+        },
+      },
+    ],
+    alertStrategy: {
+      notificationRateLimit: {
+        period: "3600s",
+      },
+      autoClose: "604800s",
+    },
+    combiner: "OR",
+    enabled: true,
+    notificationChannels: [notificationEmail.name],
+  },
+  {
+    dependsOn: [cloudRun, notificationEmail],
+  },
+);
+
+/**
  * Exports
  */
 export const cloudRunUrl = cloudRun.uri;
