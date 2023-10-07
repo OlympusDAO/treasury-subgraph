@@ -38,6 +38,7 @@ export default createOperation.query({
     const polygonBlock = getBlockByChain(latestQueryResult.data || [], CHAIN_POLYGON);
 
     if (!arbitrumBlock || !ethereumBlock || !fantomBlock || !polygonBlock) {
+      log.error(`${FUNC}: Could not find latest tokenRecord block for each chain. Arbitrum: ${arbitrumBlock}, Ethereum: ${ethereumBlock}, Fantom: ${fantomBlock}, Polygon: ${polygonBlock}`);
       return null;
     }
 
