@@ -130,7 +130,7 @@ export default createOperation.query({
     byDateRecords.forEach((recordContainer, date) => {
       const metricRecord: Metric | null = getMetricObject(recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, ctx.input.includeRecords);
       if (!metricRecord) {
-        log.info(`${FUNC}: Skipping date ${date} because it is missing data.`);
+        log.error(`${FUNC}: Skipping date ${date} because it is missing data.`);
         return;
       }
 
