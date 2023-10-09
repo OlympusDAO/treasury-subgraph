@@ -131,11 +131,7 @@ export default createOperation.query({
 
     // Convert into new Metric objects
     byDateRecords.forEach((recordContainer, date) => {
-      const metricRecord: Metric | null = getMetricObject(log, recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, ctx.input.includeRecords);
-
-      if (!metricRecord) {
-        throw new UpstreamSubgraphError({ message: `${FUNC}: Unable to generate Metric for ${date} due to missing data` });
-      }
+      const metricRecord: Metric = getMetricObject(log, recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, { includeRecords: ctx.input.includeRecords, dateFallback: date });
 
       metricRecords.push(metricRecord);
     });

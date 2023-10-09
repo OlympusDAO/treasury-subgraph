@@ -65,11 +65,7 @@ export default createOperation.query({
       input: input,
     });
 
-    const metricRecord: Metric | null = getMetricObject(log, tokenRecordsQueryResult.data || [], tokenSuppliesQueryResult.data || [], protocolMetricsQueryResult.data || []);
-
-    if (!metricRecord) {
-      throw new UpstreamSubgraphError({ message: `${FUNC}: Could not generate metric record` });
-    }
+    const metricRecord: Metric = getMetricObject(log, tokenRecordsQueryResult.data || [], tokenSuppliesQueryResult.data || [], protocolMetricsQueryResult.data || []);
 
     // Update the cache
     await setCachedRecord(cacheKey, metricRecord, log);
