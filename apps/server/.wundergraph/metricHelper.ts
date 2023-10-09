@@ -559,8 +559,11 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
   if (!tokenRecords.length || !tokenSupplies.length || !protocolMetrics.length) {
     log.warn(`${FUNC}: Not all parameters have non-zero length: tokenRecords: ${tokenRecords.length}, tokenSupplies: ${tokenSupplies.length}, protocolMetrics: ${protocolMetrics.length}`);
 
+    const date = options && options.dateFallback ? options.dateFallback : "";
+    const timestamp = options && options.dateFallback ? Date.parse(options.dateFallback) / 1000 : 0;
+
     return {
-      date: options && options.dateFallback ? options.dateFallback : "",
+      date: date,
       blocks: {
         [Chains.ARBITRUM]: 0,
         [Chains.ETHEREUM]: 0,
@@ -569,7 +572,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       },
       timestamps: {
         [Chains.ARBITRUM]: 0,
-        [Chains.ETHEREUM]: 0,
+        [Chains.ETHEREUM]: timestamp,
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
       },
