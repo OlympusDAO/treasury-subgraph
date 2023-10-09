@@ -30,7 +30,7 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      log.info(`${FUNC}: No data returned.`);
+      log.error(`${FUNC}: No data returned.`);
       return [];
     }
 

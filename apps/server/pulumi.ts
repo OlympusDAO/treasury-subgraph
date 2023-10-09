@@ -94,7 +94,7 @@ const cloudRun = new gcp.cloudrunv2.Service(
   {
     location: gcpConfig.require("region"),
     template: {
-      maxInstanceRequestConcurrency: 20, // Seems to be a good balance with 1GB memory
+      maxInstanceRequestConcurrency: 10, // Seems to be a good balance with 1GB memory
       containers: [
         {
           image: dockerImageGitCommit.imageName,
