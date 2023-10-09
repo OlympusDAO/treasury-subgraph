@@ -1,3 +1,4 @@
+import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { flattenRecords } from '../../tokenSupplyHelper';
 
@@ -6,6 +7,7 @@ import { flattenRecords } from '../../tokenSupplyHelper';
  * each endpoint.
  */
 export default createOperation.query({
+  errors: [UpstreamSubgraphError],
   input: z.object({
     arbitrumBlock: z.number({ description: "Arbitrum block number" }),
     ethereumBlock: z.number({ description: "Ethereum block number" }),
@@ -28,8 +30,7 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      log.info(`${FUNC}: No data returned`);
-      return [];
+      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned` });
     }
 
     return flattenRecords(queryResult.data, true, false, log);

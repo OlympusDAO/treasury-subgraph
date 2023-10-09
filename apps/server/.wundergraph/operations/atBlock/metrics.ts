@@ -38,7 +38,7 @@ export default createOperation.query({
       input: input,
     });
 
-    const metricRecord: Metric | null = getMetricObject(tokenRecordsQueryResult.data || [], tokenSuppliesQueryResult.data || [], protocolMetricsQueryResult.data || []);
+    const metricRecord: Metric = getMetricObject(log, tokenRecordsQueryResult.data || [], tokenSuppliesQueryResult.data || [], protocolMetricsQueryResult.data || []);
     return metricRecord;
   },
 });

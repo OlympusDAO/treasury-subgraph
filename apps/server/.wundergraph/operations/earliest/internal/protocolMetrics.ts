@@ -1,3 +1,4 @@
+import { UpstreamSubgraphError } from '../../../upstreamSubgraphError';
 import { createOperation } from '../../../generated/wundergraph.factory';
 import { flattenRecords } from '../../../protocolMetricHelper';
 
@@ -8,6 +9,7 @@ import { flattenRecords } from '../../../protocolMetricHelper';
  * NOTE: this is not available for public use, and is superseded by the Metric queries.
  */
 export default createOperation.query({
+  errors: [UpstreamSubgraphError],
   handler: async (ctx) => {
     const FUNC = `earliest/internal/protocolMetrics`;
     const log = ctx.log;
@@ -18,8 +20,7 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      log.info(`${FUNC}: No data returned.`);
-      return [];
+      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned.` });
     }
 
     // Combine across pages and endpoints

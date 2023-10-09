@@ -1,4 +1,5 @@
 import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
+import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { TokenSupply, flattenRecords } from '../../tokenSupplyHelper';
 
@@ -7,6 +8,7 @@ import { TokenSupply, flattenRecords } from '../../tokenSupplyHelper';
  * each blockchain.
  */
 export default createOperation.query({
+  errors: [UpstreamSubgraphError],
   input: z.object({
     ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
   }),
@@ -30,8 +32,7 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      log.info(`${FUNC}: No data returned.`);
-      return [];
+      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned.` });
     }
 
     // Combine across pages and endpoints

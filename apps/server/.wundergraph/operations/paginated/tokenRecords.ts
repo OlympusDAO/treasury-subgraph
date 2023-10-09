@@ -4,6 +4,8 @@ import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString }
 import { TokenRecordsResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { TokenRecord, flattenRecords, isCrossChainRecordDataComplete, sortRecordsDescending } from '../../tokenRecordHelper';
+import { BadRequestError } from '../../badRequestError';
+import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 
 /**
  * Determines whether the provided records should be processed further.
@@ -43,6 +45,7 @@ const shouldProcessRecords = (records: TokenRecordsResponseData, hasProcessedFir
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
  */
 export default createOperation.query({
+  errors: [BadRequestError, UpstreamSubgraphError],
   input: z.object({
     startDate: z.string({ description: "The start date in the YYYY-MM-DD format." }),
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
@@ -58,7 +61,7 @@ export default createOperation.query({
     const finalStartDate: Date = new Date(ctx.input.startDate);
     log.info(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
-      throw new Error(`startDate should be in the YYYY-MM-DD format.`);
+      throw new BadRequestError({ message: `startDate should be in the YYYY-MM-DD format.` });
     }
 
     // Return cached data if it exists
@@ -92,7 +95,11 @@ export default createOperation.query({
         },
       });
 
-      if (queryResult.data && shouldProcessRecords(queryResult.data, hasProcessedFirstDate, log, ctx.input.crossChainDataComplete)) {
+      if (!queryResult.data) {
+        throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned for date range ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}` });
+      }
+
+      if (shouldProcessRecords(queryResult.data, hasProcessedFirstDate, log, ctx.input.crossChainDataComplete)) {
         // Collapse the data into a single array
         combinedTokenRecords.push(...flattenRecords(queryResult.data, true, log));
 

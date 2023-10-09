@@ -1,7 +1,9 @@
+import { RequestLogger } from "@wundergraph/sdk/server";
 import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, Chains, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY, TokenSupplyCategories } from "./constants";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { TokenRecord } from "./tokenRecordHelper";
 import { TokenSupply } from "./tokenSupplyHelper";
+import { parseNumber } from "./numberHelper";
 
 //
 // Customised for the treasury-subgraph repo
@@ -547,16 +549,109 @@ const getTimestamp = (tokenRecords: TokenRecord[]): number => {
   return +tokenRecords[0].timestamp;
 }
 
-export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], protocolMetrics: ProtocolMetric[], includeRecords = false): Metric | null => {
+export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], protocolMetrics: ProtocolMetric[], options?: { includeRecords?: boolean, dateFallback?: string }): Metric => {
+  const FUNC = `getMetricObject`;
+  const includeRecords = options && options.includeRecords ? options.includeRecords : false;
+
+  /**
+   * If there is data missing, provide a "blank" object, so that the number of returned records is consistent.
+   */
   if (!tokenRecords.length || !tokenSupplies.length || !protocolMetrics.length) {
-    return null;
+    log.warn(`${FUNC}: Not all parameters have non-zero length: tokenRecords: ${tokenRecords.length}, tokenSupplies: ${tokenSupplies.length}, protocolMetrics: ${protocolMetrics.length}`);
+
+    const date = options && options.dateFallback ? options.dateFallback : "";
+    const timestamp = options && options.dateFallback ? new Date(options.dateFallback).getTime() / 1000 : 0;
+
+    return {
+      date: date,
+      blocks: {
+        [Chains.ARBITRUM]: 0,
+        [Chains.ETHEREUM]: 0,
+        [Chains.FANTOM]: 0,
+        [Chains.POLYGON]: 0,
+      },
+      timestamps: {
+        [Chains.ARBITRUM]: 0,
+        [Chains.ETHEREUM]: timestamp,
+        [Chains.FANTOM]: 0,
+        [Chains.POLYGON]: 0,
+      },
+      ohmIndex: 0,
+      ohmApy: 0,
+      ohmTotalSupply: 0,
+      ohmTotalSupplyComponents: {
+        [Chains.ARBITRUM]: 0,
+        [Chains.ETHEREUM]: 0,
+        [Chains.FANTOM]: 0,
+        [Chains.POLYGON]: 0,
+      },
+      ohmCirculatingSupply: 0,
+      ohmCirculatingSupplyComponents: {
+        [Chains.ARBITRUM]: 0,
+        [Chains.ETHEREUM]: 0,
+        [Chains.FANTOM]: 0,
+        [Chains.POLYGON]: 0,
+      },
+      ohmFloatingSupply: 0,
+      ohmFloatingSupplyComponents: {
+        [Chains.ARBITRUM]: 0,
+        [Chains.ETHEREUM]: 0,
+        [Chains.FANTOM]: 0,
+        [Chains.POLYGON]: 0,
+      },
+      ohmBackedSupply: 0,
+      gOhmBackedSupply: 0,
+      ohmBackedSupplyComponents: {
+        [Chains.ARBITRUM]: 0,
+        [Chains.ETHEREUM]: 0,
+        [Chains.FANTOM]: 0,
+        [Chains.POLYGON]: 0,
+      },
+      ohmSupplyCategories: {
+        [TokenSupplyCategories.BONDS_DEPOSITS]: 0,
+        [TokenSupplyCategories.BONDS_PREMINTED]: 0,
+        [TokenSupplyCategories.BONDS_VESTING_DEPOSITS]: 0,
+        [TokenSupplyCategories.BONDS_VESTING_TOKENS]: 0,
+        [TokenSupplyCategories.LIQUIDITY]: 0,
+        [TokenSupplyCategories.BOOSTED_LIQUIDITY_VAULT]: 0,
+        [TokenSupplyCategories.MIGRATION_OFFSET]: 0,
+        [TokenSupplyCategories.TOTAL_SUPPLY]: 0,
+        [TokenSupplyCategories.TREASURY]: 0,
+        [TokenSupplyCategories.LENDING]: 0,
+      },
+      ohmPrice: 0,
+      gOhmPrice: 0,
+      marketCap: 0,
+      sOhmCirculatingSupply: 0,
+      sOhmTotalValueLocked: 0,
+      treasuryMarketValue: 0,
+      treasuryMarketValueComponents: {
+        [Chains.ARBITRUM]: 0,
+        [Chains.ETHEREUM]: 0,
+        [Chains.FANTOM]: 0,
+        [Chains.POLYGON]: 0,
+      },
+      treasuryLiquidBacking: 0,
+      treasuryLiquidBackingComponents: {
+        [Chains.ARBITRUM]: 0,
+        [Chains.ETHEREUM]: 0,
+        [Chains.FANTOM]: 0,
+        [Chains.POLYGON]: 0,
+      },
+      treasuryLiquidBackingPerOhmFloating: 0,
+      treasuryLiquidBackingPerOhmBacked: 0,
+      treasuryLiquidBackingPerGOhmBacked: 0,
+    }
   }
 
-  const block: number = +protocolMetrics[0].block;
-  const ohmIndex: number = +protocolMetrics[0].currentIndex;
-  const ohmApy: number = +protocolMetrics[0].currentAPY;
-  const ohmPrice: number = +protocolMetrics[0].ohmPrice;
-  const gOhmPrice: number = +protocolMetrics[0].gOhmPrice;
+  const protocolMetricsOne: ProtocolMetric = protocolMetrics[0];
+
+  const date: string = tokenRecords[0].date;
+  const block: number = parseNumber(protocolMetricsOne.block);
+  const ohmIndex: number = parseNumber(protocolMetricsOne.currentIndex);
+  const ohmApy: number = parseNumber(protocolMetricsOne.currentAPY);
+  const ohmPrice: number = parseNumber(protocolMetricsOne.ohmPrice);
+  const gOhmPrice: number = parseNumber(protocolMetricsOne.gOhmPrice);
 
   const supplyCategories = getSupplyCategories(tokenSupplies, ohmIndex);
   const assetValues = getAssetValues(tokenRecords);
@@ -566,11 +661,11 @@ export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: Toke
   const ohmBackedSupply = getOhmBackedSupply(supplyCategories[1], ohmIndex);
   const ohmTotalSupply = getOhmTotalSupply(supplyCategories[1], ohmIndex);
 
-  const sOhmCirculatingSupply: number = +protocolMetrics[0].sOhmCirculatingSupply;
-  const sOhmTotalValueLocked: number = +protocolMetrics[0].totalValueLocked;
+  const sOhmCirculatingSupply: number = parseNumber(protocolMetricsOne.sOhmCirculatingSupply);
+  const sOhmTotalValueLocked: number = parseNumber(protocolMetricsOne.totalValueLocked);
 
   return {
-    date: tokenRecords[0].date,
+    date: date,
     blocks: {
       [Chains.ARBITRUM]: getBlock(assetValues.marketValueChainRecords.Arbitrum),
       [Chains.ETHEREUM]: getBlock(assetValues.marketValueChainRecords.Ethereum),

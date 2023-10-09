@@ -2,6 +2,8 @@ import { createOperation, z } from '../../generated/wundergraph.factory';
 import { getISO8601DateString } from '../../dateHelper';
 import { Metric, RecordContainer, getMetricObject, sortRecordsDescending } from '../../metricHelper';
 import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
+import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
+import { BadRequestError } from '../../badRequestError';
 
 /**
  * This custom query will return a flat array containing Metric objects from
@@ -10,6 +12,7 @@ import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelp
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
  */
 export default createOperation.query({
+  errors: [BadRequestError, UpstreamSubgraphError],
   input: z.object({
     startDate: z.string({ description: "The start date in the YYYY-MM-DD format." }),
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
@@ -28,7 +31,7 @@ export default createOperation.query({
     const finalStartDate: Date = new Date(ctx.input.startDate);
     log.info(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
-      throw new Error(`startDate should be in the YYYY-MM-DD format.`);
+      throw new BadRequestError({ message: `startDate should be in the YYYY-MM-DD format.` });
     }
 
     // Return cached data if it exists
@@ -128,11 +131,7 @@ export default createOperation.query({
 
     // Convert into new Metric objects
     byDateRecords.forEach((recordContainer, date) => {
-      const metricRecord: Metric | null = getMetricObject(recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, ctx.input.includeRecords);
-      if (!metricRecord) {
-        log.info(`${FUNC}: Skipping date ${date} because it is missing data.`);
-        return;
-      }
+      const metricRecord: Metric = getMetricObject(log, recordContainer.tokenRecords, recordContainer.tokenSupplies, recordContainer.protocolMetrics, { includeRecords: ctx.input.includeRecords, dateFallback: date });
 
       metricRecords.push(metricRecord);
     });

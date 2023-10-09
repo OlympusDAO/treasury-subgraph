@@ -3,6 +3,8 @@ import { RawInternalProtocolMetricsResponseData } from '../../generated/models';
 import { ProtocolMetric, flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
 import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
+import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
+import { BadRequestError } from '../../badRequestError';
 
 /**
  * This custom query will return a flat array containing ProtocolMetric objects from
@@ -13,6 +15,7 @@ import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelp
  * NOTE: this is not recommended for public use, and is superseded by the Metric queries.
  */
 export default createOperation.query({
+  errors: [BadRequestError, UpstreamSubgraphError],
   input: z.object({
     startDate: z.string({ description: "The start date in the YYYY-MM-DD format." }),
     dateOffset: z.number({ description: "The number of days to paginate by. Reduce the value if data is missing." }).optional(),
@@ -27,7 +30,7 @@ export default createOperation.query({
     const finalStartDate: Date = new Date(ctx.input.startDate);
     log.info(`${FUNC}: finalStartDate: ${finalStartDate.toISOString()}`);
     if (isNaN(finalStartDate.getTime())) {
-      throw new Error(`startDate should be in the YYYY-MM-DD format.`);
+      throw new BadRequestError({ message: `startDate should be in the YYYY-MM-DD format.` });
     }
 
     // Return cached data if it exists
@@ -60,12 +63,13 @@ export default createOperation.query({
         },
       });
 
-      // Collapse the data into a single array
-      if (queryResult.data) {
-        // Collapse the data into a single array, and add a missing property
-        // ProtocolMetrics are only generated for the Ethereum mainnet subgraph at the moment, so there is no need for a cross-chain consistency check
-        combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true, log));
+      if (!queryResult.data) {
+        throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned for date range ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}` });
       }
+
+      // Collapse the data into a single array, and add a missing property
+      // ProtocolMetrics are only generated for the Ethereum mainnet subgraph at the moment, so there is no need for a cross-chain consistency check
+      combinedProtocolMetrics.push(...flattenRecords(queryResult.data, true, log));
 
       // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
       // There is probably a cleaner way to do this, but this works for now

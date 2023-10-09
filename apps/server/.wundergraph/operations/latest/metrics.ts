@@ -3,11 +3,13 @@ import { Metric, getMetricObject } from '../../metricHelper';
 import { getBlockByChain } from '../../tokenRecordHelper';
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from '../../constants';
 import { getCacheKey, getCachedRecord, setCachedRecord } from '../../cacheHelper';
+import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 
 /**
  * This custom query will return the latest Metric object.
  */
 export default createOperation.query({
+  errors: [UpstreamSubgraphError],
   input: z.object({
     ignoreCache: z.boolean({ description: "If true, ignores the cache and queries the subgraphs directly." }).optional(),
   }),
@@ -38,7 +40,7 @@ export default createOperation.query({
     const polygonBlock = getBlockByChain(latestQueryResult.data || [], CHAIN_POLYGON);
 
     if (!arbitrumBlock || !ethereumBlock || !fantomBlock || !polygonBlock) {
-      return null;
+      throw new UpstreamSubgraphError({ message: `${FUNC}: Could not find latest tokenRecord block for each chain. Arbitrum: ${arbitrumBlock}, Ethereum: ${ethereumBlock}, Fantom: ${fantomBlock}, Polygon: ${polygonBlock}` });
     }
 
     const input = {
@@ -63,12 +65,10 @@ export default createOperation.query({
       input: input,
     });
 
-    const metricRecord: Metric | null = getMetricObject(tokenRecordsQueryResult.data || [], tokenSuppliesQueryResult.data || [], protocolMetricsQueryResult.data || []);
+    const metricRecord: Metric = getMetricObject(log, tokenRecordsQueryResult.data || [], tokenSuppliesQueryResult.data || [], protocolMetricsQueryResult.data || []);
 
     // Update the cache
-    if (metricRecord) {
-      await setCachedRecord(cacheKey, metricRecord, log);
-    }
+    await setCachedRecord(cacheKey, metricRecord, log);
 
     return metricRecord;
   },
