@@ -1,3 +1,4 @@
+import { RequestLogger } from "@wundergraph/sdk/server";
 import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, Chains, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY, TokenSupplyCategories } from "./constants";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { TokenRecord } from "./tokenRecordHelper";
@@ -547,8 +548,11 @@ const getTimestamp = (tokenRecords: TokenRecord[]): number => {
   return +tokenRecords[0].timestamp;
 }
 
-export const getMetricObject = (tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], protocolMetrics: ProtocolMetric[], includeRecords = false): Metric | null => {
+export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], protocolMetrics: ProtocolMetric[], includeRecords = false): Metric | null => {
+  const FUNC = `getMetricObject`;
+
   if (!tokenRecords.length || !tokenSupplies.length || !protocolMetrics.length) {
+    log.error(`${FUNC}: Not all parameters have non-zero length: tokenRecords: ${tokenRecords.length}, tokenSupplies: ${tokenSupplies.length}, protocolMetrics: ${protocolMetrics.length}`);
     return null;
   }
 

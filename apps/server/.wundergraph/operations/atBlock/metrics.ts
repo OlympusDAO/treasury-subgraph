@@ -1,3 +1,4 @@
+import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { Metric, getMetricObject } from '../../metricHelper';
 
@@ -5,6 +6,7 @@ import { Metric, getMetricObject } from '../../metricHelper';
  * This custom query will return the Metric object for a specific block.
  */
 export default createOperation.query({
+  errors: [UpstreamSubgraphError],
   input: z.object({
     arbitrumBlock: z.number({ description: "Arbitrum block number" }),
     ethereumBlock: z.number({ description: "Ethereum block number" }),
@@ -38,7 +40,11 @@ export default createOperation.query({
       input: input,
     });
 
-    const metricRecord: Metric | null = getMetricObject(tokenRecordsQueryResult.data || [], tokenSuppliesQueryResult.data || [], protocolMetricsQueryResult.data || []);
+    const metricRecord: Metric | null = getMetricObject(log, tokenRecordsQueryResult.data || [], tokenSuppliesQueryResult.data || [], protocolMetricsQueryResult.data || []);
+    if (!metricRecord) {
+      throw new UpstreamSubgraphError({ message: `${FUNC}: Could not generate metric record for block ${JSON.stringify(input)}` });
+    }
+
     return metricRecord;
   },
 });
