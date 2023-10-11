@@ -18,6 +18,7 @@ type TokenRecordByDate = {
  * @returns 
  */
 export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] => {
+  const FUNC = `tokenRecord/filterLatestBlockByDay`;
   const filteredData = Object.values(records.reduce((acc: Record<string, TokenRecordByDate>, curr: TokenRecord) => {
     const { date, block } = curr;
     const blockNumber = parseNumber(block);
@@ -76,7 +77,9 @@ export const flattenRecords = (records: TokenRecordsLatestResponseData, latestBl
     let currentRecords: TokenRecord[] = value;
 
     if (latestBlock) {
+      log.info(`${FUNC}: Filtering latest block for ${key} records with length ${currentRecords.length}`);
       currentRecords = filterLatestBlockByDay(currentRecords);
+      log.info(`${FUNC}: Filtered latest block for ${key} records with revised length ${currentRecords.length}`);
     }
 
     combinedRecords.push(...currentRecords);
