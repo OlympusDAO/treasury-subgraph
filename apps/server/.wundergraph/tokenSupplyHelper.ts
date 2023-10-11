@@ -80,7 +80,9 @@ export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockch
     }
 
     if (latestBlock) {
+      log.info(`${FUNC}: Filtering latest block for ${key} records with length ${currentRecords.length}`);
       currentRecords = filterLatestBlockByDay(currentRecords);
+      log.info(`${FUNC}: Filtered latest block for ${key} records with revised length ${currentRecords.length}`);
     }
 
     combinedRecords.push(...currentRecords);

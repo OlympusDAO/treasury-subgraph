@@ -3,10 +3,10 @@ import { addDays } from "date-fns";
 /**
  * The Graph Protocol's server has a limit of 1000 records per query (per endpoint).
  * 
- * There are on average 50 records per day (for Ethereum, which has the most records),
- * so we can query 10 days at a time to stay under the limit.
+ * There are on average 50 * 3 records per day (for Ethereum, which has the most records),
+ * so we can query 6 days at a time to stay under the limit.
  */
-const OFFSET_DAYS = 10;
+const OFFSET_DAYS = 4;
 
 export const getISO8601DateString = (date: Date): string => {
   return date.toISOString().split("T")[0];
