@@ -28,6 +28,16 @@ export const getOffsetDays = (dateOffset?: number): number => {
   return dateOffset;
 }
 
+/**
+ * Subtracts `offsetDays` from the `currentDate` and returns the new start date.
+ * 
+ * This function also ensures that the new start date is not before the `finalStartDate`.
+ * 
+ * @param offsetDays 
+ * @param finalStartDate 
+ * @param currentDate 
+ * @returns 
+ */
 export const getNextStartDate = (offsetDays: number, finalStartDate: Date, currentDate: Date | null): Date => {
   const newEndDate: Date = getNextEndDate(currentDate);
 

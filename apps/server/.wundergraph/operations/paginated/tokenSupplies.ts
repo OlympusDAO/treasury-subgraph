@@ -1,42 +1,10 @@
-import { RequestLogger } from '@wundergraph/sdk/server';
 import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
 import { TokenSuppliesResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
-import { TokenSupply, flattenRecords, isCrossChainSupplyDataComplete, sortRecordsDescending } from '../../tokenSupplyHelper';
+import { TokenSupply, filterCompleteRecords, flattenRecords, sortRecordsDescending } from '../../tokenSupplyHelper';
 import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 import { BadRequestError } from '../../badRequestError';
-
-/**
- * Determines whether the provided records should be processed further.
- * 
- * This is used to skip processing records if the cross-chain data is incomplete (when the flag is provided).
- * 
- * @param records 
- * @param hasProcessedFirstDate 
- * @param crossChainDataComplete 
- * @returns 
- */
-const shouldProcessRecords = (records: TokenSuppliesResponseData, hasProcessedFirstDate: boolean, log: RequestLogger, crossChainDataComplete: boolean | undefined): boolean => {
-  if (hasProcessedFirstDate === true) {
-    return true;
-  }
-
-  if (!crossChainDataComplete) {
-    return true;
-  }
-
-  const arbitrumTokenRecords = records.treasuryArbitrum_tokenSupplies;
-  const ethereumTokenRecords = records.treasuryEthereum_tokenSupplies;
-
-  if (isCrossChainSupplyDataComplete(arbitrumTokenRecords, ethereumTokenRecords)) {
-    log.info(`Cross-chain data is complete.`);
-    return true;
-  }
-
-  log.info(`Cross-chain data is incomplete.`);
-  return false;
-}
 
 /**
  * This custom query will return a flat array containing TokenSupply objects from
@@ -103,13 +71,18 @@ export default createOperation.query({
         throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned for date range ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}` });
       }
 
-      if (shouldProcessRecords(queryResult.data, hasProcessedFirstDate, log, ctx.input.crossChainDataComplete)) {
-        // Collapse the data into a single array, and add a missing property
-        combinedTokenSupplies.push(...flattenRecords(queryResult.data, true, true, log));
+      let data: TokenSuppliesResponseData = queryResult.data;
 
-        // This prevents checking for consistent cross-chain data a second time
-        hasProcessedFirstDate = true;
+      // If the first set of data has not been processed (in which case there may be lagging indexing) and cross-chain data should be complete, filter the records
+      if (!hasProcessedFirstDate && ctx.input.crossChainDataComplete == true) {
+        data = filterCompleteRecords(data, log);
       }
+
+      // This prevents checking for consistent cross-chain data a second time
+      hasProcessedFirstDate = true;
+
+      // Flatten the data and add it to the combined array
+      combinedTokenSupplies.push(...flattenRecords(data, true, true, log));
 
       // Ensures that a finalStartDate close to the current date (within the first page) is handled correctly
       // There is probably a cleaner way to do this, but this works for now
