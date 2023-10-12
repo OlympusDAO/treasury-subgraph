@@ -92,6 +92,7 @@ export const filterCompleteRecords = (records: TokenRecordsLatestResponseData, l
     treasuryFantom_tokenRecords: records.treasuryFantom_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
     treasuryPolygon_tokenRecords: records.treasuryPolygon_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
   };
+  log.info(`${FUNC}: Filtered records up to latest consistent date: ${earliestDate.toISOString()}`);
 
   return filteredRecords;
 }

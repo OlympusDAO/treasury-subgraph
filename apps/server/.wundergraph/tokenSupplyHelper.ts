@@ -66,7 +66,7 @@ export const setBlockchainProperty = (records: TokenSupply[], blockchain: string
  * @param records 
  */
 export const filterCompleteRecords = (records: TokenSuppliesLatestResponseData, log: RequestLogger): TokenSuppliesLatestResponseData => {
-  const FUNC = `tokenRecord/filterCompleteRecords`;
+  const FUNC = `tokenSupply/filterCompleteRecords`;
 
   // Check for empty values
   if (!records.treasuryArbitrum_tokenSupplies.length || !records.treasuryEthereum_tokenSupplies.length) {
@@ -91,6 +91,7 @@ export const filterCompleteRecords = (records: TokenSuppliesLatestResponseData, 
     treasuryFantom_tokenSupplies: records.treasuryFantom_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
     treasuryPolygon_tokenSupplies: records.treasuryPolygon_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
   };
+  log.info(`${FUNC}: Filtered records up to latest consistent date: ${earliestDate.toISOString()}`);
 
   return filteredRecords;
 }
