@@ -113,6 +113,7 @@ export default createOperation.query({
     });
 
     // Group by date
+    let latestTokenSupplyDate: string | null = null;
     if (tokenSuppliesQueryResult.data) {
       tokenSuppliesQueryResult.data.forEach((record) => {
         const date = record.date;
@@ -124,9 +125,29 @@ export default createOperation.query({
 
         recordContainer.tokenSupplies.push(record);
         byDateRecords.set(date, recordContainer);
+
+        // Record the latest date
+        if (!latestTokenSupplyDate || new Date(date) > new Date(latestTokenSupplyDate)) {
+          log.info(`${FUNC}: Found latest date: ${date}`);
+          latestTokenSupplyDate = date;
+        }
       });
 
       log.info(`${FUNC}: Processed ${tokenSuppliesQueryResult.data.length} TokenSupply records.`);
+    }
+
+    // If crossChainDataComplete is true, filter out incomplete records
+    if (ctx.input.crossChainDataComplete == true && latestTokenSupplyDate) {
+      const latestDate: Date = new Date(latestTokenSupplyDate);
+      // TokenRecord and TokenSupply records would have already been filtered to the latest complete date,
+      // but ProtocolMetric records would not be, as they are not cross-chain
+      // Remove by byDateRecords any keys that are later than latestTokenSupplyDate
+      byDateRecords.forEach((recordContainer, date) => {
+        if (new Date(date) > latestDate) {
+          log.info(`${FUNC}: Removing incomplete records for date ${date}.`);
+          byDateRecords.delete(date);
+        }
+      });
     }
 
     // Convert into new Metric objects

@@ -558,6 +558,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
    */
   if (!tokenRecords.length || !tokenSupplies.length || !protocolMetrics.length) {
     log.warn(`${FUNC}: Not all parameters have non-zero length: tokenRecords: ${tokenRecords.length}, tokenSupplies: ${tokenSupplies.length}, protocolMetrics: ${protocolMetrics.length}`);
+    log.warn(`${FUNC}: Fallback date: ${options && options.dateFallback ? options.dateFallback : "None"}`);
 
     const date = options && options.dateFallback ? options.dateFallback : "";
     const timestamp = options && options.dateFallback ? new Date(options.dateFallback).getTime() / 1000 : 0;
