@@ -61,6 +61,41 @@ export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => 
   });
 };
 
+/**
+ * Filters `records` to only include records with a complete set of cross-chain data.
+ * 
+ * @param records 
+ */
+export const filterCompleteRecords = (records: TokenRecordsLatestResponseData, log: RequestLogger): TokenRecordsLatestResponseData => {
+  const FUNC = `tokenRecord/filterCompleteRecords`;
+
+  // Check for empty values
+  if (!records.treasuryArbitrum_tokenRecords.length || !records.treasuryEthereum_tokenRecords.length) {
+    log.warn(`${FUNC}: Arbitrum or Ethereum records are empty.`)
+    return {
+      treasuryArbitrum_tokenRecords: [],
+      treasuryEthereum_tokenRecords: [],
+      treasuryFantom_tokenRecords: [],
+      treasuryPolygon_tokenRecords: [],
+    };
+  }
+
+  // Get the earliest date across the Ethereum and Arbitrum records
+  const arbitrumDate = records.treasuryArbitrum_tokenRecords[0].date;
+  const ethereumDate = records.treasuryEthereum_tokenRecords[0].date;
+  const earliestDate = new Date(arbitrumDate) < new Date(ethereumDate) ? new Date(arbitrumDate) : new Date(ethereumDate);
+
+  // Filter the records to only include records up to the earliest date
+  const filteredRecords = {
+    treasuryArbitrum_tokenRecords: records.treasuryArbitrum_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
+    treasuryEthereum_tokenRecords: records.treasuryEthereum_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
+    treasuryFantom_tokenRecords: records.treasuryFantom_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
+    treasuryPolygon_tokenRecords: records.treasuryPolygon_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
+  };
+
+  return filteredRecords;
+}
+
 export const flattenRecords = (records: TokenRecordsLatestResponseData, latestBlock: boolean, log: RequestLogger): TokenRecord[] => {
   const FUNC = "tokenRecord/flattenRecords";
   const combinedRecords: TokenRecord[] = [];
