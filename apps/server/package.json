@@ -32,6 +32,7 @@
     "build:release": "WG_PUBLIC_NODE_URL=https://olympus-treasury-subgraph-prod.web.app yarn build",
     "build:local": "WG_PUBLIC_NODE_URL=http://localhost:9991 yarn build",
     "pretest": "yarn build:local",
+    "pretest:ci": "yarn build:local",
     "test": "jest",
     "test:ci": "WG_LOG_LEVEL=error jest --runInBand --ci",
     "test:local": "dotenv -e ../../.env jest"
