@@ -32,7 +32,7 @@ const resolveSubgraphUrl = (url: string): string => {
 
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmPa7EVtHhVoCGGsfyC1RwxkbyUnWcqvvDQNRKK7gMzUno"), // 4.14.2
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmNPv8c9WmgJACticVNssjXADWxj9CTnipJNhcxouP8cG2"), // 4.15.2
 	schemaExtension: schemaExtension,
 });
 
@@ -50,7 +50,7 @@ const treasuryFantom = introspect.graphql({
 
 const treasuryPolygon = introspect.graphql({
 	apiNamespace: "treasuryPolygon",
-	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-polygon",
+	url: "https://api.studio.thegraph.com/query/46563/protocol-metrics-polygon/1.1.1",
 	schemaExtension: schemaExtension,
 });
 
