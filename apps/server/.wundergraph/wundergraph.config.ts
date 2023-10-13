@@ -50,7 +50,7 @@ const treasuryFantom = introspect.graphql({
 
 const treasuryPolygon = introspect.graphql({
 	apiNamespace: "treasuryPolygon",
-	url: "https://api.studio.thegraph.com/query/46563/protocol-metrics-polygon/1.1.1",
+	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-polygon",
 	schemaExtension: schemaExtension,
 });
 
