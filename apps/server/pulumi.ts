@@ -256,7 +256,7 @@ new gcp.monitoring.AlertPolicy(
             `,
           aggregations: [
             {
-              alignmentPeriod: "300s",
+              alignmentPeriod: "1800s", // 30 minute window
               perSeriesAligner: "ALIGN_PERCENTILE_99",
             },
           ],
