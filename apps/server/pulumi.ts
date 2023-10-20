@@ -122,7 +122,7 @@ const cloudRun = new gcp.cloudrunv2.Service(
             },
             {
               name: "CACHE_ENABLED",
-              value: "false",
+              value: "true",
             }
           ]
         }
