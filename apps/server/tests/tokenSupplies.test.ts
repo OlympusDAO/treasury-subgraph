@@ -4,7 +4,6 @@ import { getISO8601DateString } from "./dateHelper";
 import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
 import { getFirstRecord } from "./tokenSupplyHelper";
 import { parseNumber } from "./numberHelper";
-import { clearCache } from "./cacheHelper";
 
 const wg = createTestServer();
 
@@ -17,7 +16,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await clearCache();
+  //
 });
 
 const getStartDate = (days: number = -5): string => {
