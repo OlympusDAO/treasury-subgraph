@@ -1,5 +1,6 @@
 import { RequestLogger } from "@wundergraph/sdk/server";
 
+// 1 hour
 const TTL = 60 * 60 * 1000;
 
 /**
