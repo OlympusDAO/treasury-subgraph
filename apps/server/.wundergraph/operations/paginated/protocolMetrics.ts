@@ -2,7 +2,7 @@ import { createOperation, z } from '../../generated/wundergraph.factory';
 import { RawInternalProtocolMetricsResponseData } from '../../generated/models';
 import { ProtocolMetric, flattenRecords, sortRecordsDescending } from '../../protocolMetricHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
-import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
+import { getCacheKey, getCachedRecord, setCachedRecord } from '../../cacheHelper';
 import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 import { BadRequestError } from '../../badRequestError';
 
@@ -37,7 +37,7 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecords<ProtocolMetric>(cacheKey, log);
+      const cachedData = await getCachedRecord<ProtocolMetric[]>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
@@ -86,7 +86,7 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(combinedProtocolMetrics);
 
     // Update the cache
-    await setCachedRecords(cacheKey, sortedRecords, log);
+    await setCachedRecord(cacheKey, sortedRecords, log);
 
     log.info(`${FUNC}: Returning ${combinedProtocolMetrics.length} records.`);
     return sortedRecords;
