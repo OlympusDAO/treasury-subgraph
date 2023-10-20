@@ -37,7 +37,7 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecord<Metric>(cacheKey, log);
+      const cachedData = await getCachedRecord<Metric[]>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
