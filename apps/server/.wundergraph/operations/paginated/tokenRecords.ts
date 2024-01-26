@@ -1,8 +1,8 @@
-import { getCacheKey, getCachedRecords, setCachedRecords } from '../../cacheHelper';
+import { getCacheKey, getCachedRecord, setCachedRecord } from '../../cacheHelper';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../../dateHelper';
 import { TokenRecordsResponseData } from '../../generated/models';
 import { createOperation, z } from '../../generated/wundergraph.factory';
-import { TokenRecord, filterCompleteRecords, flattenRecords, isCrossChainRecordDataComplete, sortRecordsDescending } from '../../tokenRecordHelper';
+import { TokenRecord, filterCompleteRecords, flattenRecords, sortRecordsDescending } from '../../tokenRecordHelper';
 import { BadRequestError } from '../../badRequestError';
 import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 
@@ -35,7 +35,7 @@ export default createOperation.query({
     // Return cached data if it exists
     const cacheKey = getCacheKey(FUNC, ctx.input);
     if (!ctx.input.ignoreCache) {
-      const cachedData = await getCachedRecords<TokenRecord>(cacheKey, log);
+      const cachedData = await getCachedRecord<TokenRecord[]>(cacheKey, log);
       if (cachedData) {
         return cachedData;
       }
@@ -94,7 +94,7 @@ export default createOperation.query({
     const sortedRecords = sortRecordsDescending(combinedTokenRecords);
 
     // Update the cache
-    await setCachedRecords(cacheKey, sortedRecords, log);
+    await setCachedRecord(cacheKey, sortedRecords, log);
 
     log.info(`${FUNC}: Returning ${sortedRecords.length} records.`);
     return sortedRecords;
