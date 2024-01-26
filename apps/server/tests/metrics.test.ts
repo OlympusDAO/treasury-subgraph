@@ -7,7 +7,6 @@ import { TokenRecord, filterReduce, filter as filterTokenRecords, getFirstRecord
 import { TokenSupply, filter as filterTokenSupplies } from "./tokenSupplyHelper";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { parseNumber } from "./numberHelper";
-import { clearCache } from "./cacheHelper";
 
 const wg = createTestServer();
 
@@ -20,7 +19,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await clearCache();
+  // 
 });
 
 const getStartDate = (days: number = -5): string => {
