@@ -46,7 +46,7 @@ const treasuryFantom = introspect.graphql({
 
 const treasuryPolygon = introspect.graphql({
 	apiNamespace: "treasuryPolygon",
-	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-polygon",
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmdDUpqEzfKug1ER6HWM8c7U6wf3wtEtRBvXV7LkVoBi9f"), // 1.1.1
 	schemaExtension: schemaExtension,
 });
 
