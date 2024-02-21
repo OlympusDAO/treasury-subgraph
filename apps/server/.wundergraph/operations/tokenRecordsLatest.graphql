@@ -4,7 +4,7 @@ query TokenRecordsLatest {
   }
   treasuryEthereum_tokenRecords(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenRecordEthereum
-}
+  }
   treasuryFantom_tokenRecords(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenRecordFantom
   }

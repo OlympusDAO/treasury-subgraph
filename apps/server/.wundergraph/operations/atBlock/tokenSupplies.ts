@@ -30,7 +30,7 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned` });
+      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned. Error: ${queryResult.error}` });
     }
 
     return flattenRecords(queryResult.data, true, false, log);

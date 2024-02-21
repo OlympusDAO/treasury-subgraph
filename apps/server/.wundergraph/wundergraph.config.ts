@@ -4,10 +4,10 @@ import operations from './wundergraph.operations';
 
 /**
  * The TokenSupply type on non-Ethereum chains has not historically had a blockchain property.
- * 
+ *
  * Re-indexing the historical data is very time-consuming, so we modify the schema to add this field,
  * and add it to each record in the operations.
- * 
+ *
  * NOTE: this is currently ignored by Wundergraph
  */
 const schemaExtension: string =
