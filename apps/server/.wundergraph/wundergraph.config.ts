@@ -40,7 +40,7 @@ const treasuryArbitrum = introspect.graphql({
 
 const treasuryFantom = introspect.graphql({
 	apiNamespace: "treasuryFantom",
-	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-fantom",
+	url: "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/3qSJTWdWJETFzht814HVV9rVafwRLQp3k9mZhCF39bYd", // 0.0.6
 	schemaExtension: schemaExtension,
 });
 
