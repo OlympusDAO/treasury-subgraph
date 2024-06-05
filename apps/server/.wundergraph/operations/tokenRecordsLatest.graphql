@@ -11,4 +11,7 @@ query TokenRecordsLatest {
   treasuryPolygon_tokenRecords(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_TokenRecordPolygon
   }
+  treasuryBase_tokenRecords(orderBy: block, orderDirection: desc, first: 1) {
+    ...Fragment_TokenRecordBase
+  }
 }

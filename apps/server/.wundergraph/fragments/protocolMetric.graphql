@@ -1,4 +1,4 @@
-# One fragment per type 
+# One fragment per type
 
 fragment Fragment_ProtocolMetricArbitrum on treasuryArbitrum_ProtocolMetric {
   id
@@ -52,6 +52,23 @@ fragment Fragment_ProtocolMetricFantom on treasuryFantom_ProtocolMetric {
 }
 
 fragment Fragment_ProtocolMetricPolygon on treasuryPolygon_ProtocolMetric {
+  id
+  block
+  currentAPY
+  currentIndex
+  date
+  gOhmPrice
+  gOhmTotalSupply
+  nextDistributedOhm
+  nextEpochRebase
+  ohmPrice
+  ohmTotalSupply
+  sOhmCirculatingSupply
+  timestamp
+  totalValueLocked
+}
+
+fragment Fragment_ProtocolMetricBase on treasuryBase_ProtocolMetric {
   id
   block
   currentAPY

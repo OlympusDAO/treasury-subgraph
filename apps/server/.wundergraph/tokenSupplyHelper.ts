@@ -1,5 +1,5 @@
 import { RequestLogger } from "@wundergraph/sdk/server";
-import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
+import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenSuppliesLatestResponseData } from "./generated/models";
 import { parseNumber } from "./numberHelper";
 
@@ -62,8 +62,8 @@ export const setBlockchainProperty = (records: TokenSupply[], blockchain: string
 
 /**
  * Filters `records` to only include records with a complete set of cross-chain data.
- * 
- * @param records 
+ *
+ * @param records
  */
 export const filterCompleteRecords = (records: TokenSuppliesLatestResponseData, log: RequestLogger): TokenSuppliesLatestResponseData => {
   const FUNC = `tokenSupply/filterCompleteRecords`;
@@ -76,6 +76,7 @@ export const filterCompleteRecords = (records: TokenSuppliesLatestResponseData, 
       treasuryEthereum_tokenSupplies: [],
       treasuryFantom_tokenSupplies: [],
       treasuryPolygon_tokenSupplies: [],
+      treasuryBase_tokenSupplies: [],
     };
   }
 
@@ -90,6 +91,7 @@ export const filterCompleteRecords = (records: TokenSuppliesLatestResponseData, 
     treasuryEthereum_tokenSupplies: records.treasuryEthereum_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
     treasuryFantom_tokenSupplies: records.treasuryFantom_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
     treasuryPolygon_tokenSupplies: records.treasuryPolygon_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
+    treasuryBase_tokenSupplies: records.treasuryBase_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
   };
   log.info(`${FUNC}: Filtered records up to latest consistent date: ${earliestDate.toISOString()}`);
 
@@ -105,6 +107,7 @@ export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockch
     [CHAIN_ETHEREUM]: records.treasuryEthereum_tokenSupplies,
     [CHAIN_FANTOM]: records.treasuryFantom_tokenSupplies,
     [CHAIN_POLYGON]: records.treasuryPolygon_tokenSupplies,
+    [CHAIN_BASE]: records.treasuryBase_tokenSupplies,
   };
 
   for (const [key, value] of Object.entries(mapping)) {

@@ -10,6 +10,7 @@ export default createOperation.query({
     ethereumBlock: z.number({ description: "Ethereum block number" }),
     fantomBlock: z.number({ description: "Fantom block number" }),
     polygonBlock: z.number({ description: "Polygon block number" }),
+    baseBlock: z.number({ description: "Base block number" }),
   }),
   handler: async (ctx) => {
     const FUNC = `atBlock/metrics`;
@@ -21,6 +22,7 @@ export default createOperation.query({
       ethereumBlock: ctx.input.ethereumBlock,
       fantomBlock: ctx.input.fantomBlock,
       polygonBlock: ctx.input.polygonBlock,
+      baseBlock: ctx.input.baseBlock,
     };
 
     const protocolMetricsQueryResult = await ctx.operations.query({

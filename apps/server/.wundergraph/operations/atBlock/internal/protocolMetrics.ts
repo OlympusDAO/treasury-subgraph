@@ -15,6 +15,7 @@ export default createOperation.query({
     ethereumBlock: z.number({ description: "Ethereum block number" }),
     fantomBlock: z.number({ description: "Fantom block number" }),
     polygonBlock: z.number({ description: "Polygon block number" }),
+    baseBlock: z.number({ description: "Base block number" }),
   }),
   handler: async (ctx) => {
     const FUNC = `atBlock/internal/protocolMetrics`;
@@ -28,6 +29,7 @@ export default createOperation.query({
         ethereumBlock: ctx.input.ethereumBlock.toString(),
         fantomBlock: ctx.input.fantomBlock.toString(),
         polygonBlock: ctx.input.polygonBlock.toString(),
+        baseBlock: ctx.input.baseBlock.toString(),
       },
     });
 

@@ -40,7 +40,7 @@ const treasuryArbitrum = introspect.graphql({
 
 const treasuryFantom = introspect.graphql({
 	apiNamespace: "treasuryFantom",
-	url: "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/3qSJTWdWJETFzht814HVV9rVafwRLQp3k9mZhCF39bYd", // 0.0.6
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmSBMNhnzbe4c4cwznLUsFkE4H5XZfiVqLHnNZYA48EPwy"), // 0.0.6
 	schemaExtension: schemaExtension,
 });
 
@@ -50,9 +50,16 @@ const treasuryPolygon = introspect.graphql({
 	schemaExtension: schemaExtension,
 });
 
+// TODO shift to production URL
+const treasuryBase = introspect.graphql({
+	apiNamespace: "treasuryBase",
+	url: resolveSubgraphUrl("https://api.studio.thegraph.com/query/46563/protocol-metrics-base/version/latest"), // 0.0.2
+	schemaExtension: schemaExtension,
+});
+
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [treasuryArbitrum, treasuryEthereum, treasuryFantom, treasuryPolygon],
+	apis: [treasuryArbitrum, treasuryEthereum, treasuryFantom, treasuryPolygon, treasuryBase],
 	server,
 	operations,
 	codeGenerators: [
