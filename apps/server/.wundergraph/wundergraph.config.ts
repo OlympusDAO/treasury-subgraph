@@ -40,7 +40,7 @@ const treasuryArbitrum = introspect.graphql({
 
 const treasuryFantom = introspect.graphql({
 	apiNamespace: "treasuryFantom",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmSBMNhnzbe4c4cwznLUsFkE4H5XZfiVqLHnNZYA48EPwy"), // 0.0.6
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmNUJtrE5Hiwj5eBeF5gSubY2vhuMdjaZnZsaq6vVY2aba"), // 1.0.4
 	schemaExtension: schemaExtension,
 });
 
