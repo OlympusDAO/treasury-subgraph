@@ -4,10 +4,10 @@ import operations from './wundergraph.operations';
 
 /**
  * The TokenSupply type on non-Ethereum chains has not historically had a blockchain property.
- * 
+ *
  * Re-indexing the historical data is very time-consuming, so we modify the schema to add this field,
  * and add it to each record in the operations.
- * 
+ *
  * NOTE: this is currently ignored by Wundergraph
  */
 const schemaExtension: string =
@@ -40,13 +40,13 @@ const treasuryArbitrum = introspect.graphql({
 
 const treasuryFantom = introspect.graphql({
 	apiNamespace: "treasuryFantom",
-	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-fantom",
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmSBMNhnzbe4c4cwznLUsFkE4H5XZfiVqLHnNZYA48EPwy"), // 0.0.6
 	schemaExtension: schemaExtension,
 });
 
 const treasuryPolygon = introspect.graphql({
 	apiNamespace: "treasuryPolygon",
-	url: "https://api.thegraph.com/subgraphs/name/olympusdao/protocol-metrics-polygon",
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmdDUpqEzfKug1ER6HWM8c7U6wf3wtEtRBvXV7LkVoBi9f"), // 1.1.1
 	schemaExtension: schemaExtension,
 });
 
