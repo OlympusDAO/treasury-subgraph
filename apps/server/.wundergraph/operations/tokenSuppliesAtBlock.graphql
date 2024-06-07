@@ -1,4 +1,4 @@
-query TokenSupplies($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereumBlock: BigInt!, $fantomBlock: BigInt!, $polygonBlock: BigInt!) {
+query TokenSupplies($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereumBlock: BigInt!, $fantomBlock: BigInt!, $polygonBlock: BigInt!, $baseBlock: BigInt!) {
   treasuryArbitrum_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $arbitrumBlock }) {
     ...Fragment_TokenSupplyArbitrum
   }
@@ -10,5 +10,8 @@ query TokenSupplies($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereumBl
   }
   treasuryPolygon_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $polygonBlock }) {
     ...Fragment_TokenSupplyPolygon
+  }
+  treasuryBase_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $baseBlock }) {
+    ...Fragment_TokenSupplyBase
   }
 }

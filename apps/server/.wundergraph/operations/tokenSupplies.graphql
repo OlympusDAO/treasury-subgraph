@@ -11,4 +11,8 @@ query TokenSupplies($pageSize: Int! = 1000, $startDate: String!, $endDate: Strin
   treasuryPolygon_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     ...Fragment_TokenSupplyPolygon
   }
+  treasuryBase_tokenSupplies(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate })
+  {
+    ...Fragment_TokenSupplyBase
+  }
 }
