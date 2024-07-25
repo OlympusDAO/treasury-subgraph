@@ -9,9 +9,9 @@ import { BadRequestError } from '../../badRequestError';
 /**
  * This custom query will return a flat array containing ProtocolMetric objects from
  * across all endpoints.
- * 
+ *
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
- * 
+ *
  * NOTE: this is not recommended for public use, and is superseded by the Metric queries.
  */
 export default createOperation.query({
@@ -65,7 +65,7 @@ export default createOperation.query({
       });
 
       if (!queryResult.data) {
-        throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned for date range ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}` });
+        throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned for date range ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}. Error: ${queryResult.error}` });
       }
 
       // Collapse the data into a single array, and add a missing property

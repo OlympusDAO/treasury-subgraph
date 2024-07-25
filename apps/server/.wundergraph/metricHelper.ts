@@ -1,5 +1,5 @@
 import { RequestLogger } from "@wundergraph/sdk/server";
-import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, Chains, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY, TokenSupplyCategories } from "./constants";
+import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, Chains, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY, TokenSupplyCategories } from "./constants";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { TokenRecord } from "./tokenRecordHelper";
 import { TokenSupply } from "./tokenSupplyHelper";
@@ -12,6 +12,7 @@ import { parseNumber } from "./numberHelper";
 const OHM_ADDRESSES: string[] = [
   "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase(), // Mainnet
   "0xf0cb2dc0db5e6c66B9a70Ac27B06b878da017028".toLowerCase(), // Arbitrum
+  "0x060cb087a9730E13aa191f31A6d86bFF8DfcdCC0".toLowerCase(), // Base
 ];
 
 const GOHM_ADDRESSES: string[] = [
@@ -168,13 +169,13 @@ const getBalancesForTypes = (
 
 /**
  * Returns the sums and records for different supply types.
- * 
+ *
  * This will be commonly used to bootstrap the SupplyCategoryRecords object.
- * 
- * @param records 
- * @param includedTypes 
- * @param ohmIndex 
- * @returns 
+ *
+ * @param records
+ * @param includedTypes
+ * @param ohmIndex
+ * @returns
  */
 const getTokenSupplyRecordsForTypes = (
   records: TokenSupply[],
@@ -221,6 +222,7 @@ const getRecordsForTypes = (
       [Chains.ETHEREUM]: [...previousChainRecords[Chains.ETHEREUM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_ETHEREUM)],
       [Chains.FANTOM]: [...previousChainRecords[Chains.FANTOM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_FANTOM)],
       [Chains.POLYGON]: [...previousChainRecords[Chains.POLYGON], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_POLYGON)],
+      [Chains.BASE]: [...previousChainRecords[Chains.BASE], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_BASE)],
     };
 
     return [newRecords, newChainRecords];
@@ -229,6 +231,7 @@ const getRecordsForTypes = (
     [Chains.ETHEREUM]: [] as TokenSupply[],
     [Chains.FANTOM]: [] as TokenSupply[],
     [Chains.POLYGON]: [] as TokenSupply[],
+    [Chains.BASE]: [] as TokenSupply[],
   } as ChainSupplies]);
 
   // Sum to get the balance and supply balance
@@ -240,6 +243,7 @@ const getRecordsForTypes = (
     [Chains.ETHEREUM]: getBalancesForTypes(chainSupplies[Chains.ETHEREUM], ohmIndex)[1],
     [Chains.FANTOM]: getBalancesForTypes(chainSupplies[Chains.FANTOM], ohmIndex)[1],
     [Chains.POLYGON]: getBalancesForTypes(chainSupplies[Chains.POLYGON], ohmIndex)[1],
+    [Chains.BASE]: getBalancesForTypes(chainSupplies[Chains.BASE], ohmIndex)[1],
   }
 
   return {
@@ -388,10 +392,10 @@ export const getGOhmBackedSupply = (backedSupply: number, ohmIndex: number): num
 /**
  * This function splits the TokenSupply records into categories, which makes calculating metrics
  * more efficient.
- * 
- * @param records 
- * @param ohmIndex 
- * @returns 
+ *
+ * @param records
+ * @param ohmIndex
+ * @returns
  */
 const getSupplyCategories = (records: TokenSupply[], ohmIndex: number): [SupplyCategoryValues, SupplyCategoryRecords] => {
   const bondDeposits = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS], ohmIndex);
@@ -440,11 +444,11 @@ const getSupplyCategories = (records: TokenSupply[], ohmIndex: number): [SupplyC
 
 /**
  * Calculates the market value or liquid backing for the given records.
- * 
- * @param records 
- * @param liquidBacking 
- * @param categories 
- * @returns 
+ *
+ * @param records
+ * @param liquidBacking
+ * @param categories
+ * @returns
  */
 const getTreasuryAssetValue = (
   records: TokenRecord[],
@@ -471,12 +475,14 @@ const getTreasuryAssetValue = (
       [Chains.ETHEREUM]: previousChainValues[Chains.ETHEREUM] + (currentRecord.blockchain === CHAIN_ETHEREUM ? currentValue : 0),
       [Chains.FANTOM]: previousChainValues[Chains.FANTOM] + (currentRecord.blockchain === CHAIN_FANTOM ? currentValue : 0),
       [Chains.POLYGON]: previousChainValues[Chains.POLYGON] + (currentRecord.blockchain === CHAIN_POLYGON ? currentValue : 0),
+      [Chains.BASE]: previousChainValues[Chains.BASE] + (currentRecord.blockchain === CHAIN_BASE ? currentValue : 0),
     };
     const newChainRecords: ChainRecords = {
       [Chains.ARBITRUM]: [...previousChainRecords[Chains.ARBITRUM], ...(currentRecord.blockchain === CHAIN_ARBITRUM ? [currentRecord] : [])],
       [Chains.ETHEREUM]: [...previousChainRecords[Chains.ETHEREUM], ...(currentRecord.blockchain === CHAIN_ETHEREUM ? [currentRecord] : [])],
       [Chains.FANTOM]: [...previousChainRecords[Chains.FANTOM], ...(currentRecord.blockchain === CHAIN_FANTOM ? [currentRecord] : [])],
       [Chains.POLYGON]: [...previousChainRecords[Chains.POLYGON], ...(currentRecord.blockchain === CHAIN_POLYGON ? [currentRecord] : [])],
+      [Chains.BASE]: [...previousChainRecords[Chains.BASE], ...(currentRecord.blockchain === CHAIN_BASE ? [currentRecord] : [])],
     };
 
     return [newTotalValue, newRecords, newChainValues, newChainRecords];
@@ -488,12 +494,14 @@ const getTreasuryAssetValue = (
       [Chains.ETHEREUM]: 0,
       [Chains.FANTOM]: 0,
       [Chains.POLYGON]: 0,
+      [Chains.BASE]: 0,
     } as ChainValues,
     {
       [Chains.ARBITRUM]: [] as TokenRecord[],
       [Chains.ETHEREUM]: [] as TokenRecord[],
       [Chains.FANTOM]: [] as TokenRecord[],
       [Chains.POLYGON]: [] as TokenRecord[],
+      [Chains.BASE]: [] as TokenRecord[],
     } as ChainRecords]);
 
   return [totalValue, allRecords, chainValues, chainRecords];
@@ -501,9 +509,9 @@ const getTreasuryAssetValue = (
 
 /**
  * Used to efficiently calculate the market value and liquid backing.
- * 
- * @param records 
- * @returns 
+ *
+ * @param records
+ * @returns
  */
 const getAssetValues = (
   records: TokenRecord[],
@@ -570,12 +578,14 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.ETHEREUM]: 0,
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
+        [Chains.BASE]: 0,
       },
       timestamps: {
         [Chains.ARBITRUM]: 0,
         [Chains.ETHEREUM]: timestamp,
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
+        [Chains.BASE]: 0,
       },
       ohmIndex: 0,
       ohmApy: 0,
@@ -585,6 +595,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.ETHEREUM]: 0,
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
+        [Chains.BASE]: 0,
       },
       ohmCirculatingSupply: 0,
       ohmCirculatingSupplyComponents: {
@@ -592,6 +603,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.ETHEREUM]: 0,
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
+        [Chains.BASE]: 0,
       },
       ohmFloatingSupply: 0,
       ohmFloatingSupplyComponents: {
@@ -599,6 +611,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.ETHEREUM]: 0,
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
+        [Chains.BASE]: 0,
       },
       ohmBackedSupply: 0,
       gOhmBackedSupply: 0,
@@ -607,6 +620,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.ETHEREUM]: 0,
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
+        [Chains.BASE]: 0,
       },
       ohmSupplyCategories: {
         [TokenSupplyCategories.BONDS_DEPOSITS]: 0,
@@ -631,6 +645,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.ETHEREUM]: 0,
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
+        [Chains.BASE]: 0,
       },
       treasuryLiquidBacking: 0,
       treasuryLiquidBackingComponents: {
@@ -638,6 +653,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.ETHEREUM]: 0,
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
+        [Chains.BASE]: 0,
       },
       treasuryLiquidBackingPerOhmFloating: 0,
       treasuryLiquidBackingPerOhmBacked: 0,
@@ -672,12 +688,14 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.ETHEREUM]: getBlock(assetValues.marketValueChainRecords.Ethereum),
       [Chains.FANTOM]: getBlock(assetValues.marketValueChainRecords.Fantom),
       [Chains.POLYGON]: getBlock(assetValues.marketValueChainRecords.Polygon),
+      [Chains.BASE]: getBlock(assetValues.marketValueChainRecords.Base),
     },
     timestamps: {
       [Chains.ARBITRUM]: getTimestamp(assetValues.marketValueChainRecords.Arbitrum),
       [Chains.ETHEREUM]: getTimestamp(assetValues.marketValueChainRecords.Ethereum),
       [Chains.FANTOM]: getTimestamp(assetValues.marketValueChainRecords.Fantom),
       [Chains.POLYGON]: getTimestamp(assetValues.marketValueChainRecords.Polygon),
+      [Chains.BASE]: getTimestamp(assetValues.marketValueChainRecords.Base),
     },
     ohmIndex: ohmIndex,
     ohmApy: ohmApy,
@@ -687,6 +705,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.ETHEREUM]: ohmTotalSupply.chainSupplyBalances.Ethereum,
       [Chains.FANTOM]: ohmTotalSupply.chainSupplyBalances.Fantom,
       [Chains.POLYGON]: ohmTotalSupply.chainSupplyBalances.Polygon,
+      [Chains.BASE]: ohmTotalSupply.chainSupplyBalances.Base,
     },
     ohmCirculatingSupply: ohmCirculatingSupply.supplyBalance,
     ohmCirculatingSupplyComponents: {
@@ -694,6 +713,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.ETHEREUM]: ohmCirculatingSupply.chainSupplyBalances.Ethereum,
       [Chains.FANTOM]: ohmCirculatingSupply.chainSupplyBalances.Fantom,
       [Chains.POLYGON]: ohmCirculatingSupply.chainSupplyBalances.Polygon,
+      [Chains.BASE]: ohmCirculatingSupply.chainSupplyBalances.Base,
     },
     ohmFloatingSupply: ohmFloatingSupply.supplyBalance,
     ohmFloatingSupplyComponents: {
@@ -701,6 +721,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.ETHEREUM]: ohmFloatingSupply.chainSupplyBalances.Ethereum,
       [Chains.FANTOM]: ohmFloatingSupply.chainSupplyBalances.Fantom,
       [Chains.POLYGON]: ohmFloatingSupply.chainSupplyBalances.Polygon,
+      [Chains.BASE]: ohmFloatingSupply.chainSupplyBalances.Base,
     },
     ohmBackedSupply: ohmBackedSupply.supplyBalance,
     gOhmBackedSupply: getGOhmBackedSupply(ohmBackedSupply.supplyBalance, ohmIndex),
@@ -709,6 +730,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.ETHEREUM]: ohmBackedSupply.chainSupplyBalances.Ethereum,
       [Chains.FANTOM]: ohmBackedSupply.chainSupplyBalances.Fantom,
       [Chains.POLYGON]: ohmBackedSupply.chainSupplyBalances.Polygon,
+      [Chains.BASE]: ohmBackedSupply.chainSupplyBalances.Base,
     },
     ohmSupplyCategories: supplyCategories[0],
     ohmPrice: ohmPrice,
@@ -722,6 +744,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.ETHEREUM]: assetValues.marketValueChainValues.Ethereum,
       [Chains.FANTOM]: assetValues.marketValueChainValues.Fantom,
       [Chains.POLYGON]: assetValues.marketValueChainValues.Polygon,
+      [Chains.BASE]: assetValues.marketValueChainValues.Base,
     },
     treasuryLiquidBacking: assetValues.liquidBacking,
     treasuryLiquidBackingComponents: {
@@ -729,6 +752,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.ETHEREUM]: assetValues.liquidBackingChainValues.Ethereum,
       [Chains.FANTOM]: assetValues.liquidBackingChainValues.Fantom,
       [Chains.POLYGON]: assetValues.liquidBackingChainValues.Polygon,
+      [Chains.BASE]: assetValues.liquidBackingChainValues.Base,
     },
     treasuryLiquidBackingPerOhmFloating: getLiquidBackingPerOhmFloating(assetValues.liquidBacking, ohmFloatingSupply.supplyBalance),
     treasuryLiquidBackingPerOhmBacked: getLiquidBackingPerOhmBacked(assetValues.liquidBacking, ohmBackedSupply.supplyBalance),
@@ -740,36 +764,42 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.ETHEREUM]: ohmTotalSupply.chainRecords.Ethereum,
         [Chains.FANTOM]: ohmTotalSupply.chainRecords.Fantom,
         [Chains.POLYGON]: ohmTotalSupply.chainRecords.Polygon,
+        [Chains.BASE]: ohmTotalSupply.chainRecords.Base,
       },
       ohmCirculatingSupplyRecords: {
         [Chains.ARBITRUM]: ohmCirculatingSupply.chainRecords.Arbitrum,
         [Chains.ETHEREUM]: ohmCirculatingSupply.chainRecords.Ethereum,
         [Chains.FANTOM]: ohmCirculatingSupply.chainRecords.Fantom,
         [Chains.POLYGON]: ohmCirculatingSupply.chainRecords.Polygon,
+        [Chains.BASE]: ohmCirculatingSupply.chainRecords.Base,
       },
       ohmFloatingSupplyRecords: {
         [Chains.ARBITRUM]: ohmFloatingSupply.chainRecords.Arbitrum,
         [Chains.ETHEREUM]: ohmFloatingSupply.chainRecords.Ethereum,
         [Chains.FANTOM]: ohmFloatingSupply.chainRecords.Fantom,
         [Chains.POLYGON]: ohmFloatingSupply.chainRecords.Polygon,
+        [Chains.BASE]: ohmFloatingSupply.chainRecords.Base,
       },
       ohmBackedSupplyRecords: {
         [Chains.ARBITRUM]: ohmBackedSupply.chainRecords.Arbitrum,
         [Chains.ETHEREUM]: ohmBackedSupply.chainRecords.Ethereum,
         [Chains.FANTOM]: ohmBackedSupply.chainRecords.Fantom,
         [Chains.POLYGON]: ohmBackedSupply.chainRecords.Polygon,
+        [Chains.BASE]: ohmBackedSupply.chainRecords.Base,
       },
       treasuryMarketValueRecords: {
         [Chains.ARBITRUM]: assetValues.marketValueChainRecords.Arbitrum,
         [Chains.ETHEREUM]: assetValues.marketValueChainRecords.Ethereum,
         [Chains.FANTOM]: assetValues.marketValueChainRecords.Fantom,
         [Chains.POLYGON]: assetValues.marketValueChainRecords.Polygon,
+        [Chains.BASE]: assetValues.marketValueChainRecords.Base,
       },
       treasuryLiquidBackingRecords: {
         [Chains.ARBITRUM]: assetValues.liquidBackingChainRecords.Arbitrum,
         [Chains.ETHEREUM]: assetValues.liquidBackingChainRecords.Ethereum,
         [Chains.FANTOM]: assetValues.liquidBackingChainRecords.Fantom,
         [Chains.POLYGON]: assetValues.liquidBackingChainRecords.Polygon,
+        [Chains.BASE]: assetValues.liquidBackingChainRecords.Base,
       },
     } : {},
   }
