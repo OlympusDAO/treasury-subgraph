@@ -11,4 +11,7 @@ query ProtocolMetrics($pageSize: Int! = 1000, $startDate: String!, $endDate: Str
   treasuryPolygon_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     ...Fragment_ProtocolMetricPolygon
   }
+  treasuryBase_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+    ...Fragment_ProtocolMetricBase
+  }
 }

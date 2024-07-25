@@ -13,6 +13,7 @@ export default createOperation.query({
     ethereumBlock: z.number({ description: "Ethereum block number" }),
     fantomBlock: z.number({ description: "Fantom block number" }),
     polygonBlock: z.number({ description: "Polygon block number" }),
+    baseBlock: z.number({ description: "Base block number" }),
   }),
   handler: async (ctx) => {
     const FUNC = "atBlock/tokenSupplies";
@@ -26,11 +27,12 @@ export default createOperation.query({
         ethereumBlock: ctx.input.ethereumBlock.toString(),
         fantomBlock: ctx.input.fantomBlock.toString(),
         polygonBlock: ctx.input.polygonBlock.toString(),
+        baseBlock: ctx.input.baseBlock.toString(),
       },
     });
 
     if (!queryResult.data) {
-      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned` });
+      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned. Error: ${queryResult.error}` });
     }
 
     return flattenRecords(queryResult.data, true, false, log);

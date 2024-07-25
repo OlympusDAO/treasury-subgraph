@@ -9,10 +9,10 @@ import { BadRequestError } from '../../badRequestError';
 /**
  * This custom query will return a flat array containing TokenSupply objects from
  * across all endpoints.
- * 
+ *
  * As TokenSupply snapshots can be created at different blocks, this operation
  * returns the latest snapshot for each day.
- * 
+ *
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
  */
 export default createOperation.query({
@@ -68,7 +68,7 @@ export default createOperation.query({
       });
 
       if (!queryResult.data) {
-        throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned for date range ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}` });
+        throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned for date range ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}. Error: ${queryResult.error}` });
       }
 
       let data: TokenSuppliesResponseData = queryResult.data;

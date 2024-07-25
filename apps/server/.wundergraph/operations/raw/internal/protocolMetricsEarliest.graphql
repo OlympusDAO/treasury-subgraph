@@ -11,4 +11,7 @@ query ProtocolMetricsEarliest {
   treasuryPolygon_protocolMetrics(orderBy: block, orderDirection: asc, first: 1) {
     ...Fragment_ProtocolMetricPolygon
   }
+  treasuryBase_protocolMetrics(orderBy: block, orderDirection: asc, first: 1) {
+    ...Fragment_ProtocolMetricBase
+  }
 }

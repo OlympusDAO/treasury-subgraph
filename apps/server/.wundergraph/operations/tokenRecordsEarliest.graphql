@@ -4,11 +4,14 @@ query TokenRecordsEarliest {
   }
   treasuryEthereum_tokenRecords(orderBy: block, orderDirection: asc, first: 1) {
     ...Fragment_TokenRecordEthereum
-}
+  }
   treasuryFantom_tokenRecords(orderBy: block, orderDirection: asc, first: 1) {
     ...Fragment_TokenRecordFantom
   }
   treasuryPolygon_tokenRecords(orderBy: block, orderDirection: asc, first: 1) {
     ...Fragment_TokenRecordPolygon
+  }
+  treasuryBase_tokenRecords(orderBy: block, orderDirection: asc, first: 1) {
+    ...Fragment_TokenRecordBase
   }
 }

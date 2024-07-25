@@ -1,5 +1,5 @@
 import { RequestLogger } from "@wundergraph/sdk/server";
-import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
+import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenRecordsLatestResponseData } from "./generated/models";
 import { parseNumber } from "./numberHelper";
 
@@ -13,9 +13,9 @@ type TokenRecordByDate = {
 
 /**
  * This function determines the latest block for each day and returns only the records with that block.
- * 
- * @param records 
- * @returns 
+ *
+ * @param records
+ * @returns
  */
 export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] => {
   const FUNC = `tokenRecord/filterLatestBlockByDay`;
@@ -63,8 +63,8 @@ export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => 
 
 /**
  * Filters `records` to only include records with a complete set of cross-chain data.
- * 
- * @param records 
+ *
+ * @param records
  */
 export const filterCompleteRecords = (records: TokenRecordsLatestResponseData, log: RequestLogger): TokenRecordsLatestResponseData => {
   const FUNC = `tokenRecord/filterCompleteRecords`;
@@ -77,6 +77,7 @@ export const filterCompleteRecords = (records: TokenRecordsLatestResponseData, l
       treasuryEthereum_tokenRecords: [],
       treasuryFantom_tokenRecords: [],
       treasuryPolygon_tokenRecords: [],
+      treasuryBase_tokenRecords: [],
     };
   }
 
@@ -91,6 +92,7 @@ export const filterCompleteRecords = (records: TokenRecordsLatestResponseData, l
     treasuryEthereum_tokenRecords: records.treasuryEthereum_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
     treasuryFantom_tokenRecords: records.treasuryFantom_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
     treasuryPolygon_tokenRecords: records.treasuryPolygon_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
+    treasuryBase_tokenRecords: records.treasuryBase_tokenRecords.filter((record) => new Date(record.date) <= earliestDate),
   };
   log.info(`${FUNC}: Filtered records up to latest consistent date: ${earliestDate.toISOString()}`);
 
@@ -106,6 +108,7 @@ export const flattenRecords = (records: TokenRecordsLatestResponseData, latestBl
     [CHAIN_ETHEREUM]: records.treasuryEthereum_tokenRecords,
     [CHAIN_FANTOM]: records.treasuryFantom_tokenRecords,
     [CHAIN_POLYGON]: records.treasuryPolygon_tokenRecords,
+    [CHAIN_BASE]: records.treasuryBase_tokenRecords,
   };
 
   for (const [key, value] of Object.entries(mapping)) {
@@ -132,16 +135,16 @@ export const getBlockByChain = (records: TokenRecord[], chain: string): number |
 
 /**
  * Determines whether the data across chains is complete.
- * 
+ *
  * It determines this by checking if the date of the records across chains is the same.
- * 
+ *
  * Assumptions:
  * - The data is sorted in descending order and for the same day
  * - Ethereum and Arbitrum have the bulk of assets, so we only check those two chains
- * 
- * @param arbitrumRecords 
- * @param ethereumRecords 
- * @returns 
+ *
+ * @param arbitrumRecords
+ * @param ethereumRecords
+ * @returns
  */
 export const isCrossChainRecordDataComplete = (arbitrumRecords: TokenRecord[], ethereumRecords: TokenRecord[]): boolean => {
   if (!arbitrumRecords.length || !ethereumRecords.length) {

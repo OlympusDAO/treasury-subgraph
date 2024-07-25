@@ -1,4 +1,4 @@
-query ProtocolMetrics($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereumBlock: BigInt!, $fantomBlock: BigInt!, $polygonBlock: BigInt!) {
+query ProtocolMetrics($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereumBlock: BigInt!, $fantomBlock: BigInt!, $polygonBlock: BigInt!, $baseBlock: BigInt!) {
   treasuryArbitrum_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $arbitrumBlock }) {
     ...Fragment_ProtocolMetricArbitrum
   }
@@ -10,5 +10,8 @@ query ProtocolMetrics($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereum
   }
   treasuryPolygon_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $polygonBlock }) {
     ...Fragment_ProtocolMetricPolygon
+  }
+  treasuryBase_protocolMetrics(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $baseBlock }) {
+    ...Fragment_ProtocolMetricBase
   }
 }

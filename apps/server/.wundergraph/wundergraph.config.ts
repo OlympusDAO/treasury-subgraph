@@ -34,13 +34,13 @@ const treasuryEthereum = introspect.graphql({
 
 const treasuryArbitrum = introspect.graphql({
 	apiNamespace: "treasuryArbitrum",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmRf3fo7tVsXsj9cQZSgT3Y2R67Hv41T1Ph559oQAmTLe1"), // 1.6.4
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmNQfMN2GjnGYx2mGo92gAc7z47fMbTMRR9M1gGEUjLZHX"), // 1.7.9
 	schemaExtension: schemaExtension,
 });
 
 const treasuryFantom = introspect.graphql({
 	apiNamespace: "treasuryFantom",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmSBMNhnzbe4c4cwznLUsFkE4H5XZfiVqLHnNZYA48EPwy"), // 0.0.6
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmNUJtrE5Hiwj5eBeF5gSubY2vhuMdjaZnZsaq6vVY2aba"), // 1.0.4
 	schemaExtension: schemaExtension,
 });
 
@@ -50,9 +50,15 @@ const treasuryPolygon = introspect.graphql({
 	schemaExtension: schemaExtension,
 });
 
+const treasuryBase = introspect.graphql({
+	apiNamespace: "treasuryBase",
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmdqJ1zoExrs8u2T93wXSRWSx5VSKqKWTV4gCE2vszGwgt"), // 0.0.2
+	schemaExtension: schemaExtension,
+});
+
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [treasuryArbitrum, treasuryEthereum, treasuryFantom, treasuryPolygon],
+	apis: [treasuryArbitrum, treasuryEthereum, treasuryFantom, treasuryPolygon, treasuryBase],
 	server,
 	operations,
 	codeGenerators: [

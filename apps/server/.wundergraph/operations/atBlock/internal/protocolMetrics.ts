@@ -5,7 +5,7 @@ import { flattenRecords } from '../../../protocolMetricHelper';
 /**
  * This custom query will return a flat array containing the ProtocolMetric objects for
  * a specific block.
- * 
+ *
  * NOTE: this is not available for public use, and is superseded by the Metric queries.
  */
 export default createOperation.query({
@@ -15,6 +15,7 @@ export default createOperation.query({
     ethereumBlock: z.number({ description: "Ethereum block number" }),
     fantomBlock: z.number({ description: "Fantom block number" }),
     polygonBlock: z.number({ description: "Polygon block number" }),
+    baseBlock: z.number({ description: "Base block number" }),
   }),
   handler: async (ctx) => {
     const FUNC = `atBlock/internal/protocolMetrics`;
@@ -28,11 +29,12 @@ export default createOperation.query({
         ethereumBlock: ctx.input.ethereumBlock.toString(),
         fantomBlock: ctx.input.fantomBlock.toString(),
         polygonBlock: ctx.input.polygonBlock.toString(),
+        baseBlock: ctx.input.baseBlock.toString(),
       },
     });
 
     if (!queryResult.data) {
-      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned.` });
+      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned. Error: ${queryResult.error}` });
     }
 
     // Combine across pages and endpoints

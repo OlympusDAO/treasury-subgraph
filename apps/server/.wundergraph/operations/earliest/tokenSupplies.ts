@@ -32,7 +32,7 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned.` });
+      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned. Error: ${queryResult.error}` });
     }
 
     // Combine across pages and endpoints

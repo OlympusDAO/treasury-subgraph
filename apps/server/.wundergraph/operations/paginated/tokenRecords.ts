@@ -9,7 +9,7 @@ import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 /**
  * This custom query will return a flat array containing TokenRecord objects from
  * across all endpoints.
- * 
+ *
  * It also handles pagination to work around the Graph Protocol's 1000 record limit.
  */
 export default createOperation.query({
@@ -64,7 +64,7 @@ export default createOperation.query({
       });
 
       if (!queryResult.data) {
-        throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned for date range ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}` });
+        throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned for date range ${getISO8601DateString(currentStartDate)} to ${getISO8601DateString(currentEndDate)}. Error: ${queryResult.error}` });
       }
 
       let data: TokenRecordsResponseData = queryResult.data;

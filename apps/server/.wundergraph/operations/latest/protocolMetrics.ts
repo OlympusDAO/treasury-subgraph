@@ -6,9 +6,9 @@ import { ProtocolMetric, flattenRecords } from '../../protocolMetricHelper';
 /**
  * This custom query will return a flat array containing the latest ProtocolMetric object for
  * each blockchain.
- * 
+ *
  * NOTE: this is not available for public use, and is superseded by the Metric queries.
- * 
+ *
  * TODO: remove this query once the Metric queries are in use in the frontend
  */
 export default createOperation.query({
@@ -36,7 +36,7 @@ export default createOperation.query({
     });
 
     if (!queryResult.data) {
-      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned.` });
+      throw new UpstreamSubgraphError({ message: `${FUNC}: No data returned. Error: ${queryResult.error}` });
     }
 
     // Combine across pages and endpoints
