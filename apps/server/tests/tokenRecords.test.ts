@@ -1,7 +1,7 @@
 import { addDays } from "date-fns";
 import { createTestServer } from "../.wundergraph/generated/testing";
 import { getISO8601DateString } from "./dateHelper";
-import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
+import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
 import { getFirstRecord } from "./tokenRecordHelper";
 import { parseNumber } from "./numberHelper";
 
@@ -294,6 +294,8 @@ describe("atBlock", () => {
     // Raw data has an array property for each chain
     const arbitrumRawResult = getFirstRecord(rawResult.data, CHAIN_ARBITRUM, startDate);
     const arbitrumRawBlock = parseNumber(arbitrumRawResult?.block);
+    const baseRawResult = getFirstRecord(rawResult.data, CHAIN_BASE, startDate);
+    const baseRawBlock = parseNumber(baseRawResult?.block);
     const ethereumRawResult = getFirstRecord(rawResult.data, CHAIN_ETHEREUM, startDate);
     const ethereumRawBlock = parseNumber(ethereumRawResult?.block);
     const fantomRawResult = getFirstRecord(rawResult.data, CHAIN_FANTOM, startDate);
@@ -306,6 +308,7 @@ describe("atBlock", () => {
       operationName: "atBlock/tokenRecords",
       input: {
         arbitrumBlock: arbitrumRawBlock,
+        baseBlock: baseRawBlock,
         ethereumBlock: ethereumRawBlock,
         fantomBlock: fantomRawBlock,
         polygonBlock: polygonRawBlock,
@@ -315,12 +318,14 @@ describe("atBlock", () => {
     // Latest records is collapsed into a flat array
     const records = result.data;
     const arbitrumResult = getFirstRecord(records, CHAIN_ARBITRUM);
+    const baseResult = getFirstRecord(records, CHAIN_BASE);
     const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
     const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
     const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
 
     // Check that the block is the same
     expect(parseNumber(arbitrumResult?.block)).toEqual(arbitrumRawBlock);
+    expect(parseNumber(baseResult?.block)).toEqual(baseRawBlock);
     expect(parseNumber(ethereumResult?.block)).toEqual(ethereumRawBlock);
     expect(parseNumber(fantomResult?.block)).toEqual(fantomRawBlock);
     expect(parseNumber(polygonResult?.block)).toEqual(polygonRawBlock);

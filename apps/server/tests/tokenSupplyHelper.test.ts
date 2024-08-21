@@ -56,6 +56,7 @@ describe("filterCompleteRecords", () => {
         getSampleRecord("2", "2021-01-02", 2),
         getSampleRecord("1", "2021-01-01", 1),
       ],
+      treasuryBase_tokenSupplies: [],
       treasuryEthereum_tokenSupplies: [
         getSampleRecord("3", "2021-01-03", 3),
         getSampleRecord("2", "2021-01-02", 2),
@@ -85,6 +86,7 @@ describe("filterCompleteRecords", () => {
         getSampleRecord("2", "2021-01-02", 2),
         getSampleRecord("1", "2021-01-01", 1),
       ],
+      treasuryBase_tokenSupplies: [],
       treasuryEthereum_tokenSupplies: [
         getSampleRecord("2", "2021-01-02", 2),
         getSampleRecord("1", "2021-01-01", 1),
@@ -113,6 +115,7 @@ describe("filterCompleteRecords", () => {
         getSampleRecord("2", "2021-01-02", 2),
         getSampleRecord("1", "2021-01-01", 1),
       ],
+      treasuryBase_tokenSupplies: [],
       treasuryEthereum_tokenSupplies: [],
       treasuryFantom_tokenSupplies: [],
       treasuryPolygon_tokenSupplies: []
@@ -132,6 +135,7 @@ describe("filterCompleteRecords", () => {
         getSampleRecord("2", "2021-01-02", 2),
         getSampleRecord("1", "2021-01-01", 1),
       ],
+      treasuryBase_tokenSupplies: [],
       treasuryFantom_tokenSupplies: [],
       treasuryPolygon_tokenSupplies: []
     };
