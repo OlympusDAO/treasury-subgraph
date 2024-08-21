@@ -8,6 +8,9 @@ import { TokenSupply, filter as filterTokenSupplies } from "./tokenSupplyHelper"
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { parseNumber } from "./numberHelper";
 
+const BUYBACK_MS = "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase();
+const DAO_WALLET = "0x245cc372c84b3645bf0ffe6538620b04a217988b".toLowerCase();
+
 const wg = createTestServer();
 
 beforeAll(async () => {
@@ -707,6 +710,19 @@ describe("metrics", () => {
     expect(record?.treasuryMarketValueComponents.Ethereum).toBeCloseTo(marketValueEthereum);
     expect(record?.treasuryMarketValueComponents.Fantom).toBeCloseTo(marketValueFantom);
     expect(record?.treasuryMarketValueComponents.Polygon).toBeCloseTo(marketValuePolygon);
+
+    // Ensure that it excludes OHM in treasury addresses
+    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
+      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+    ).length).toEqual(0);
+
+    // Ensure that it includes OHM in the buyback addresses
+    const marketValueExcludeOhm = filterReduce(combinedTokenRecords, () => true, true);
+    const buybackOhmValue = filterReduce(combinedTokenRecords, (value) => value.tokenAddress.includes("OHM") && value.sourceAddress.toLowerCase() == BUYBACK_MS, true);
+    expect(record?.treasuryMarketValue).toEqual(marketValueExcludeOhm + buybackOhmValue);
+    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
+      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == BUYBACK_MS
+    ).length).toBeGreaterThan(0);
   });
 
   test("treasury liquid backing is accurate", async () => {
@@ -745,6 +761,16 @@ describe("metrics", () => {
     expect(record?.treasuryLiquidBackingComponents.Ethereum).toBeCloseTo(liquidBackingValueEthereum);
     expect(record?.treasuryLiquidBackingComponents.Fantom).toBeCloseTo(liquidBackingValueFantom);
     expect(record?.treasuryLiquidBackingComponents.Polygon).toBeCloseTo(liquidBackingValuePolygon);
+
+    // Ensure that it excludes OHM in treasury addresses
+    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
+      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+    ).length).toEqual(0);
+
+    // Ensure that it excludes OHM in the buyback addresses
+    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
+      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == BUYBACK_MS
+    ).length).toEqual(0);
   });
 
   test("OHM index", async () => {
