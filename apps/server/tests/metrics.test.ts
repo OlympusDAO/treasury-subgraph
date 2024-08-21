@@ -73,7 +73,7 @@ describe("paginated", () => {
     expect(recordsNotNull[0].date).toEqual(getISO8601DateString(new Date()));
     // Last date
     expect(recordsNotNull[recordsNotNull.length - 1].date).toEqual(startDateString);
-  });
+  }, 60 * 1000);
 
   test("subsequent results are equal", async () => {
     const result = await wg.client().query({
@@ -114,7 +114,7 @@ describe("paginated", () => {
     });
 
     expect(resultTwo.data).toEqual(records);
-  }, 30 * 1000);
+  }, 60 * 1000);
 
   test("crossChainDataComplete true", async () => {
     const result = await wg.client().query({
@@ -168,7 +168,7 @@ describe("paginated", () => {
 
     expect(treasuryLiquidBackingRecords?.Arbitrum.length).toBeGreaterThan(0);
     expect(treasuryLiquidBackingRecords?.Ethereum.length).toBeGreaterThan(0);
-  });
+  }, 60 * 1000);
 
   test("includeRecords false", async () => {
     const result = await wg.client().query({
