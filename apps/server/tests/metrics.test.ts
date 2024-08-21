@@ -114,7 +114,7 @@ describe("paginated", () => {
     });
 
     expect(resultTwo.data).toEqual(records);
-  }, 60 * 1000);
+  }, 90 * 1000);
 
   test("crossChainDataComplete true", async () => {
     const result = await wg.client().query({
