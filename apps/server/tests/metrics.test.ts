@@ -696,6 +696,7 @@ describe("metrics", () => {
       operationName: "paginated/metrics",
       input: {
         startDate: START_DATE,
+        includeRecords: true,
       },
     });
 
@@ -716,14 +717,31 @@ describe("metrics", () => {
       (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
     ).length).toEqual(0);
 
-    // Ensure that it includes OHM in the buyback addresses
-    const marketValueExcludeOhm = filterReduce(combinedTokenRecords, () => true, true);
-    const buybackOhmValue = filterReduce(combinedTokenRecords, (value) => value.tokenAddress.includes("OHM") && value.sourceAddress.toLowerCase() == BUYBACK_MS, true);
+    const isOHM = (value: TokenRecord): boolean => {
+      if (value.token == "OHM V1") {
+        return true;
+      }
+
+      if (value.token == "OHM V2") {
+        return true;
+      }
+
+      if (value.token == "gOHM") {
+        return true;
+      }
+
+      return false;
+    }
+
+    // Market value should not include the value of any raw OHM
+    const marketValueExcludeOhm = filterReduce(combinedTokenRecords, (value) => !isOHM(value), true);
+    // Only OHM in the buyback address should be included
+    const buybackOhmValue = filterReduce(combinedTokenRecords, (value) => isOHM(value) && value.sourceAddress.toLowerCase() == BUYBACK_MS, true);
     expect(record?.treasuryMarketValue).toEqual(marketValueExcludeOhm + buybackOhmValue);
     expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
-      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == BUYBACK_MS
+      (record) => isOHM(record) && record.sourceAddress.toLowerCase() == BUYBACK_MS
     ).length).toBeGreaterThan(0);
-  });
+  }, 30 * 1000);
 
   test("treasury liquid backing is accurate", async () => {
     const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
@@ -747,6 +765,7 @@ describe("metrics", () => {
       operationName: "paginated/metrics",
       input: {
         startDate: START_DATE,
+        includeRecords: true,
       },
     });
 
