@@ -733,14 +733,18 @@ describe("metrics", () => {
       return false;
     }
 
+
     // Market value should not include the value of any raw OHM
-    const marketValueExcludeOhm = filterReduce(combinedTokenRecords, (value) => !isOHM(value), true);
+    const marketValueExcludeOhm = filterReduce(combinedTokenRecords, (value) => !isOHM(value), false);
     // Only OHM in the buyback address should be included
-    const buybackOhmValue = filterReduce(combinedTokenRecords, (value) => isOHM(value) && value.sourceAddress.toLowerCase() == BUYBACK_MS, true);
+    const buybackOhmValue = filterReduce(combinedTokenRecords, (value) => isOHM(value) && value.sourceAddress.toLowerCase() == BUYBACK_MS, false);
+
     expect(record?.treasuryMarketValue).toEqual(marketValueExcludeOhm + buybackOhmValue);
-    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
+
+    const buybackOhmRecords = record?.treasuryMarketValueRecords?.Ethereum.filter(
       (record) => isOHM(record) && record.sourceAddress.toLowerCase() == BUYBACK_MS
-    ).length).toBeGreaterThan(0);
+    ) || [];
+    expect(buybackOhmRecords.length).toBeGreaterThan(0);
   }, 30 * 1000);
 
   test("treasury liquid backing is accurate", async () => {
