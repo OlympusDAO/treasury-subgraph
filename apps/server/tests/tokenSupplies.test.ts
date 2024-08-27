@@ -1,7 +1,7 @@
 import { addDays } from "date-fns";
 import { createTestServer } from "../.wundergraph/generated/testing";
 import { getISO8601DateString } from "./dateHelper";
-import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
+import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../.wundergraph/constants";
 import { getFirstRecord } from "./tokenSupplyHelper";
 import { parseNumber } from "./numberHelper";
 
@@ -186,12 +186,13 @@ describe("latest", () => {
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenSupplies[0];
+    const baseRawResult = rawResult.data?.treasuryBase_tokenSupplies[0];
     const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenSupplies[0];
     const fantomRawResult = rawResult.data?.treasuryFantom_tokenSupplies[0];
     const polygonRawResult = rawResult.data?.treasuryPolygon_tokenSupplies[0];
 
     // Calculate the expected count based on how many of the raw results were defined. This is because there may not be TokenSupply records on every chain.
-    const expectedCount = [arbitrumRawResult, ethereumRawResult, fantomRawResult, polygonRawResult].filter((result) => result !== undefined).length;
+    const expectedCount = [arbitrumRawResult, baseRawResult, ethereumRawResult, fantomRawResult, polygonRawResult].filter((result) => result !== undefined).length;
 
     // Grab the results from the latest operation
     const result = await wg.client().query({
@@ -201,12 +202,14 @@ describe("latest", () => {
     // Latest records is collapsed into a flat array
     const records = result.data;
     const arbitrumResult = getFirstRecord(records, CHAIN_ARBITRUM);
+    const baseResult = getFirstRecord(records, CHAIN_BASE);
     const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
     const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
     const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawResult?.block);
+    expect(baseResult?.block).toEqual(baseRawResult?.block);
     expect(ethereumResult?.block).toEqual(ethereumRawResult?.block);
     expect(fantomResult?.block).toEqual(fantomRawResult?.block);
     expect(polygonResult?.block).toEqual(polygonRawResult?.block);
@@ -240,12 +243,13 @@ describe("earliest", () => {
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenSupplies[0];
+    const baseRawResult = rawResult.data?.treasuryBase_tokenSupplies[0];
     const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenSupplies[0];
     const fantomRawResult = rawResult.data?.treasuryFantom_tokenSupplies[0];
     const polygonRawResult = rawResult.data?.treasuryPolygon_tokenSupplies[0];
 
     // Calculate the expected count based on how many of the raw results were defined. This is because there may not be TokenSupply records on every chain.
-    const expectedCount = [arbitrumRawResult, ethereumRawResult, fantomRawResult, polygonRawResult].filter((result) => result !== undefined).length;
+    const expectedCount = [arbitrumRawResult, baseRawResult, ethereumRawResult, fantomRawResult, polygonRawResult].filter((result) => result !== undefined).length;
 
     // Grab the results from the earliest operation
     const result = await wg.client().query({
@@ -255,12 +259,14 @@ describe("earliest", () => {
     // Latest records is collapsed into a flat array
     const records = result.data;
     const arbitrumResult = getFirstRecord(records, CHAIN_ARBITRUM);
+    const baseResult = getFirstRecord(records, CHAIN_BASE);
     const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
     const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
     const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawResult?.block);
+    expect(baseResult?.block).toEqual(baseRawResult?.block);
     expect(ethereumResult?.block).toEqual(ethereumRawResult?.block);
     expect(fantomResult?.block).toEqual(fantomRawResult?.block);
     expect(polygonResult?.block).toEqual(polygonRawResult?.block);
@@ -299,6 +305,7 @@ describe("atBlock", () => {
 
     // Raw data has an array property for each chain
     const arbitrumRawBlock = getFirstRecord(rawResult.data, CHAIN_ARBITRUM, startDate)?.block;
+    const baseRawBlock = getFirstRecord(rawResult.data, CHAIN_BASE, startDate)?.block;
     const ethereumRawBlock = getFirstRecord(rawResult.data, CHAIN_ETHEREUM, startDate)?.block;
     const fantomRawBlock = getFirstRecord(rawResult.data, CHAIN_FANTOM, startDate)?.block;
     const polygonRawBlock = getFirstRecord(rawResult.data, CHAIN_POLYGON, startDate)?.block;
@@ -308,6 +315,7 @@ describe("atBlock", () => {
       operationName: "atBlock/tokenSupplies",
       input: {
         arbitrumBlock: parseNumber(arbitrumRawBlock),
+        baseBlock: parseNumber(baseRawBlock),
         ethereumBlock: parseNumber(ethereumRawBlock),
         fantomBlock: parseNumber(fantomRawBlock),
         polygonBlock: parseNumber(polygonRawBlock),
@@ -317,12 +325,14 @@ describe("atBlock", () => {
     // Latest records is collapsed into a flat array
     const records = result.data;
     const arbitrumResult = getFirstRecord(records, CHAIN_ARBITRUM);
+    const baseResult = getFirstRecord(records, CHAIN_BASE);
     const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
     const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
     const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawBlock);
+    expect(baseResult?.block).toEqual(baseRawBlock);
     expect(ethereumResult?.block).toEqual(ethereumRawBlock);
     expect(fantomResult?.block).toEqual(fantomRawBlock);
     expect(polygonResult?.block).toEqual(polygonRawBlock);

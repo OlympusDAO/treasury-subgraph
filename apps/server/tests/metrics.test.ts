@@ -1,12 +1,15 @@
 import { addDays } from "date-fns";
 import { createTestServer } from "../.wundergraph/generated/testing";
 import { getISO8601DateString } from "./dateHelper";
-import { CHAIN_ARBITRUM, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY } from "../.wundergraph/constants";
+import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY } from "../.wundergraph/constants";
 import { getSupplyBalanceForTypes } from "./metricsHelper";
 import { TokenRecord, filterReduce, filter as filterTokenRecords, getFirstRecord as getFirstTokenRecord } from "./tokenRecordHelper";
 import { TokenSupply, filter as filterTokenSupplies } from "./tokenSupplyHelper";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { parseNumber } from "./numberHelper";
+
+const BUYBACK_MS = "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase();
+const DAO_WALLET = "0x245cc372c84b3645bf0ffe6538620b04a217988b".toLowerCase();
 
 const wg = createTestServer();
 
@@ -19,7 +22,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  // 
+  //
 });
 
 const getStartDate = (days: number = -5): string => {
@@ -70,7 +73,7 @@ describe("paginated", () => {
     expect(recordsNotNull[0].date).toEqual(getISO8601DateString(new Date()));
     // Last date
     expect(recordsNotNull[recordsNotNull.length - 1].date).toEqual(startDateString);
-  });
+  }, 60 * 1000);
 
   test("subsequent results are equal", async () => {
     const result = await wg.client().query({
@@ -111,7 +114,7 @@ describe("paginated", () => {
     });
 
     expect(resultTwo.data).toEqual(records);
-  }, 30 * 1000);
+  }, 90 * 1000);
 
   test("crossChainDataComplete true", async () => {
     const result = await wg.client().query({
@@ -165,7 +168,7 @@ describe("paginated", () => {
 
     expect(treasuryLiquidBackingRecords?.Arbitrum.length).toBeGreaterThan(0);
     expect(treasuryLiquidBackingRecords?.Ethereum.length).toBeGreaterThan(0);
-  });
+  }, 60 * 1000);
 
   test("includeRecords false", async () => {
     const result = await wg.client().query({
@@ -208,6 +211,9 @@ describe("latest", () => {
     const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenRecords[0];
     const arbitrumRawBlock: number = parseNumber(arbitrumRawResult?.block);
     const arbitrumRawTimestamp: number = parseNumber(arbitrumRawResult?.timestamp);
+    const baseRawResult = rawResult.data?.treasuryBase_tokenRecords[0];
+    const baseRawBlock: number = parseNumber(baseRawResult?.block);
+    const baseRawTimestamp: number = parseNumber(baseRawResult?.timestamp);
     const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenRecords[0];
     const ethereumRawBlock: number = parseNumber(ethereumRawResult?.block);
     const ethereumRawTimestamp: number = parseNumber(ethereumRawResult?.timestamp);
@@ -230,12 +236,14 @@ describe("latest", () => {
 
     // Check that the block is the same
     expect(record?.blocks.Arbitrum).toEqual(arbitrumRawBlock);
+    expect(record?.blocks.Base).toEqual(baseRawBlock);
     expect(record?.blocks.Ethereum).toEqual(ethereumRawBlock);
     expect(record?.blocks.Fantom).toEqual(fantomRawBlock);
     expect(record?.blocks.Polygon).toEqual(polygonRawBlock);
 
     // Check that the timestamp is the same
     expect(record?.timestamps.Arbitrum).toEqual(arbitrumRawTimestamp);
+    expect(record?.timestamps.Base).toEqual(baseRawTimestamp);
     expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
@@ -267,6 +275,9 @@ describe("earliest", () => {
     const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenRecords[0];
     const arbitrumRawBlock: number = parseNumber(arbitrumRawResult?.block);
     const arbitrumRawTimestamp: number = parseNumber(arbitrumRawResult?.timestamp);
+    const baseRawResult = rawResult.data?.treasuryBase_tokenRecords[0];
+    const baseRawBlock: number = parseNumber(baseRawResult?.block);
+    const baseRawTimestamp: number = parseNumber(baseRawResult?.timestamp);
     const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenRecords[0];
     const ethereumRawBlock: number = parseNumber(ethereumRawResult?.block);
     const ethereumRawTimestamp: number = parseNumber(ethereumRawResult?.timestamp);
@@ -289,12 +300,14 @@ describe("earliest", () => {
 
     // Check that the block is the same
     expect(record?.blocks.Arbitrum).toEqual(arbitrumRawBlock);
+    expect(record?.blocks.Base).toEqual(baseRawBlock);
     expect(record?.blocks.Ethereum).toEqual(ethereumRawBlock);
     expect(record?.blocks.Fantom).toEqual(fantomRawBlock);
     expect(record?.blocks.Polygon).toEqual(polygonRawBlock);
 
     // Check that the timestamp is the same
     expect(record?.timestamps.Arbitrum).toEqual(arbitrumRawTimestamp);
+    expect(record?.timestamps.Base).toEqual(baseRawTimestamp);
     expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
@@ -331,6 +344,9 @@ describe("atBlock", () => {
     const arbitrumRawResult = getFirstTokenRecord(rawResult.data, CHAIN_ARBITRUM, startDate);
     const arbitrumRawBlock: number = parseNumber(arbitrumRawResult?.block);
     const arbitrumRawTimestamp: number = parseNumber(arbitrumRawResult?.timestamp);
+    const baseRawResult = getFirstTokenRecord(rawResult.data, CHAIN_BASE, startDate);
+    const baseRawBlock: number = parseNumber(baseRawResult?.block);
+    const baseRawTimestamp: number = parseNumber(baseRawResult?.timestamp);
     const ethereumRawResult = getFirstTokenRecord(rawResult.data, CHAIN_ETHEREUM, startDate);
     const ethereumRawBlock: number = parseNumber(ethereumRawResult?.block);
     const ethereumRawTimestamp: number = parseNumber(ethereumRawResult?.timestamp);
@@ -346,6 +362,7 @@ describe("atBlock", () => {
       operationName: "atBlock/metrics",
       input: {
         arbitrumBlock: arbitrumRawBlock,
+        baseBlock: baseRawBlock,
         ethereumBlock: ethereumRawBlock,
         fantomBlock: fantomRawBlock,
         polygonBlock: polygonRawBlock,
@@ -359,12 +376,14 @@ describe("atBlock", () => {
 
     // Check that the block is the same
     expect(record?.blocks.Arbitrum).toEqual(arbitrumRawBlock);
+    expect(record?.blocks.Base).toEqual(baseRawBlock);
     expect(record?.blocks.Ethereum).toEqual(ethereumRawBlock);
     expect(record?.blocks.Fantom).toEqual(fantomRawBlock);
     expect(record?.blocks.Polygon).toEqual(polygonRawBlock);
 
     // Check that the timestamp is the same
     expect(record?.timestamps.Arbitrum).toEqual(arbitrumRawTimestamp);
+    expect(record?.timestamps.Base).toEqual(baseRawTimestamp);
     expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
@@ -410,12 +429,14 @@ describe("metrics", () => {
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
     const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
     const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
     const arbitrumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ARBITRUM);
+    const baseTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_BASE);
     const ethereumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ETHEREUM);
     const fantomTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_FANTOM);
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
@@ -428,6 +449,7 @@ describe("metrics", () => {
     const includedTypes = [TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY];
     const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedArbitrumSupply = getSupplyBalanceForTypes(arbitrumTokenSupplies, includedTypes, ohmIndex)[0];
+    const expectedBaseSupply = getSupplyBalanceForTypes(baseTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedEthereumSupply = getSupplyBalanceForTypes(ethereumTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedFantomSupply = getSupplyBalanceForTypes(fantomTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
@@ -447,6 +469,7 @@ describe("metrics", () => {
     expect(record).not.toBeNull();
     expect(record?.ohmTotalSupply).toBeCloseTo(expectedSupply);
     expect(record?.ohmTotalSupplyComponents.Arbitrum).toBeCloseTo(expectedArbitrumSupply);
+    expect(record?.ohmTotalSupplyComponents.Base).toBeCloseTo(expectedBaseSupply);
     expect(record?.ohmTotalSupplyComponents.Ethereum).toBeCloseTo(expectedEthereumSupply);
     expect(record?.ohmTotalSupplyComponents.Fantom).toBeCloseTo(expectedFantomSupply);
     expect(record?.ohmTotalSupplyComponents.Polygon).toBeCloseTo(expectedPolygonSupply);
@@ -457,12 +480,14 @@ describe("metrics", () => {
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
     const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
     const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
     const arbitrumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ARBITRUM);
+    const baseTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_BASE);
     const ethereumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ETHEREUM);
     const fantomTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_FANTOM);
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
@@ -483,6 +508,7 @@ describe("metrics", () => {
     ];
     const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedArbitrumSupply = getSupplyBalanceForTypes(arbitrumTokenSupplies, includedTypes, ohmIndex)[0];
+    const expectedBaseSupply = getSupplyBalanceForTypes(baseTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedEthereumSupply = getSupplyBalanceForTypes(ethereumTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedFantomSupply = getSupplyBalanceForTypes(fantomTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
@@ -502,6 +528,7 @@ describe("metrics", () => {
     expect(record).not.toBeNull();
     expect(record?.ohmCirculatingSupply).toBeCloseTo(expectedSupply);
     expect(record?.ohmCirculatingSupplyComponents.Arbitrum).toBeCloseTo(expectedArbitrumSupply);
+    expect(record?.ohmCirculatingSupplyComponents.Base).toBeCloseTo(expectedBaseSupply);
     expect(record?.ohmCirculatingSupplyComponents.Ethereum).toBeCloseTo(expectedEthereumSupply);
     expect(record?.ohmCirculatingSupplyComponents.Fantom).toBeCloseTo(expectedFantomSupply);
     expect(record?.ohmCirculatingSupplyComponents.Polygon).toBeCloseTo(expectedPolygonSupply);
@@ -512,12 +539,14 @@ describe("metrics", () => {
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
     const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
     const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
     const arbitrumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ARBITRUM);
+    const baseTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_BASE);
     const ethereumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ETHEREUM);
     const fantomTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_FANTOM);
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
@@ -539,6 +568,7 @@ describe("metrics", () => {
     ];
     const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedArbitrumSupply = getSupplyBalanceForTypes(arbitrumTokenSupplies, includedTypes, ohmIndex)[0];
+    const expectedBaseSupply = getSupplyBalanceForTypes(baseTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedEthereumSupply = getSupplyBalanceForTypes(ethereumTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedFantomSupply = getSupplyBalanceForTypes(fantomTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
@@ -558,6 +588,7 @@ describe("metrics", () => {
     expect(record).not.toBeNull();
     expect(record?.ohmFloatingSupply).toBeCloseTo(expectedSupply);
     expect(record?.ohmFloatingSupplyComponents.Arbitrum).toBeCloseTo(expectedArbitrumSupply);
+    expect(record?.ohmFloatingSupplyComponents.Base).toBeCloseTo(expectedBaseSupply);
     expect(record?.ohmFloatingSupplyComponents.Ethereum).toBeCloseTo(expectedEthereumSupply);
     expect(record?.ohmFloatingSupplyComponents.Fantom).toBeCloseTo(expectedFantomSupply);
     expect(record?.ohmFloatingSupplyComponents.Polygon).toBeCloseTo(expectedPolygonSupply);
@@ -568,12 +599,14 @@ describe("metrics", () => {
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
     const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
     const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
     const arbitrumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ARBITRUM);
+    const baseTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_BASE);
     const ethereumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ETHEREUM);
     const fantomTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_FANTOM);
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
@@ -597,6 +630,7 @@ describe("metrics", () => {
     ];
     const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedArbitrumSupply = getSupplyBalanceForTypes(arbitrumTokenSupplies, includedTypes, ohmIndex)[0];
+    const expectedBaseSupply = getSupplyBalanceForTypes(baseTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedEthereumSupply = getSupplyBalanceForTypes(ethereumTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedFantomSupply = getSupplyBalanceForTypes(fantomTokenSupplies, includedTypes, ohmIndex)[0];
     const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
@@ -616,6 +650,7 @@ describe("metrics", () => {
     expect(record).not.toBeNull();
     expect(record?.ohmBackedSupply).toBeCloseTo(expectedSupply);
     expect(record?.ohmBackedSupplyComponents.Arbitrum).toBeCloseTo(expectedArbitrumSupply);
+    expect(record?.ohmBackedSupplyComponents.Base).toBeCloseTo(expectedBaseSupply);
     expect(record?.ohmBackedSupplyComponents.Ethereum).toBeCloseTo(expectedEthereumSupply);
     expect(record?.ohmBackedSupplyComponents.Fantom).toBeCloseTo(expectedFantomSupply);
     expect(record?.ohmBackedSupplyComponents.Polygon).toBeCloseTo(expectedPolygonSupply);
@@ -644,12 +679,14 @@ describe("metrics", () => {
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
     const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
     const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     const marketValue = filterReduce(combinedTokenRecords, () => true);
     const marketValueArbitrum = filterReduce(arbitrumTokenRecords, () => true);
+    const marketValueBase = filterReduce(baseTokenRecords, () => true);
     const marketValueEthereum = filterReduce(ethereumTokenRecords, () => true);
     const marketValueFantom = filterReduce(fantomTokenRecords, () => true);
     const marketValuePolygon = filterReduce(polygonTokenRecords, () => true);
@@ -659,6 +696,7 @@ describe("metrics", () => {
       operationName: "paginated/metrics",
       input: {
         startDate: START_DATE,
+        includeRecords: true,
       },
     });
 
@@ -669,22 +707,59 @@ describe("metrics", () => {
     expect(record).not.toBeNull();
     expect(record?.treasuryMarketValue).toBeCloseTo(marketValue);
     expect(record?.treasuryMarketValueComponents.Arbitrum).toBeCloseTo(marketValueArbitrum);
+    expect(record?.treasuryMarketValueComponents.Base).toBeCloseTo(marketValueBase);
     expect(record?.treasuryMarketValueComponents.Ethereum).toBeCloseTo(marketValueEthereum);
     expect(record?.treasuryMarketValueComponents.Fantom).toBeCloseTo(marketValueFantom);
     expect(record?.treasuryMarketValueComponents.Polygon).toBeCloseTo(marketValuePolygon);
-  });
+
+    // Ensure that it excludes OHM in treasury addresses
+    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
+      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+    ).length).toEqual(0);
+
+    const isOHM = (value: TokenRecord): boolean => {
+      if (value.token == "OHM V1") {
+        return true;
+      }
+
+      if (value.token == "OHM V2") {
+        return true;
+      }
+
+      if (value.token == "gOHM") {
+        return true;
+      }
+
+      return false;
+    }
+
+
+    // Market value should not include the value of any raw OHM
+    const marketValueExcludeOhm = filterReduce(combinedTokenRecords, (value) => !isOHM(value), false);
+    // Only OHM in the buyback address should be included
+    const buybackOhmValue = filterReduce(combinedTokenRecords, (value) => isOHM(value) && value.sourceAddress.toLowerCase() == BUYBACK_MS, false);
+
+    expect(record?.treasuryMarketValue).toEqual(marketValueExcludeOhm + buybackOhmValue);
+
+    const buybackOhmRecords = record?.treasuryMarketValueRecords?.Ethereum.filter(
+      (record) => isOHM(record) && record.sourceAddress.toLowerCase() == BUYBACK_MS
+    ) || [];
+    expect(buybackOhmRecords.length).toBeGreaterThan(0);
+  }, 30 * 1000);
 
   test("treasury liquid backing is accurate", async () => {
     const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
     const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
     const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     const liquidBackingValue = filterReduce(combinedTokenRecords, (value) => value.isLiquid == true, true);
     const liquidBackingValueArbitrum = filterReduce(arbitrumTokenRecords, (value) => value.isLiquid == true, true);
+    const liquidBackingValueBase = filterReduce(baseTokenRecords, (value) => value.isLiquid == true, true);
     const liquidBackingValueEthereum = filterReduce(ethereumTokenRecords, (value) => value.isLiquid == true, true);
     const liquidBackingValueFantom = filterReduce(fantomTokenRecords, (value) => value.isLiquid == true, true);
     const liquidBackingValuePolygon = filterReduce(polygonTokenRecords, (value) => value.isLiquid == true, true);
@@ -694,6 +769,7 @@ describe("metrics", () => {
       operationName: "paginated/metrics",
       input: {
         startDate: START_DATE,
+        includeRecords: true,
       },
     });
 
@@ -704,9 +780,20 @@ describe("metrics", () => {
     expect(record).not.toBeNull();
     expect(record?.treasuryLiquidBacking).toBeCloseTo(liquidBackingValue);
     expect(record?.treasuryLiquidBackingComponents.Arbitrum).toBeCloseTo(liquidBackingValueArbitrum);
+    expect(record?.treasuryLiquidBackingComponents.Base).toBeCloseTo(liquidBackingValueBase);
     expect(record?.treasuryLiquidBackingComponents.Ethereum).toBeCloseTo(liquidBackingValueEthereum);
     expect(record?.treasuryLiquidBackingComponents.Fantom).toBeCloseTo(liquidBackingValueFantom);
     expect(record?.treasuryLiquidBackingComponents.Polygon).toBeCloseTo(liquidBackingValuePolygon);
+
+    // Ensure that it excludes OHM in treasury addresses
+    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
+      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+    ).length).toEqual(0);
+
+    // Ensure that it excludes OHM in the buyback addresses
+    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
+      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == BUYBACK_MS
+    ).length).toEqual(0);
   });
 
   test("OHM index", async () => {

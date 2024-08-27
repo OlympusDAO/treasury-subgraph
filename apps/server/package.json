@@ -1,6 +1,6 @@
 {
   "name": "@olympusdao/treasury-subgraph",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "engines": {
     "node": ">= 18.0.0"
   },
@@ -34,6 +34,6 @@
     "pretest:ci": "yarn build:local",
     "test": "jest",
     "test:ci": "WG_LOG_LEVEL=error jest --runInBand --ci",
-    "test:local": "dotenv -e ../../.env jest"
+    "test:local": "jest -e ../../.env"
   }
 }
