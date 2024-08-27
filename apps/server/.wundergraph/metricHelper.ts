@@ -443,6 +443,35 @@ const getSupplyCategories = (records: TokenSupply[], ohmIndex: number): [SupplyC
 //
 
 /**
+ * Determines if the given record is a variant of OHM.
+ *
+ * @param record
+ * @returns
+ */
+const isOHM = (record: TokenRecord): boolean => {
+  return getOhmAddresses().includes(record.token.toLowerCase()) || getOhmAddresses().includes(record.tokenAddress.toLowerCase());
+}
+
+/**
+ * Determines if the given record is sourced from a buyback address.
+ *
+ * @param record
+ * @returns
+ */
+const isBuybackAddress = (record: TokenRecord): boolean => {
+  if (!record.block) {
+    return false;
+  }
+
+  // If before the inclusion block, ignore
+  if (Number(record.block) < 20514801) {
+    return false;
+  }
+
+  return record.sourceAddress.toLowerCase() == "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase();
+}
+
+/**
  * Calculates the market value or liquid backing for the given records.
  *
  * @param records
@@ -463,6 +492,17 @@ const getTreasuryAssetValue = (
 
     // If liquidBacking is specified, check if the record is liquid
     if (liquidBacking && !currentRecord.isLiquid) {
+      return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
+    }
+
+    // If it is OHM and liquidBacking is specified, ignore
+    const isTokenOhm = isOHM(currentRecord);
+    if (liquidBacking && isTokenOhm) {
+      return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
+    }
+
+    // If it is OHM and not in the buyback addresses, ignore
+    if (isTokenOhm && !isBuybackAddress(currentRecord)) {
       return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
     }
 

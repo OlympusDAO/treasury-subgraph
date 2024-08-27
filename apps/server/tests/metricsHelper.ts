@@ -5,6 +5,7 @@ type TokenSupply = TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"][0
 const OHM_ADDRESSES: string[] = [
   "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase(), // Mainnet
   "0xf0cb2dc0db5e6c66B9a70Ac27B06b878da017028".toLowerCase(), // Arbitrum
+  "0x060cb087a9730e13aa191f31a6d86bff8dfcdcc0".toLowerCase(), // Base
 ];
 
 const GOHM_ADDRESSES: string[] = [
