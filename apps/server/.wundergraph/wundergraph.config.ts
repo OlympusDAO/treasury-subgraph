@@ -28,7 +28,7 @@ const resolveSubgraphUrl = (url: string): string => {
 
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/Qmam2fnfYzj6srEGC49XxsFyMwngs7xKwjGWZc7jnEU97h"), // 5.2.6
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/Qmcw9E6pTyUyGzdwi1tvRBdrDrnjcXVngLeuTkruuM2t8g"), // 5.3.0
 	schemaExtension: schemaExtension,
 });
 
