@@ -28,7 +28,7 @@ const resolveSubgraphUrl = (url: string): string => {
 
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmZtg5fzQiLw3z74wqZZHE4roD23Mz2Jzu2zW5RafNfhff"), // 5.4.4
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmZ6oSTWZCX2mvAdv6wyuznY51eSup9VmWXAtMTiknHSpo"), // 5.4.8
 	schemaExtension: schemaExtension,
 });
 
@@ -52,7 +52,7 @@ const treasuryPolygon = introspect.graphql({
 
 const treasuryBase = introspect.graphql({
 	apiNamespace: "treasuryBase",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmdqJ1zoExrs8u2T93wXSRWSx5VSKqKWTV4gCE2vszGwgt"), // 0.0.2
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmYgw9fWpiriYBj6NL8U8952Gsrxfvdfe3hxHE25UJm56A"), // 1.0.2
 	schemaExtension: schemaExtension,
 });
 
