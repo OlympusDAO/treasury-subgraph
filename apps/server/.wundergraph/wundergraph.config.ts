@@ -52,7 +52,7 @@ const treasuryPolygon = introspect.graphql({
 
 const treasuryBase = introspect.graphql({
 	apiNamespace: "treasuryBase",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmYgw9fWpiriYBj6NL8U8952Gsrxfvdfe3hxHE25UJm56A"), // 1.0.2
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmWj7CDe7VivLqX49g6nXjni8w3XFokY5Pwiau78xyox9p"), // 1.0.9
 	schemaExtension: schemaExtension,
 });
 
