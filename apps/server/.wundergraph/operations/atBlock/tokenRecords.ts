@@ -14,6 +14,7 @@ export default createOperation.query({
     fantomBlock: z.number({ description: "Fantom block number" }),
     polygonBlock: z.number({ description: "Polygon block number" }),
     baseBlock: z.number({ description: "Base block number" }),
+    berachainBlock: z.number({ description: "Berachain block number" }),
   }),
   handler: async (ctx) => {
     const FUNC = "atBlock/tokenRecords";
@@ -28,6 +29,7 @@ export default createOperation.query({
         fantomBlock: ctx.input.fantomBlock.toString(),
         polygonBlock: ctx.input.polygonBlock.toString(),
         baseBlock: ctx.input.baseBlock.toString(),
+        berachainBlock: ctx.input.berachainBlock.toString(),
       },
     });
 

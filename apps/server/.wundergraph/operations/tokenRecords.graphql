@@ -14,4 +14,7 @@ query TokenRecords($pageSize: Int! = 1000, $startDate: String!, $endDate: String
   treasuryBase_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
     ...Fragment_TokenRecordBase
   }
+  treasuryBerachain_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { date_gte: $startDate, date_lt: $endDate }) {
+    ...Fragment_TokenRecordBerachain
+  }
 }

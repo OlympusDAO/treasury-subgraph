@@ -1,5 +1,5 @@
 import { RequestLogger } from "@wundergraph/sdk/server";
-import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, Chains, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY, TokenSupplyCategories } from "./constants";
+import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_BERACHAIN, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, Chains, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY, TokenSupplyCategories } from "./constants";
 import { ProtocolMetric } from "./protocolMetricHelper";
 import { TokenRecord } from "./tokenRecordHelper";
 import { TokenSupply } from "./tokenSupplyHelper";
@@ -13,6 +13,7 @@ const OHM_ADDRESSES: string[] = [
   "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase(), // Mainnet
   "0xf0cb2dc0db5e6c66B9a70Ac27B06b878da017028".toLowerCase(), // Arbitrum
   "0x060cb087a9730E13aa191f31A6d86bFF8DfcdCC0".toLowerCase(), // Base
+  "0x18878Df23e2a36f81e820e4b47b4A40576D3159C".toLowerCase(), // Berachain
 ];
 
 const GOHM_ADDRESSES: string[] = [
@@ -223,6 +224,7 @@ const getRecordsForTypes = (
       [Chains.FANTOM]: [...previousChainRecords[Chains.FANTOM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_FANTOM)],
       [Chains.POLYGON]: [...previousChainRecords[Chains.POLYGON], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_POLYGON)],
       [Chains.BASE]: [...previousChainRecords[Chains.BASE], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_BASE)],
+      [Chains.BERACHAIN]: [...previousChainRecords[Chains.BERACHAIN], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_BERACHAIN)],
     };
 
     return [newRecords, newChainRecords];
@@ -232,6 +234,7 @@ const getRecordsForTypes = (
     [Chains.FANTOM]: [] as TokenSupply[],
     [Chains.POLYGON]: [] as TokenSupply[],
     [Chains.BASE]: [] as TokenSupply[],
+    [Chains.BERACHAIN]: [] as TokenSupply[],
   } as ChainSupplies]);
 
   // Sum to get the balance and supply balance
@@ -244,6 +247,7 @@ const getRecordsForTypes = (
     [Chains.FANTOM]: getBalancesForTypes(chainSupplies[Chains.FANTOM], ohmIndex)[1],
     [Chains.POLYGON]: getBalancesForTypes(chainSupplies[Chains.POLYGON], ohmIndex)[1],
     [Chains.BASE]: getBalancesForTypes(chainSupplies[Chains.BASE], ohmIndex)[1],
+    [Chains.BERACHAIN]: getBalancesForTypes(chainSupplies[Chains.BERACHAIN], ohmIndex)[1],
   }
 
   return {
@@ -516,6 +520,7 @@ const getTreasuryAssetValue = (
       [Chains.FANTOM]: previousChainValues[Chains.FANTOM] + (currentRecord.blockchain === CHAIN_FANTOM ? currentValue : 0),
       [Chains.POLYGON]: previousChainValues[Chains.POLYGON] + (currentRecord.blockchain === CHAIN_POLYGON ? currentValue : 0),
       [Chains.BASE]: previousChainValues[Chains.BASE] + (currentRecord.blockchain === CHAIN_BASE ? currentValue : 0),
+      [Chains.BERACHAIN]: previousChainValues[Chains.BERACHAIN] + (currentRecord.blockchain === CHAIN_BERACHAIN ? currentValue : 0),
     };
     const newChainRecords: ChainRecords = {
       [Chains.ARBITRUM]: [...previousChainRecords[Chains.ARBITRUM], ...(currentRecord.blockchain === CHAIN_ARBITRUM ? [currentRecord] : [])],
@@ -523,6 +528,7 @@ const getTreasuryAssetValue = (
       [Chains.FANTOM]: [...previousChainRecords[Chains.FANTOM], ...(currentRecord.blockchain === CHAIN_FANTOM ? [currentRecord] : [])],
       [Chains.POLYGON]: [...previousChainRecords[Chains.POLYGON], ...(currentRecord.blockchain === CHAIN_POLYGON ? [currentRecord] : [])],
       [Chains.BASE]: [...previousChainRecords[Chains.BASE], ...(currentRecord.blockchain === CHAIN_BASE ? [currentRecord] : [])],
+      [Chains.BERACHAIN]: [...previousChainRecords[Chains.BERACHAIN], ...(currentRecord.blockchain === CHAIN_BERACHAIN ? [currentRecord] : [])],
     };
 
     return [newTotalValue, newRecords, newChainValues, newChainRecords];
@@ -535,6 +541,7 @@ const getTreasuryAssetValue = (
       [Chains.FANTOM]: 0,
       [Chains.POLYGON]: 0,
       [Chains.BASE]: 0,
+      [Chains.BERACHAIN]: 0,
     } as ChainValues,
     {
       [Chains.ARBITRUM]: [] as TokenRecord[],
@@ -542,6 +549,7 @@ const getTreasuryAssetValue = (
       [Chains.FANTOM]: [] as TokenRecord[],
       [Chains.POLYGON]: [] as TokenRecord[],
       [Chains.BASE]: [] as TokenRecord[],
+      [Chains.BERACHAIN]: [] as TokenRecord[],
     } as ChainRecords]);
 
   return [totalValue, allRecords, chainValues, chainRecords];
@@ -619,6 +627,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
         [Chains.BASE]: 0,
+        [Chains.BERACHAIN]: 0,
       },
       timestamps: {
         [Chains.ARBITRUM]: 0,
@@ -626,6 +635,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
         [Chains.BASE]: 0,
+        [Chains.BERACHAIN]: 0,
       },
       ohmIndex: 0,
       ohmApy: 0,
@@ -636,6 +646,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
         [Chains.BASE]: 0,
+        [Chains.BERACHAIN]: 0,
       },
       ohmCirculatingSupply: 0,
       ohmCirculatingSupplyComponents: {
@@ -644,6 +655,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
         [Chains.BASE]: 0,
+        [Chains.BERACHAIN]: 0,
       },
       ohmFloatingSupply: 0,
       ohmFloatingSupplyComponents: {
@@ -652,6 +664,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
         [Chains.BASE]: 0,
+        [Chains.BERACHAIN]: 0,
       },
       ohmBackedSupply: 0,
       gOhmBackedSupply: 0,
@@ -661,6 +674,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
         [Chains.BASE]: 0,
+        [Chains.BERACHAIN]: 0,
       },
       ohmSupplyCategories: {
         [TokenSupplyCategories.BONDS_DEPOSITS]: 0,
@@ -686,6 +700,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
         [Chains.BASE]: 0,
+        [Chains.BERACHAIN]: 0,
       },
       treasuryLiquidBacking: 0,
       treasuryLiquidBackingComponents: {
@@ -694,6 +709,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: 0,
         [Chains.POLYGON]: 0,
         [Chains.BASE]: 0,
+        [Chains.BERACHAIN]: 0,
       },
       treasuryLiquidBackingPerOhmFloating: 0,
       treasuryLiquidBackingPerOhmBacked: 0,
@@ -729,6 +745,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.FANTOM]: getBlock(assetValues.marketValueChainRecords.Fantom),
       [Chains.POLYGON]: getBlock(assetValues.marketValueChainRecords.Polygon),
       [Chains.BASE]: getBlock(assetValues.marketValueChainRecords.Base),
+      [Chains.BERACHAIN]: getBlock(assetValues.marketValueChainRecords.Berachain),
     },
     timestamps: {
       [Chains.ARBITRUM]: getTimestamp(assetValues.marketValueChainRecords.Arbitrum),
@@ -736,6 +753,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.FANTOM]: getTimestamp(assetValues.marketValueChainRecords.Fantom),
       [Chains.POLYGON]: getTimestamp(assetValues.marketValueChainRecords.Polygon),
       [Chains.BASE]: getTimestamp(assetValues.marketValueChainRecords.Base),
+      [Chains.BERACHAIN]: getTimestamp(assetValues.marketValueChainRecords.Berachain),
     },
     ohmIndex: ohmIndex,
     ohmApy: ohmApy,
@@ -746,6 +764,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.FANTOM]: ohmTotalSupply.chainSupplyBalances.Fantom,
       [Chains.POLYGON]: ohmTotalSupply.chainSupplyBalances.Polygon,
       [Chains.BASE]: ohmTotalSupply.chainSupplyBalances.Base,
+      [Chains.BERACHAIN]: ohmTotalSupply.chainSupplyBalances.Berachain,
     },
     ohmCirculatingSupply: ohmCirculatingSupply.supplyBalance,
     ohmCirculatingSupplyComponents: {
@@ -754,6 +773,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.FANTOM]: ohmCirculatingSupply.chainSupplyBalances.Fantom,
       [Chains.POLYGON]: ohmCirculatingSupply.chainSupplyBalances.Polygon,
       [Chains.BASE]: ohmCirculatingSupply.chainSupplyBalances.Base,
+      [Chains.BERACHAIN]: ohmCirculatingSupply.chainSupplyBalances.Berachain,
     },
     ohmFloatingSupply: ohmFloatingSupply.supplyBalance,
     ohmFloatingSupplyComponents: {
@@ -762,6 +782,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.FANTOM]: ohmFloatingSupply.chainSupplyBalances.Fantom,
       [Chains.POLYGON]: ohmFloatingSupply.chainSupplyBalances.Polygon,
       [Chains.BASE]: ohmFloatingSupply.chainSupplyBalances.Base,
+      [Chains.BERACHAIN]: ohmFloatingSupply.chainSupplyBalances.Berachain,
     },
     ohmBackedSupply: ohmBackedSupply.supplyBalance,
     gOhmBackedSupply: getGOhmBackedSupply(ohmBackedSupply.supplyBalance, ohmIndex),
@@ -771,6 +792,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.FANTOM]: ohmBackedSupply.chainSupplyBalances.Fantom,
       [Chains.POLYGON]: ohmBackedSupply.chainSupplyBalances.Polygon,
       [Chains.BASE]: ohmBackedSupply.chainSupplyBalances.Base,
+      [Chains.BERACHAIN]: ohmBackedSupply.chainSupplyBalances.Berachain,
     },
     ohmSupplyCategories: supplyCategories[0],
     ohmPrice: ohmPrice,
@@ -785,6 +807,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.FANTOM]: assetValues.marketValueChainValues.Fantom,
       [Chains.POLYGON]: assetValues.marketValueChainValues.Polygon,
       [Chains.BASE]: assetValues.marketValueChainValues.Base,
+      [Chains.BERACHAIN]: assetValues.marketValueChainValues.Berachain,
     },
     treasuryLiquidBacking: assetValues.liquidBacking,
     treasuryLiquidBackingComponents: {
@@ -793,6 +816,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
       [Chains.FANTOM]: assetValues.liquidBackingChainValues.Fantom,
       [Chains.POLYGON]: assetValues.liquidBackingChainValues.Polygon,
       [Chains.BASE]: assetValues.liquidBackingChainValues.Base,
+      [Chains.BERACHAIN]: assetValues.liquidBackingChainValues.Berachain,
     },
     treasuryLiquidBackingPerOhmFloating: getLiquidBackingPerOhmFloating(assetValues.liquidBacking, ohmFloatingSupply.supplyBalance),
     treasuryLiquidBackingPerOhmBacked: getLiquidBackingPerOhmBacked(assetValues.liquidBacking, ohmBackedSupply.supplyBalance),
@@ -805,6 +829,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: ohmTotalSupply.chainRecords.Fantom,
         [Chains.POLYGON]: ohmTotalSupply.chainRecords.Polygon,
         [Chains.BASE]: ohmTotalSupply.chainRecords.Base,
+        [Chains.BERACHAIN]: ohmTotalSupply.chainRecords.Berachain,
       },
       ohmCirculatingSupplyRecords: {
         [Chains.ARBITRUM]: ohmCirculatingSupply.chainRecords.Arbitrum,
@@ -812,6 +837,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: ohmCirculatingSupply.chainRecords.Fantom,
         [Chains.POLYGON]: ohmCirculatingSupply.chainRecords.Polygon,
         [Chains.BASE]: ohmCirculatingSupply.chainRecords.Base,
+        [Chains.BERACHAIN]: ohmCirculatingSupply.chainRecords.Berachain,
       },
       ohmFloatingSupplyRecords: {
         [Chains.ARBITRUM]: ohmFloatingSupply.chainRecords.Arbitrum,
@@ -819,6 +845,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: ohmFloatingSupply.chainRecords.Fantom,
         [Chains.POLYGON]: ohmFloatingSupply.chainRecords.Polygon,
         [Chains.BASE]: ohmFloatingSupply.chainRecords.Base,
+        [Chains.BERACHAIN]: ohmFloatingSupply.chainRecords.Berachain,
       },
       ohmBackedSupplyRecords: {
         [Chains.ARBITRUM]: ohmBackedSupply.chainRecords.Arbitrum,
@@ -826,6 +853,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: ohmBackedSupply.chainRecords.Fantom,
         [Chains.POLYGON]: ohmBackedSupply.chainRecords.Polygon,
         [Chains.BASE]: ohmBackedSupply.chainRecords.Base,
+        [Chains.BERACHAIN]: ohmBackedSupply.chainRecords.Berachain,
       },
       treasuryMarketValueRecords: {
         [Chains.ARBITRUM]: assetValues.marketValueChainRecords.Arbitrum,
@@ -833,6 +861,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: assetValues.marketValueChainRecords.Fantom,
         [Chains.POLYGON]: assetValues.marketValueChainRecords.Polygon,
         [Chains.BASE]: assetValues.marketValueChainRecords.Base,
+        [Chains.BERACHAIN]: assetValues.marketValueChainRecords.Berachain,
       },
       treasuryLiquidBackingRecords: {
         [Chains.ARBITRUM]: assetValues.liquidBackingChainRecords.Arbitrum,
@@ -840,6 +869,7 @@ export const getMetricObject = (log: RequestLogger, tokenRecords: TokenRecord[],
         [Chains.FANTOM]: assetValues.liquidBackingChainRecords.Fantom,
         [Chains.POLYGON]: assetValues.liquidBackingChainRecords.Polygon,
         [Chains.BASE]: assetValues.liquidBackingChainRecords.Base,
+        [Chains.BERACHAIN]: assetValues.liquidBackingChainRecords.Berachain,
       },
     } : {},
   }

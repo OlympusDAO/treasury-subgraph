@@ -99,3 +99,23 @@ fragment Fragment_TokenRecordBase on treasuryBase_TokenRecord {
   value
   valueExcludingOhm
 }
+
+fragment Fragment_TokenRecordBerachain on treasuryBerachain_TokenRecord {
+  id
+  balance
+  block
+  blockchain
+  category
+  date
+  isBluechip
+  isLiquid
+  multiplier
+  rate
+  source
+  sourceAddress
+  timestamp
+  token
+  tokenAddress
+  value
+  valueExcludingOhm
+}

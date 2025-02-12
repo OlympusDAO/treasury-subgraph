@@ -1,4 +1,4 @@
-query TokenRecords($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereumBlock: BigInt!, $fantomBlock: BigInt!, $polygonBlock: BigInt!, $baseBlock: BigInt!) {
+query TokenRecords($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereumBlock: BigInt!, $fantomBlock: BigInt!, $polygonBlock: BigInt!, $baseBlock: BigInt!, $berachainBlock: BigInt!) {
   treasuryArbitrum_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $arbitrumBlock }) {
     ...Fragment_TokenRecordArbitrum
   }
@@ -13,5 +13,8 @@ query TokenRecords($pageSize: Int! = 1000, $arbitrumBlock: BigInt!, $ethereumBlo
   }
   treasuryBase_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $baseBlock }) {
     ...Fragment_TokenRecordBase
+  }
+  treasuryBerachain_tokenRecords(first: $pageSize, orderBy: date, orderDirection: desc, where: { block: $berachainBlock }) {
+    ...Fragment_TokenRecordBerachain
   }
 }
