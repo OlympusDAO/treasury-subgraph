@@ -14,4 +14,7 @@ query TokenRecordsEarliest {
   treasuryBase_tokenRecords(orderBy: block, orderDirection: asc, first: 1) {
     ...Fragment_TokenRecordBase
   }
+  treasuryBerachain_tokenRecords(orderBy: block, orderDirection: asc, first: 1) {
+    ...Fragment_TokenRecordBerachain
+  }
 }

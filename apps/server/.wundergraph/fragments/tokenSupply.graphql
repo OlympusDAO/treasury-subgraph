@@ -84,3 +84,20 @@ fragment Fragment_TokenSupplyBase on treasuryBase_TokenSupply {
   tokenAddress
   type
 }
+
+fragment Fragment_TokenSupplyBerachain on treasuryBerachain_TokenSupply {
+  id
+  balance
+  block
+  blockchain
+  date
+  pool
+  poolAddress
+  source
+  sourceAddress
+  supplyBalance
+  timestamp
+  token
+  tokenAddress
+  type
+}

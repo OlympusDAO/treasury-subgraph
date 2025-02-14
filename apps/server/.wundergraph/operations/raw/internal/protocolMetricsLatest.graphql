@@ -14,4 +14,7 @@ query ProtocolMetricsLatest {
   treasuryBase_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
     ...Fragment_ProtocolMetricBase
   }
+  treasuryBerachain_protocolMetrics(orderBy: block, orderDirection: desc, first: 1) {
+    ...Fragment_ProtocolMetricBerachain
+  }
 }
