@@ -58,7 +58,7 @@ const treasuryBase = introspect.graphql({
 
 const treasuryBerachain = introspect.graphql({
 	apiNamespace: "treasuryBerachain",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmWKhC2iJ8CD8PgeSX7k3Z9uCmwyD7btqq8drmw44YQKKn"), // 1.0.3
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/Qme6Rx9vv6kgpx3RJnHGHTd8WwLhiHCmooLcY1MNY6vDvo"), // 1.0.4
 	schemaExtension: schemaExtension,
 });
 
