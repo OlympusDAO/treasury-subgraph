@@ -28,7 +28,7 @@ const resolveSubgraphUrl = (url: string): string => {
 
 const treasuryEthereum = introspect.graphql({
 	apiNamespace: "treasuryEthereum",
-	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmdGqRrQD4FehyTYTmoK9RvveuR3e4vPDsyuqAYF4Nrmfv"), // 5.4.10
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7jeChfyUTWRyp2JxPGuuzxvGt3fDKMkC9rLjm7sfLcNp"),
 	schemaExtension: schemaExtension,
 });
 
@@ -56,9 +56,15 @@ const treasuryBase = introspect.graphql({
 	schemaExtension: schemaExtension,
 });
 
+const treasuryBerachain = introspect.graphql({
+	apiNamespace: "treasuryBerachain",
+	url: resolveSubgraphUrl("https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/5KjntDTvo4DumbAkXdkrzNBdta2NujCc73TRYwgTdVun"),
+	schemaExtension: schemaExtension,
+});
+
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [treasuryArbitrum, treasuryEthereum, treasuryFantom, treasuryPolygon, treasuryBase],
+	apis: [treasuryArbitrum, treasuryEthereum, treasuryFantom, treasuryPolygon, treasuryBase, treasuryBerachain],
 	server,
 	operations,
 	codeGenerators: [

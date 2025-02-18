@@ -1,7 +1,7 @@
 import { createOperation, z } from '../../generated/wundergraph.factory';
 import { Metric, getMetricObject } from '../../metricHelper';
 import { getBlockByChain } from '../../tokenRecordHelper';
-import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from '../../constants';
+import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_BERACHAIN, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from '../../constants';
 import { getCacheKey, getCachedRecord, setCachedRecord } from '../../cacheHelper';
 import { UpstreamSubgraphError } from '../../upstreamSubgraphError';
 
@@ -39,9 +39,10 @@ export default createOperation.query({
     const fantomBlock = getBlockByChain(latestQueryResult.data || [], CHAIN_FANTOM);
     const polygonBlock = getBlockByChain(latestQueryResult.data || [], CHAIN_POLYGON);
     const baseBlock = getBlockByChain(latestQueryResult.data || [], CHAIN_BASE);
+    const berachainBlock = getBlockByChain(latestQueryResult.data || [], CHAIN_BERACHAIN);
 
-    if (!arbitrumBlock || !ethereumBlock || !fantomBlock || !polygonBlock || !baseBlock) {
-      throw new UpstreamSubgraphError({ message: `${FUNC}: Could not find latest tokenRecord block for each chain. Arbitrum: ${arbitrumBlock}, Ethereum: ${ethereumBlock}, Fantom: ${fantomBlock}, Polygon: ${polygonBlock}, Base: ${baseBlock}` });
+    if (!arbitrumBlock || !ethereumBlock || !fantomBlock || !polygonBlock || !baseBlock || !berachainBlock) {
+      throw new UpstreamSubgraphError({ message: `${FUNC}: Could not find latest tokenRecord block for each chain. Arbitrum: ${arbitrumBlock}, Ethereum: ${ethereumBlock}, Fantom: ${fantomBlock}, Polygon: ${polygonBlock}, Base: ${baseBlock}, Berachain: ${berachainBlock}` });
     }
 
     const input = {
@@ -50,6 +51,7 @@ export default createOperation.query({
       fantomBlock,
       polygonBlock,
       baseBlock,
+      berachainBlock,
     };
 
     const protocolMetricsQueryResult = await ctx.operations.query({

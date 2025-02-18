@@ -1,5 +1,5 @@
 import { RequestLogger } from "@wundergraph/sdk/server";
-import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
+import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_BERACHAIN, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { RawInternalProtocolMetricsResponseData } from "./generated/models";
 import { parseNumber } from "./numberHelper";
 
@@ -64,6 +64,7 @@ export const flattenRecords = (records: RawInternalProtocolMetricsResponseData, 
     [CHAIN_FANTOM]: records.treasuryFantom_protocolMetrics,
     [CHAIN_POLYGON]: records.treasuryPolygon_protocolMetrics,
     [CHAIN_BASE]: records.treasuryBase_protocolMetrics,
+    [CHAIN_BERACHAIN]: records.treasuryBerachain_protocolMetrics,
   };
 
   for (const [key, value] of Object.entries(mapping)) {

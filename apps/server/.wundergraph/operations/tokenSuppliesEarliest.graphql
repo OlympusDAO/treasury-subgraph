@@ -14,4 +14,7 @@ query TokenSuppliesEarliest {
   treasuryBase_tokenSupplies(orderBy: block, orderDirection: asc, first: 1) {
     ...Fragment_TokenSupplyBase
   }
+  treasuryBerachain_tokenSupplies(orderBy: block, orderDirection: asc, first: 1) {
+    ...Fragment_TokenSupplyBerachain
+  }
 }

@@ -1,5 +1,5 @@
 import { RequestLogger } from "@wundergraph/sdk/server";
-import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
+import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_BERACHAIN, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
 import { TokenSuppliesLatestResponseData } from "./generated/models";
 import { parseNumber } from "./numberHelper";
 
@@ -77,6 +77,7 @@ export const filterCompleteRecords = (records: TokenSuppliesLatestResponseData, 
       treasuryFantom_tokenSupplies: [],
       treasuryPolygon_tokenSupplies: [],
       treasuryBase_tokenSupplies: [],
+      treasuryBerachain_tokenSupplies: [],
     };
   }
 
@@ -92,6 +93,7 @@ export const filterCompleteRecords = (records: TokenSuppliesLatestResponseData, 
     treasuryFantom_tokenSupplies: records.treasuryFantom_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
     treasuryPolygon_tokenSupplies: records.treasuryPolygon_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
     treasuryBase_tokenSupplies: records.treasuryBase_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
+    treasuryBerachain_tokenSupplies: records.treasuryBerachain_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
   };
   log.info(`${FUNC}: Filtered records up to latest consistent date: ${earliestDate.toISOString()}`);
 
@@ -108,6 +110,7 @@ export const flattenRecords = (records: TokenSuppliesLatestResponseData, blockch
     [CHAIN_FANTOM]: records.treasuryFantom_tokenSupplies,
     [CHAIN_POLYGON]: records.treasuryPolygon_tokenSupplies,
     [CHAIN_BASE]: records.treasuryBase_tokenSupplies,
+    [CHAIN_BERACHAIN]: records.treasuryBerachain_tokenSupplies,
   };
 
   for (const [key, value] of Object.entries(mapping)) {
