@@ -15,6 +15,16 @@ async function startServer() {
   app.use(cors({ origin: true, credentials: true }));
   app.use(express.json());
 
+  // Normalize URLs by removing duplicate slashes (more forgiving)
+  app.use((req, res, next) => {
+    const originalUrl = req.url;
+    const normalizedUrl = originalUrl.replace(/\/+/g, '/');
+    if (originalUrl !== normalizedUrl) {
+      req.url = normalizedUrl;
+    }
+    next();
+  });
+
   // Use simple query parser to preserve raw JSON in wg_variables
   // The default 'qs' parser tries to parse {} as nested objects, breaking JSON params
   app.set('query parser', 'simple');
