@@ -12,6 +12,14 @@ export interface CacheOptions {
   defaultTtl?: number; // in milliseconds
 }
 
+/**
+ * Options for cache get operations
+ */
+export interface CacheGetOptions {
+  /** If true, bypass cache read and return null (forces fresh fetch) */
+  bypassCache?: boolean;
+}
+
 export class CacheManager<T = any> {
   private cache: LRUCache<string, CacheEntry<T>>;
   private defaultTtl: number;
@@ -40,8 +48,16 @@ export class CacheManager<T = any> {
 
   /**
    * Get a value from cache
+   * @param key The cache key
+   * @param options Optional configuration for cache read
+   * @returns The cached value or null if not found/expired/bypassed
    */
-  async get(key: string): Promise<T | null> {
+  async get(key: string, options?: CacheGetOptions): Promise<T | null> {
+    // If bypassCache is true, skip cache read entirely
+    if (options?.bypassCache) {
+      return null;
+    }
+
     const entry = this.cache.get(key);
     if (!entry) {
       return null;
