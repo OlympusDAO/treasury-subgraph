@@ -40,8 +40,9 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
  * Parse wg_variables query parameter
  * Wundergraph uses: ?wg_variables={"param1":"value1","param2":value2}
  *
- * Note: Express's default query parser may have already parsed the JSON,
- * so we need to handle both string and object cases.
+ * Supports both raw JSON and URL-encoded JSON:
+ * - Raw: ?wg_variables={"ignoreCache":true}
+ * - URL-encoded: ?wg_variables=%7B%22ignoreCache%22%3Atrue%7D
  */
 export function parseWgVariables(req: Request): Record<string, unknown> {
   const wgVariables = req.query.wg_variables;
@@ -51,40 +52,23 @@ export function parseWgVariables(req: Request): Record<string, unknown> {
     return {};
   }
 
-  // Express may have already parsed it as an object
-  if (typeof wgVariables === 'object') {
-    return wgVariables as Record<string, unknown>;
+  // With simple query parser, wg_variables is always a string
+  if (typeof wgVariables !== 'string') {
+    return {};
   }
 
-  // It's a string - try to parse it
-  if (typeof wgVariables === 'string') {
+  try {
+    // Try direct parse first (handles raw JSON)
+    let parsed = JSON.parse(wgVariables);
+    return parsed as Record<string, unknown>;
+  } catch {
+    // If direct parse fails, try URL-decoding first
     try {
-      // Try direct parse first (Express might have already decoded)
-      let parsed = JSON.parse(wgVariables);
-
-      // If parse succeeded but result is a string, try decoding and parsing again
-      if (typeof parsed === 'string') {
-        parsed = JSON.parse(parsed);
-      }
-
+      const decoded = decodeURIComponent(wgVariables);
+      let parsed = JSON.parse(decoded);
       return parsed as Record<string, unknown>;
-    } catch {
-      // If direct parse fails, try URL-decoding first
-      try {
-        const decoded = decodeURIComponent(wgVariables);
-        let parsed = JSON.parse(decoded);
-
-        // Handle double-encoded case
-        if (typeof parsed === 'string') {
-          parsed = JSON.parse(parsed);
-        }
-
-        return parsed as Record<string, unknown>;
-      } catch (e) {
-        throw new Error(`Invalid wg_variables parameter: ${e instanceof Error ? e.message : String(e)}`);
-      }
+    } catch (e) {
+      throw new Error(`Invalid wg_variables parameter: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
-
-  return {};
 }

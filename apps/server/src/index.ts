@@ -14,6 +14,10 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
+  // Use simple query parser to preserve raw JSON in wg_variables
+  // The default 'qs' parser tries to parse {} as nested objects, breaking JSON params
+  app.set('query parser', 'simple');
+
   // Mount REST API router (before GraphQL)
   app.use('/operations', restRouter);
 
