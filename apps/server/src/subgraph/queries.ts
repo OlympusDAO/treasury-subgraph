@@ -104,7 +104,7 @@ export const TOKEN_RECORDS_DATE_RANGE = `
       first: $pageSize
       orderBy: date
       orderDirection: desc
-      where: { date_gte: $startDate, date_lte: $endDate }
+      where: { date_gte: $startDate, date_lt: $endDate }
     ) {
       id
       balance
@@ -214,7 +214,7 @@ export const TOKEN_SUPPLIES_DATE_RANGE = `
       first: $pageSize
       orderBy: date
       orderDirection: desc
-      where: { date_gte: $startDate, date_lte: $endDate }
+      where: { date_gte: $startDate, date_lt: $endDate }
     ) {
       id
       balance
@@ -303,7 +303,7 @@ export const PROTOCOL_METRICS_DATE_RANGE = `
       first: $pageSize
       orderBy: date
       orderDirection: desc
-      where: { date_gte: $startDate, date_lte: $endDate }
+      where: { date_gte: $startDate, date_lt: $endDate }
     ) {
       id
       block

@@ -62,14 +62,21 @@ export const setBlockchainProperty = (records: TokenSupply[], blockchain: string
 /**
  * Filters `records` to only include records with a complete set of cross-chain data.
  *
+ * Only checks Arbitrum and Ethereum for completeness.
+ * For the LATEST date only: if Arbitrum OR Ethereum is missing data for that date,
+ * exclude ALL records for that date. Keep all other dates.
+ *
  * @param records
  */
 export const filterCompleteRecords = (records: TokenSuppliesResponse, log: Logger): TokenSuppliesResponse => {
   const FUNC = `tokenSupply/filterCompleteRecords`;
 
-  // Check for empty values
-  if (!records.treasuryArbitrum_tokenSupplies.length || !records.treasuryEthereum_tokenSupplies.length) {
-    log.warn(`${FUNC}: Arbitrum or Ethereum records are empty.`)
+  // Only check Arbitrum and Ethereum for completeness
+  const arbitrumDates = new Set(records.treasuryArbitrum_tokenSupplies.map(r => r.date));
+  const ethereumDates = new Set(records.treasuryEthereum_tokenSupplies.map(r => r.date));
+
+  if (!arbitrumDates.size || !ethereumDates.size) {
+    log.warn(`${FUNC}: Arbitrum or Ethereum records are empty.`);
     return {
       treasuryArbitrum_tokenSupplies: [],
       treasuryEthereum_tokenSupplies: [],
@@ -80,21 +87,41 @@ export const filterCompleteRecords = (records: TokenSuppliesResponse, log: Logge
     };
   }
 
-  // Get the earliest date across the Ethereum and Arbitrum records
-  const arbitrumDate = records.treasuryArbitrum_tokenSupplies[0].date;
-  const ethereumDate = records.treasuryEthereum_tokenSupplies[0].date;
-  const earliestDate = new Date(arbitrumDate) < new Date(ethereumDate) ? new Date(arbitrumDate) : new Date(ethereumDate);
+  // Find dates where BOTH Arbitrum and Ethereum have data
+  const completeDates = new Set<string>();
+  for (const date of arbitrumDates) {
+    if (ethereumDates.has(date)) {
+      completeDates.add(date);
+    }
+  }
 
-  // Filter the records to only include records up to the earliest date
-  const filteredRecords = {
-    treasuryArbitrum_tokenSupplies: records.treasuryArbitrum_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
-    treasuryEthereum_tokenSupplies: records.treasuryEthereum_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
-    treasuryFantom_tokenSupplies: records.treasuryFantom_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
-    treasuryPolygon_tokenSupplies: records.treasuryPolygon_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
-    treasuryBase_tokenSupplies: records.treasuryBase_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
-    treasuryBerachain_tokenSupplies: records.treasuryBerachain_tokenSupplies.filter((record) => new Date(record.date) <= earliestDate),
+  if (completeDates.size === 0) {
+    log.warn(`${FUNC}: No dates with data in both Arbitrum and Ethereum.`);
+    return {
+      treasuryArbitrum_tokenSupplies: [],
+      treasuryEthereum_tokenSupplies: [],
+      treasuryFantom_tokenSupplies: [],
+      treasuryPolygon_tokenSupplies: [],
+      treasuryBase_tokenSupplies: [],
+      treasuryBerachain_tokenSupplies: [],
+    };
+  }
+
+  // Find the latest complete date
+  const sortedCompleteDates = Array.from(completeDates).sort();
+  const latestCompleteDate = sortedCompleteDates[sortedCompleteDates.length - 1];
+
+  // Filter out records with dates newer than the latest complete date
+  const filteredRecords: TokenSuppliesResponse = {
+    treasuryArbitrum_tokenSupplies: records.treasuryArbitrum_tokenSupplies.filter(r => r.date <= latestCompleteDate),
+    treasuryEthereum_tokenSupplies: records.treasuryEthereum_tokenSupplies.filter(r => r.date <= latestCompleteDate),
+    treasuryFantom_tokenSupplies: records.treasuryFantom_tokenSupplies.filter(r => r.date <= latestCompleteDate),
+    treasuryPolygon_tokenSupplies: records.treasuryPolygon_tokenSupplies.filter(r => r.date <= latestCompleteDate),
+    treasuryBase_tokenSupplies: records.treasuryBase_tokenSupplies.filter(r => r.date <= latestCompleteDate),
+    treasuryBerachain_tokenSupplies: records.treasuryBerachain_tokenSupplies.filter(r => r.date <= latestCompleteDate),
   };
-  log.info(`${FUNC}: Filtered records up to latest consistent date: ${earliestDate.toISOString()}`);
+
+  log.info(`${FUNC}: Filtered out dates after ${latestCompleteDate} (latest date with data in both Arbitrum and Ethereum)`);
 
   return filteredRecords;
 }

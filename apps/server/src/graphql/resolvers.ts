@@ -6,6 +6,7 @@ import { filterCompleteRecords as filterCompleteTokenRecords } from '../core/tok
 import { filterCompleteRecords as filterCompleteTokenSupplies } from '../core/tokenSupplyHelper';
 import { TokenRecordsResponse, TokenSuppliesResponse } from '../core/types';
 import { Logger, ConsoleLogger } from '../core/types';
+import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../core/dateHelper';
 import {
   Chain,
   queryAllSubgraphs,
@@ -608,16 +609,16 @@ export const resolvers = {
       _parent: unknown,
       args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; ignoreCache?: boolean }
     ) {
-      const { startDate, dateOffset = 30, crossChainDataComplete = false, ignoreCache = false } = args;
+      const { startDate, dateOffset = 4, crossChainDataComplete = false, ignoreCache = false } = args;
       logger.info(`paginatedTokenRecords called with: startDate=${startDate}, dateOffset=${dateOffset}, crossChainDataComplete=${crossChainDataComplete}, ignoreCache=${ignoreCache}`);
 
-      // Calculate date range (startDate is earliest, dateOffset adds days forward)
-      const earliestDate = new Date(startDate);
-      const latestDate = new Date(earliestDate);
-      latestDate.setDate(latestDate.getDate() + dateOffset);
+      const finalStartDate = new Date(startDate);
+      if (isNaN(finalStartDate.getTime())) {
+        throw new Error(`startDate should be in the YYYY-MM-DD format.`);
+      }
 
-      const earliestDateStr = earliestDate.toISOString().split('T')[0];
-      const latestDateStr = latestDate.toISOString().split('T')[0];
+      const earliestDateStr = getISO8601DateString(finalStartDate);
+      const latestDateStr = getISO8601DateString(new Date()); // today, for cache key
 
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('paginatedTokenRecords', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete });
@@ -628,25 +629,72 @@ export const resolvers = {
       }
 
       const pageSize = 1000;
-      const variables = { startDate: earliestDateStr, endDate: latestDateStr, pageSize };
-      logger.info(`paginatedTokenRecords: Querying date range ${earliestDateStr} to ${latestDateStr}, crossChainDataComplete: ${crossChainDataComplete}`);
+      const offsetDays = getOffsetDays(dateOffset);
 
-      const results = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenRecordsResponse>(
-        TOKEN_RECORDS_DATE_RANGE,
-        () => variables,
-        logger
-      );
+      let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
+      let currentEndDate: Date = getNextEndDate(null);
+      let hasProcessedFirstDate = false;
 
-      logger.info(`paginatedTokenRecords: Got results from ${results.successfulChains.length} chains, failed: ${results.failedChains.join(', ')}`);
+      const allResults: SingleChainTokenRecordsResponse = {} as SingleChainTokenRecordsResponse;
+      const successfulChainsSet = new Set<Chain>();
+      const failedChainsSet = new Set<Chain>();
+
+      while (currentStartDate.getTime() >= finalStartDate.getTime()) {
+        currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
+
+        const startDateStr = getISO8601DateString(currentStartDate);
+        const endDateStr = getISO8601DateString(currentEndDate);
+
+        logger.info(`paginatedTokenRecords: Querying ${startDateStr} to ${endDateStr}`);
+
+        const results = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenRecordsResponse>(
+          TOKEN_RECORDS_DATE_RANGE,
+          () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+          logger
+        );
+
+        logger.info(`paginatedTokenRecords: Got results from ${results.successfulChains.length} chains, failed: ${results.failedChains.join(', ')}`);
+
+        results.successfulChains.forEach(c => successfulChainsSet.add(c));
+        results.failedChains.forEach(c => failedChainsSet.add(c));
+
+        // Merge results
+        for (const [chain, data] of results.results.entries()) {
+          const allResultsChain = allResults as unknown as Record<string, { tokenRecords?: TokenRecord[] }>;
+          if (!allResultsChain[chain]) {
+            allResultsChain[chain] = data;
+          } else {
+            allResultsChain[chain] = {
+              tokenRecords: [
+                ...(allResultsChain[chain]?.tokenRecords || []),
+                ...(data.tokenRecords || [])
+              ]
+            };
+          }
+        }
+
+        // Ensures that a finalStartDate close to the current date is handled correctly
+        // There is probably a cleaner way to do this, but this works for now
+        if (currentStartDate.getTime() === finalStartDate.getTime()) {
+          logger.info(`paginatedTokenRecords: Reached final start date.`);
+          break;
+        }
+
+        currentEndDate = currentStartDate;
+      }
 
       // Convert Map to Response format
-      let response = mapToTokenRecordsResponse(results.results);
+      let response = mapToTokenRecordsResponse(new Map(Object.entries(allResults).map(([k, v]) => [k as Chain, v])));
 
-      // Apply filterCompleteRecords if crossChainDataComplete is true
-      if (crossChainDataComplete) {
+      // Apply filterCompleteRecords only on first page if crossChainDataComplete is true
+      if (crossChainDataComplete && !hasProcessedFirstDate) {
         logger.info(`paginatedTokenRecords: Applying crossChainDataComplete filter`);
         response = filterCompleteTokenRecords(response, logger);
+        hasProcessedFirstDate = true;
       }
+
+      // Log record counts per chain before filtering
+      logger.info(`paginatedTokenRecords: Before filter - Arbitrum: ${response.treasuryArbitrum_tokenRecords.length}, Ethereum: ${response.treasuryEthereum_tokenRecords.length}, Fantom: ${response.treasuryFantom_tokenRecords.length}, Base: ${response.treasuryBase_tokenRecords.length}, Berachain: ${response.treasuryBerachain_tokenRecords.length}`);
 
       // Convert back to flat array, applying latest block filtering PER CHAIN first
       const allRecords: TokenRecord[] = [];
@@ -659,6 +707,7 @@ export const resolvers = {
         {key: 'treasuryBerachain_tokenRecords', name: 'Berachain'},
       ] as const) {
         const chainRecords = filterTokenRecordsByDay(response[key]);
+        logger.info(`paginatedTokenRecords: ${name} has ${chainRecords.length} records after filterLatestBlockByDay`);
         for (const record of chainRecords) {
           allRecords.push({...record, blockchain: name});
         }
@@ -677,16 +726,16 @@ export const resolvers = {
       _parent: unknown,
       args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; ignoreCache?: boolean }
     ) {
-      const { startDate, dateOffset = 30, crossChainDataComplete = false, ignoreCache = false } = args;
+      const { startDate, dateOffset = 4, crossChainDataComplete = false, ignoreCache = false } = args;
       logger.info(`paginatedTokenSupplies called with: startDate=${startDate}, dateOffset=${dateOffset}, crossChainDataComplete=${crossChainDataComplete}, ignoreCache=${ignoreCache}`);
 
-      // Calculate date range (startDate is earliest, dateOffset adds days forward)
-      const earliestDate = new Date(startDate);
-      const latestDate = new Date(earliestDate);
-      latestDate.setDate(latestDate.getDate() + dateOffset);
+      const finalStartDate = new Date(startDate);
+      if (isNaN(finalStartDate.getTime())) {
+        throw new Error(`startDate should be in the YYYY-MM-DD format.`);
+      }
 
-      const earliestDateStr = earliestDate.toISOString().split('T')[0];
-      const latestDateStr = latestDate.toISOString().split('T')[0];
+      const earliestDateStr = getISO8601DateString(finalStartDate);
+      const latestDateStr = getISO8601DateString(new Date());
 
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('paginatedTokenSupplies', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete });
@@ -697,19 +746,67 @@ export const resolvers = {
       }
 
       const pageSize = 1000;
-      const results = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenSuppliesResponse>(
-        TOKEN_SUPPLIES_DATE_RANGE,
-        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
-        logger
-      );
+      const offsetDays = getOffsetDays(dateOffset);
+
+      let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
+      let currentEndDate: Date = getNextEndDate(null);
+      let hasProcessedFirstDate = false;
+
+      const allResults: SingleChainTokenSuppliesResponse = {} as SingleChainTokenSuppliesResponse;
+      const successfulChainsSet = new Set<Chain>();
+      const failedChainsSet = new Set<Chain>();
+
+      while (currentStartDate.getTime() >= finalStartDate.getTime()) {
+        currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
+
+        const startDateStr = getISO8601DateString(currentStartDate);
+        const endDateStr = getISO8601DateString(currentEndDate);
+
+        logger.info(`paginatedTokenSupplies: Querying ${startDateStr} to ${endDateStr}`);
+
+        const results = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenSuppliesResponse>(
+          TOKEN_SUPPLIES_DATE_RANGE,
+          () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+          logger
+        );
+
+        logger.info(`paginatedTokenSupplies: Got results from ${results.successfulChains.length} chains, failed: ${results.failedChains.join(', ')}`);
+
+        results.successfulChains.forEach(c => successfulChainsSet.add(c));
+        results.failedChains.forEach(c => failedChainsSet.add(c));
+
+        // Merge results
+        for (const [chain, data] of results.results.entries()) {
+          const allResultsChain = allResults as unknown as Record<string, { tokenSupplies?: TokenSupply[] }>;
+          if (!allResultsChain[chain]) {
+            allResultsChain[chain] = data;
+          } else {
+            allResultsChain[chain] = {
+              tokenSupplies: [
+                ...(allResultsChain[chain]?.tokenSupplies || []),
+                ...(data.tokenSupplies || [])
+              ]
+            };
+          }
+        }
+
+        // Ensures that a finalStartDate close to the current date is handled correctly
+        if (currentStartDate.getTime() === finalStartDate.getTime()) {
+          logger.info(`paginatedTokenSupplies: Reached final start date.`);
+          break;
+        }
+
+        currentEndDate = currentStartDate;
+      }
 
       // Convert Map to Response format
-      let response = mapToTokenSuppliesResponse(results.results);
+      let response = mapToTokenSuppliesResponse(new Map(Object.entries(allResults).map(([k, v]) => [k as Chain, v])));
 
-      // Apply filterCompleteRecords if crossChainDataComplete is true
-      if (crossChainDataComplete) {
+      // Apply filterCompleteRecords only on first page if crossChainDataComplete is true
+      if (crossChainDataComplete && !hasProcessedFirstDate) {
         logger.info(`paginatedTokenSupplies: Applying crossChainDataComplete filter`);
         response = filterCompleteTokenSupplies(response, logger);
+        hasProcessedFirstDate = true;
       }
 
       // Convert back to flat array, applying latest block filtering PER CHAIN first
@@ -738,16 +835,16 @@ export const resolvers = {
     },
 
     async paginatedProtocolMetrics(_parent: unknown, args: { startDate: string; dateOffset?: number; ignoreCache?: boolean }) {
-      const { startDate, dateOffset = 30, ignoreCache = false } = args;
+      const { startDate, dateOffset = 4, ignoreCache = false } = args;
       logger.info(`paginatedProtocolMetrics called with: startDate=${startDate}, dateOffset=${dateOffset}, ignoreCache=${ignoreCache}`);
 
-      // Calculate date range (startDate is earliest, dateOffset adds days forward)
-      const earliestDate = new Date(startDate);
-      const latestDate = new Date(earliestDate);
-      latestDate.setDate(latestDate.getDate() + dateOffset);
+      const finalStartDate = new Date(startDate);
+      if (isNaN(finalStartDate.getTime())) {
+        throw new Error(`startDate should be in the YYYY-MM-DD format.`);
+      }
 
-      const earliestDateStr = earliestDate.toISOString().split('T')[0];
-      const latestDateStr = latestDate.toISOString().split('T')[0];
+      const earliestDateStr = getISO8601DateString(finalStartDate);
+      const latestDateStr = getISO8601DateString(new Date());
 
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('paginatedProtocolMetrics', { startDate: earliestDateStr, endDate: latestDateStr });
@@ -758,15 +855,56 @@ export const resolvers = {
       }
 
       const pageSize = 1000;
-      const results = await queryAllSubgraphsWithPerChainVariables<SingleChainProtocolMetricsResponse>(
-        PROTOCOL_METRICS_DATE_RANGE,
-        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
-        logger
-      );
+      const offsetDays = getOffsetDays(dateOffset);
 
-      const metrics = Array.from(results.results.entries()).flatMap(
+      let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
+      let currentEndDate: Date = getNextEndDate(null);
+
+      const allResults: SingleChainProtocolMetricsResponse = {} as SingleChainProtocolMetricsResponse;
+
+      while (currentStartDate.getTime() >= finalStartDate.getTime()) {
+        currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
+
+        const startDateStr = getISO8601DateString(currentStartDate);
+        const endDateStr = getISO8601DateString(currentEndDate);
+
+        logger.info(`paginatedProtocolMetrics: Querying ${startDateStr} to ${endDateStr}`);
+
+        const results = await queryAllSubgraphsWithPerChainVariables<SingleChainProtocolMetricsResponse>(
+          PROTOCOL_METRICS_DATE_RANGE,
+          () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+          logger
+        );
+
+        logger.info(`paginatedProtocolMetrics: Got results from ${results.successfulChains.length} chains, failed: ${results.failedChains.join(', ')}`);
+
+        // Merge results
+        for (const [chain, data] of results.results.entries()) {
+          const allResultsChain = allResults as unknown as Record<string, { protocolMetrics?: ProtocolMetric[] }>;
+          if (!allResultsChain[chain]) {
+            allResultsChain[chain] = data;
+          } else {
+            allResultsChain[chain] = {
+              protocolMetrics: [
+                ...(allResultsChain[chain]?.protocolMetrics || []),
+                ...(data.protocolMetrics || [])
+              ]
+            };
+          }
+        }
+
+        // Ensures that a finalStartDate close to the current date is handled correctly
+        if (currentStartDate.getTime() === finalStartDate.getTime()) {
+          logger.info(`paginatedProtocolMetrics: Reached final start date.`);
+          break;
+        }
+
+        currentEndDate = currentStartDate;
+      }
+
+      const metrics = Array.from(Object.entries(allResults).map(([k, v]) => [k as Chain, v] as const)).flatMap(
         ([chain, data]) => {
-          const chainMetrics = normalizeArray(data.protocolMetrics);
+          const chainMetrics = normalizeArray(data.protocolMetrics as ProtocolMetric[]);
           return filterProtocolMetricsByDay(chainMetrics).map(m => ({ ...m, blockchain: CHAIN_NAMES[chain] }));
         }
       );
@@ -782,16 +920,16 @@ export const resolvers = {
       _parent: unknown,
       args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; includeRecords?: boolean; ignoreCache?: boolean }
     ) {
-      const { startDate, dateOffset = 30, crossChainDataComplete = false, includeRecords = false, ignoreCache = false } = args;
+      const { startDate, dateOffset = 4, crossChainDataComplete = false, includeRecords = false, ignoreCache = false } = args;
       logger.info(`paginatedMetrics called with: startDate=${startDate}, dateOffset=${dateOffset}, crossChainDataComplete=${crossChainDataComplete}, includeRecords=${includeRecords}, ignoreCache=${ignoreCache}`);
 
-      // Calculate date range (startDate is earliest, dateOffset adds days forward)
-      const earliestDate = new Date(startDate);
-      const latestDate = new Date(earliestDate);
-      latestDate.setDate(latestDate.getDate() + dateOffset);
+      const finalStartDate = new Date(startDate);
+      if (isNaN(finalStartDate.getTime())) {
+        throw new Error(`startDate should be in the YYYY-MM-DD format.`);
+      }
 
-      const earliestDateStr = earliestDate.toISOString().split('T')[0];
-      const latestDateStr = latestDate.toISOString().split('T')[0];
+      const earliestDateStr = getISO8601DateString(finalStartDate);
+      const latestDateStr = getISO8601DateString(new Date());
 
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete });
@@ -802,36 +940,111 @@ export const resolvers = {
       }
 
       const pageSize = 1000;
-      logger.info(`paginatedMetrics: Querying date range ${earliestDateStr} to ${latestDateStr}, crossChainDataComplete: ${crossChainDataComplete}`);
+      const offsetDays = getOffsetDays(dateOffset);
 
-      // Fetch all data for the date range
-      const allTokenRecords = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenRecordsResponse>(
-        TOKEN_RECORDS_DATE_RANGE,
-        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
-        logger
-      );
+      let currentStartDate: Date = getNextStartDate(offsetDays, finalStartDate, null);
+      let currentEndDate: Date = getNextEndDate(null);
+      let hasProcessedFirstDate = false;
 
-      const allTokenSupplies = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenSuppliesResponse>(
-        TOKEN_SUPPLIES_DATE_RANGE,
-        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
-        logger
-      );
+      let allTokenRecordsResults: SingleChainTokenRecordsResponse = {} as SingleChainTokenRecordsResponse;
+      let allTokenSuppliesResults: SingleChainTokenSuppliesResponse = {} as SingleChainTokenSuppliesResponse;
+      let allProtocolMetricsResults: SingleChainProtocolMetricsResponse = {} as SingleChainProtocolMetricsResponse;
+      const successfulChains = new Set<Chain>();
+      const failedChains = new Set<Chain>();
 
-      const allProtocolMetrics = await queryAllSubgraphsWithPerChainVariables<SingleChainProtocolMetricsResponse>(
-        PROTOCOL_METRICS_DATE_RANGE,
-        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
-        logger
-      );
+      while (currentStartDate.getTime() >= finalStartDate.getTime()) {
+        currentStartDate = getNextStartDate(offsetDays, finalStartDate, currentEndDate);
+
+        const startDateStr = getISO8601DateString(currentStartDate);
+        const endDateStr = getISO8601DateString(currentEndDate);
+
+        logger.info(`paginatedMetrics: Querying ${startDateStr} to ${endDateStr}`);
+
+        // Fetch all three data types for this page
+        const allTokenRecords = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenRecordsResponse>(
+          TOKEN_RECORDS_DATE_RANGE,
+          () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+          logger
+        );
+
+        const allTokenSupplies = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenSuppliesResponse>(
+          TOKEN_SUPPLIES_DATE_RANGE,
+          () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+          logger
+        );
+
+        const allProtocolMetrics = await queryAllSubgraphsWithPerChainVariables<SingleChainProtocolMetricsResponse>(
+          PROTOCOL_METRICS_DATE_RANGE,
+          () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+          logger
+        );
+
+        // Track successful/failed chains
+        allTokenRecords.successfulChains.forEach(c => successfulChains.add(c));
+        allTokenRecords.failedChains.forEach(c => failedChains.add(c));
+
+        // Merge results
+        for (const [chain, data] of allTokenRecords.results.entries()) {
+          const allResultsChain = allTokenRecordsResults as unknown as Record<string, { tokenRecords?: TokenRecord[] }>;
+          if (!allResultsChain[chain]) {
+            allResultsChain[chain] = data;
+          } else {
+            allResultsChain[chain] = {
+              tokenRecords: [
+                ...(allResultsChain[chain]?.tokenRecords || []),
+                ...(data.tokenRecords || [])
+              ]
+            };
+          }
+        }
+
+        for (const [chain, data] of allTokenSupplies.results.entries()) {
+          const allResultsChain = allTokenSuppliesResults as unknown as Record<string, { tokenSupplies?: TokenSupply[] }>;
+          if (!allResultsChain[chain]) {
+            allResultsChain[chain] = data;
+          } else {
+            allResultsChain[chain] = {
+              tokenSupplies: [
+                ...(allResultsChain[chain]?.tokenSupplies || []),
+                ...(data.tokenSupplies || [])
+              ]
+            };
+          }
+        }
+
+        for (const [chain, data] of allProtocolMetrics.results.entries()) {
+          const allResultsChain = allProtocolMetricsResults as unknown as Record<string, { protocolMetrics?: ProtocolMetric[] }>;
+          if (!allResultsChain[chain]) {
+            allResultsChain[chain] = data;
+          } else {
+            allResultsChain[chain] = {
+              protocolMetrics: [
+                ...(allResultsChain[chain]?.protocolMetrics || []),
+                ...(data.protocolMetrics || [])
+              ]
+            };
+          }
+        }
+
+        // Ensures that a finalStartDate close to the current date is handled correctly
+        if (currentStartDate.getTime() === finalStartDate.getTime()) {
+          logger.info(`paginatedMetrics: Reached final start date.`);
+          break;
+        }
+
+        currentEndDate = currentStartDate;
+      }
 
       // Convert to response format for filtering
-      let tokenRecordsResponse = mapToTokenRecordsResponse(allTokenRecords.results);
-      let tokenSuppliesResponse = mapToTokenSuppliesResponse(allTokenSupplies.results);
+      let tokenRecordsResponse = mapToTokenRecordsResponse(new Map(Object.entries(allTokenRecordsResults).map(([k, v]) => [k as Chain, v])));
+      let tokenSuppliesResponse = mapToTokenSuppliesResponse(new Map(Object.entries(allTokenSuppliesResults).map(([k, v]) => [k as Chain, v])));
 
-      // Apply filterCompleteRecords if crossChainDataComplete is true
-      if (crossChainDataComplete) {
+      // Apply filterCompleteRecords only on first page if crossChainDataComplete is true
+      if (crossChainDataComplete && !hasProcessedFirstDate) {
         logger.info(`paginatedMetrics: Applying crossChainDataComplete filter`);
         tokenRecordsResponse = filterCompleteTokenRecords(tokenRecordsResponse, logger);
         tokenSuppliesResponse = filterCompleteTokenSupplies(tokenSuppliesResponse, logger);
+        hasProcessedFirstDate = true;
       }
 
       // Group by date and compute metrics
@@ -878,8 +1091,8 @@ export const resolvers = {
       }
 
       // Process protocol metrics - filter to latest block per day first
-      for (const [chain, data] of allProtocolMetrics.results.entries()) {
-        const chainMetrics = normalizeArray(data.protocolMetrics);
+      for (const [chain, data] of Object.entries(allProtocolMetricsResults).map(([k, v]) => [k as Chain, v] as const)) {
+        const chainMetrics = normalizeArray(data.protocolMetrics as ProtocolMetric[]);
         const filteredMetrics = filterProtocolMetricsByDay(chainMetrics);
         for (const metric of filteredMetrics) {
           if (!protocolByDate.has(metric.date)) {
@@ -927,8 +1140,8 @@ export const resolvers = {
           const metric = getMetricObject(logger, dateRecords, dateSupplies, dateProtocol, { includeRecords, dateFallback: date });
           metrics.push(addMetricMeta(
             metric,
-            Array.from(allTokenRecords.successfulChains).map(c => CHAIN_NAMES[c]),
-            Array.from(allTokenRecords.failedChains).map(c => CHAIN_NAMES[c])
+            Array.from(successfulChains).map(c => CHAIN_NAMES[c]),
+            Array.from(failedChains).map(c => CHAIN_NAMES[c])
           ));
         }
       }
