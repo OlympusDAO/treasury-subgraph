@@ -86,6 +86,26 @@ export const typeDefs = gql`
     Treasury: Float!
   }
 
+  # Chain-specific token supplies (for includeRecords)
+  type ChainTokenSupplies {
+    Arbitrum: [TokenSupply!]!
+    Ethereum: [TokenSupply!]!
+    Fantom: [TokenSupply!]!
+    Polygon: [TokenSupply!]!
+    Base: [TokenSupply!]!
+    Berachain: [TokenSupply!]!
+  }
+
+  # Chain-specific token records (for includeRecords)
+  type ChainTokenRecords {
+    Arbitrum: [TokenRecord!]!
+    Ethereum: [TokenRecord!]!
+    Fantom: [TokenRecord!]!
+    Polygon: [TokenRecord!]!
+    Base: [TokenRecord!]!
+    Berachain: [TokenRecord!]!
+  }
+
   # Response metadata for resilience tracking
   type ResponseMetadata {
     chainsComplete: [String!]!
@@ -122,6 +142,13 @@ export const typeDefs = gql`
     treasuryLiquidBackingPerOhmFloating: Float!
     treasuryLiquidBackingPerOhmBacked: Float!
     treasuryLiquidBackingPerGOhmBacked: Float!
+    # Optional record fields (only included when includeRecords: true)
+    ohmTotalSupplyRecords: ChainTokenSupplies
+    ohmCirculatingSupplyRecords: ChainTokenSupplies
+    ohmFloatingSupplyRecords: ChainTokenSupplies
+    ohmBackedSupplyRecords: ChainTokenSupplies
+    treasuryMarketValueRecords: ChainTokenRecords
+    treasuryLiquidBackingRecords: ChainTokenRecords
     _meta: ResponseMetadata
   }
 
