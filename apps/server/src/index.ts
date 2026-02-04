@@ -10,8 +10,9 @@ const PORT = process.env.PORT || 9991;
 async function startServer() {
   const app = express();
 
-  // Enable CORS for all origins (can be restricted later)
-  app.use(cors());
+  // Enable CORS for all origins with credentials support
+  // credentials: true allows cookies and auth headers to be sent/received
+  app.use(cors({ origin: true, credentials: true }));
   app.use(express.json());
 
   // Use simple query parser to preserve raw JSON in wg_variables
