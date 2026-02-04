@@ -230,6 +230,7 @@ export const resolvers = {
     },
 
     async latestTokenRecords(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`latestTokenRecords called with: ignoreCache=${args.ignoreCache ?? false}`);
       const { results, successfulChains, failedChains } = await queryAllSubgraphs<
         SingleChainTokenRecordsResponse
       >(TOKEN_RECORDS_LATEST, {}, logger);
@@ -248,6 +249,7 @@ export const resolvers = {
     },
 
     async latestTokenSupplies(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`latestTokenSupplies called with: ignoreCache=${args.ignoreCache ?? false}`);
       const { results, successfulChains, failedChains } = await queryAllSubgraphs<
         SingleChainTokenSuppliesResponse
       >(TOKEN_SUPPLIES_LATEST, {}, logger);
@@ -266,6 +268,7 @@ export const resolvers = {
     },
 
     async latestProtocolMetrics(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`latestProtocolMetrics called with: ignoreCache=${args.ignoreCache ?? false}`);
       const { results, successfulChains, failedChains } = await queryAllSubgraphs<
         SingleChainProtocolMetricsResponse
       >(PROTOCOL_METRICS_LATEST, {}, logger);
@@ -369,6 +372,7 @@ export const resolvers = {
     },
 
     async earliestTokenRecords(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`earliestTokenRecords called with: ignoreCache=${args.ignoreCache ?? false}`);
       // Note: ignoreCache is accepted for API compatibility but earliest queries don't use cache
       const { results } = await queryAllSubgraphs<SingleChainTokenRecordsResponse>(
         TOKEN_RECORDS_EARLIEST,
@@ -383,6 +387,7 @@ export const resolvers = {
     },
 
     async earliestTokenSupplies(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`earliestTokenSupplies called with: ignoreCache=${args.ignoreCache ?? false}`);
       // Note: ignoreCache is accepted for API compatibility but earliest queries don't use cache
       const { results } = await queryAllSubgraphs<SingleChainTokenSuppliesResponse>(
         TOKEN_SUPPLIES_EARLIEST,
@@ -397,6 +402,7 @@ export const resolvers = {
     },
 
     async earliestProtocolMetrics(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`earliestProtocolMetrics called with: ignoreCache=${args.ignoreCache ?? false}`);
       // Note: ignoreCache is accepted for API compatibility but earliest queries don't use cache
       const { results } = await queryAllSubgraphs<SingleChainProtocolMetricsResponse>(
         PROTOCOL_METRICS_EARLIEST,
@@ -423,6 +429,7 @@ export const resolvers = {
         berachainBlock: number;
       }
     ) {
+      logger.info(`atBlockMetrics called with: arbitrumBlock=${args.arbitrumBlock}, ethereumBlock=${args.ethereumBlock}, fantomBlock=${args.fantomBlock}, polygonBlock=${args.polygonBlock}, baseBlock=${args.baseBlock}, berachainBlock=${args.berachainBlock}`);
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('atBlockMetrics', args);
 
@@ -507,6 +514,7 @@ export const resolvers = {
         berachainBlock: number;
       }
     ) {
+      logger.info(`atBlockTokenRecords called with: arbitrumBlock=${args.arbitrumBlock}, ethereumBlock=${args.ethereumBlock}, fantomBlock=${args.fantomBlock}, polygonBlock=${args.polygonBlock}, baseBlock=${args.baseBlock}, berachainBlock=${args.berachainBlock}`);
       const blocks: Record<Chain, number> = {
         ethereum: args.ethereumBlock,
         arbitrum: args.arbitrumBlock,
@@ -539,6 +547,7 @@ export const resolvers = {
         berachainBlock: number;
       }
     ) {
+      logger.info(`atBlockTokenSupplies called with: arbitrumBlock=${args.arbitrumBlock}, ethereumBlock=${args.ethereumBlock}, fantomBlock=${args.fantomBlock}, polygonBlock=${args.polygonBlock}, baseBlock=${args.baseBlock}, berachainBlock=${args.berachainBlock}`);
       const blocks: Record<Chain, number> = {
         ethereum: args.ethereumBlock,
         arbitrum: args.arbitrumBlock,
@@ -571,6 +580,7 @@ export const resolvers = {
         berachainBlock: number;
       }
     ) {
+      logger.info(`atBlockProtocolMetrics called with: arbitrumBlock=${args.arbitrumBlock}, ethereumBlock=${args.ethereumBlock}, fantomBlock=${args.fantomBlock}, polygonBlock=${args.polygonBlock}, baseBlock=${args.baseBlock}, berachainBlock=${args.berachainBlock}`);
       const blocks: Record<Chain, number> = {
         ethereum: args.ethereumBlock,
         arbitrum: args.arbitrumBlock,
@@ -598,18 +608,19 @@ export const resolvers = {
       _parent: unknown,
       args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; ignoreCache?: boolean }
     ) {
-      const { startDate, dateOffset = 30, crossChainDataComplete = false } = args;
+      const { startDate, dateOffset = 30, crossChainDataComplete = false, ignoreCache = false } = args;
+      logger.info(`paginatedTokenRecords called with: startDate=${startDate}, dateOffset=${dateOffset}, crossChainDataComplete=${crossChainDataComplete}, ignoreCache=${ignoreCache}`);
 
-      // Calculate date range (startDate going back dateOffset days)
-      const start = new Date(startDate);
-      const end = new Date(start);
-      end.setDate(end.getDate() - dateOffset);
+      // Calculate date range (startDate is earliest, dateOffset adds days forward)
+      const earliestDate = new Date(startDate);
+      const latestDate = new Date(earliestDate);
+      latestDate.setDate(latestDate.getDate() + dateOffset);
 
-      const startDateStr = end.toISOString().split('T')[0]; // earlier date
-      const endDateStr = start.toISOString().split('T')[0]; // start date (later)
+      const earliestDateStr = earliestDate.toISOString().split('T')[0];
+      const latestDateStr = latestDate.toISOString().split('T')[0];
 
       const cache = getGlobalCache();
-      const cacheKey = CacheManager.generateKey('paginatedTokenRecords', { startDate: startDateStr, endDate: endDateStr, crossChainDataComplete });
+      const cacheKey = CacheManager.generateKey('paginatedTokenRecords', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete });
 
       const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
@@ -617,8 +628,8 @@ export const resolvers = {
       }
 
       const pageSize = 1000;
-      const variables = { startDate: startDateStr, endDate: endDateStr, pageSize };
-      logger.info(`paginatedTokenRecords: Querying date range ${startDateStr} to ${endDateStr}, crossChainDataComplete: ${crossChainDataComplete}`);
+      const variables = { startDate: earliestDateStr, endDate: latestDateStr, pageSize };
+      logger.info(`paginatedTokenRecords: Querying date range ${earliestDateStr} to ${latestDateStr}, crossChainDataComplete: ${crossChainDataComplete}`);
 
       const results = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenRecordsResponse>(
         TOKEN_RECORDS_DATE_RANGE,
@@ -637,31 +648,48 @@ export const resolvers = {
         response = filterCompleteTokenRecords(response, logger);
       }
 
-      // Convert back to flat array with latest block filtering
-      const records = responseToTokenRecordsArray(response);
-      const filteredRecords = filterTokenRecordsByDay(records);
+      // Convert back to flat array, applying latest block filtering PER CHAIN first
+      const allRecords: TokenRecord[] = [];
+      for (const {key, name} of [
+        {key: 'treasuryArbitrum_tokenRecords', name: 'Arbitrum'},
+        {key: 'treasuryEthereum_tokenRecords', name: 'Ethereum'},
+        {key: 'treasuryFantom_tokenRecords', name: 'Fantom'},
+        {key: 'treasuryPolygon_tokenRecords', name: 'Polygon'},
+        {key: 'treasuryBase_tokenRecords', name: 'Base'},
+        {key: 'treasuryBerachain_tokenRecords', name: 'Berachain'},
+      ] as const) {
+        const chainRecords = filterTokenRecordsByDay(response[key]);
+        for (const record of chainRecords) {
+          allRecords.push({...record, blockchain: name});
+        }
+      }
 
-      logger.info(`paginatedTokenRecords: Total records after filtering: ${filteredRecords.length}`);
-      await cache.set(cacheKey, filteredRecords, 300000); // 5 minute TTL
-      return filteredRecords;
+      logger.info(`paginatedTokenRecords: Total records after filtering: ${allRecords.length}`);
+
+      // Sort by date descending (latest first)
+      allRecords.sort((a, b) => b.date.localeCompare(a.date));
+
+      await cache.set(cacheKey, allRecords, 300000); // 5 minute TTL
+      return allRecords;
     },
 
     async paginatedTokenSupplies(
       _parent: unknown,
       args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; ignoreCache?: boolean }
     ) {
-      const { startDate, dateOffset = 30, crossChainDataComplete = false } = args;
+      const { startDate, dateOffset = 30, crossChainDataComplete = false, ignoreCache = false } = args;
+      logger.info(`paginatedTokenSupplies called with: startDate=${startDate}, dateOffset=${dateOffset}, crossChainDataComplete=${crossChainDataComplete}, ignoreCache=${ignoreCache}`);
 
-      // Calculate date range
-      const start = new Date(startDate);
-      const end = new Date(start);
-      end.setDate(end.getDate() - dateOffset);
+      // Calculate date range (startDate is earliest, dateOffset adds days forward)
+      const earliestDate = new Date(startDate);
+      const latestDate = new Date(earliestDate);
+      latestDate.setDate(latestDate.getDate() + dateOffset);
 
-      const startDateStr = end.toISOString().split('T')[0];
-      const endDateStr = start.toISOString().split('T')[0];
+      const earliestDateStr = earliestDate.toISOString().split('T')[0];
+      const latestDateStr = latestDate.toISOString().split('T')[0];
 
       const cache = getGlobalCache();
-      const cacheKey = CacheManager.generateKey('paginatedTokenSupplies', { startDate: startDateStr, endDate: endDateStr, crossChainDataComplete });
+      const cacheKey = CacheManager.generateKey('paginatedTokenSupplies', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete });
 
       const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
@@ -671,7 +699,7 @@ export const resolvers = {
       const pageSize = 1000;
       const results = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenSuppliesResponse>(
         TOKEN_SUPPLIES_DATE_RANGE,
-        () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
         logger
       );
 
@@ -684,28 +712,45 @@ export const resolvers = {
         response = filterCompleteTokenSupplies(response, logger);
       }
 
-      // Convert back to flat array with latest block filtering
-      const supplies = responseToTokenSuppliesArray(response);
-      const filteredSupplies = filterTokenSuppliesByDay(supplies);
+      // Convert back to flat array, applying latest block filtering PER CHAIN first
+      const allSupplies: TokenSupply[] = [];
+      for (const {key, name} of [
+        {key: 'treasuryArbitrum_tokenSupplies', name: 'Arbitrum'},
+        {key: 'treasuryEthereum_tokenSupplies', name: 'Ethereum'},
+        {key: 'treasuryFantom_tokenSupplies', name: 'Fantom'},
+        {key: 'treasuryPolygon_tokenSupplies', name: 'Polygon'},
+        {key: 'treasuryBase_tokenSupplies', name: 'Base'},
+        {key: 'treasuryBerachain_tokenSupplies', name: 'Berachain'},
+      ] as const) {
+        const chainSupplies = filterTokenSuppliesByDay(response[key]);
+        for (const supply of chainSupplies) {
+          allSupplies.push({...supply, blockchain: name});
+        }
+      }
 
-      logger.info(`paginatedTokenSupplies: Total supplies after filtering: ${filteredSupplies.length}`);
-      await cache.set(cacheKey, filteredSupplies, 300000);
-      return filteredSupplies;
+      logger.info(`paginatedTokenSupplies: Total supplies after filtering: ${allSupplies.length}`);
+
+      // Sort by date descending (latest first)
+      allSupplies.sort((a, b) => b.date.localeCompare(a.date));
+
+      await cache.set(cacheKey, allSupplies, 300000);
+      return allSupplies;
     },
 
     async paginatedProtocolMetrics(_parent: unknown, args: { startDate: string; dateOffset?: number; ignoreCache?: boolean }) {
-      const { startDate, dateOffset = 30 } = args;
+      const { startDate, dateOffset = 30, ignoreCache = false } = args;
+      logger.info(`paginatedProtocolMetrics called with: startDate=${startDate}, dateOffset=${dateOffset}, ignoreCache=${ignoreCache}`);
 
-      // Calculate date range
-      const start = new Date(startDate);
-      const end = new Date(start);
-      end.setDate(end.getDate() - dateOffset);
+      // Calculate date range (startDate is earliest, dateOffset adds days forward)
+      const earliestDate = new Date(startDate);
+      const latestDate = new Date(earliestDate);
+      latestDate.setDate(latestDate.getDate() + dateOffset);
 
-      const startDateStr = end.toISOString().split('T')[0];
-      const endDateStr = start.toISOString().split('T')[0];
+      const earliestDateStr = earliestDate.toISOString().split('T')[0];
+      const latestDateStr = latestDate.toISOString().split('T')[0];
 
       const cache = getGlobalCache();
-      const cacheKey = CacheManager.generateKey('paginatedProtocolMetrics', { startDate: startDateStr, endDate: endDateStr });
+      const cacheKey = CacheManager.generateKey('paginatedProtocolMetrics', { startDate: earliestDateStr, endDate: latestDateStr });
 
       const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
@@ -715,7 +760,7 @@ export const resolvers = {
       const pageSize = 1000;
       const results = await queryAllSubgraphsWithPerChainVariables<SingleChainProtocolMetricsResponse>(
         PROTOCOL_METRICS_DATE_RANGE,
-        () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
         logger
       );
 
@@ -726,6 +771,9 @@ export const resolvers = {
         }
       );
 
+      // Sort by date descending (latest first)
+      metrics.sort((a, b) => b.date.localeCompare(a.date));
+
       await cache.set(cacheKey, metrics, 300000);
       return metrics;
     },
@@ -734,18 +782,19 @@ export const resolvers = {
       _parent: unknown,
       args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; includeRecords?: boolean; ignoreCache?: boolean }
     ) {
-      const { startDate, dateOffset = 30, crossChainDataComplete = false, includeRecords = false } = args;
+      const { startDate, dateOffset = 30, crossChainDataComplete = false, includeRecords = false, ignoreCache = false } = args;
+      logger.info(`paginatedMetrics called with: startDate=${startDate}, dateOffset=${dateOffset}, crossChainDataComplete=${crossChainDataComplete}, includeRecords=${includeRecords}, ignoreCache=${ignoreCache}`);
 
-      // Calculate date range
-      const start = new Date(startDate);
-      const end = new Date(start);
-      end.setDate(end.getDate() - dateOffset);
+      // Calculate date range (startDate is earliest, dateOffset adds days forward)
+      const earliestDate = new Date(startDate);
+      const latestDate = new Date(earliestDate);
+      latestDate.setDate(latestDate.getDate() + dateOffset);
 
-      const startDateStr = end.toISOString().split('T')[0];
-      const endDateStr = start.toISOString().split('T')[0];
+      const earliestDateStr = earliestDate.toISOString().split('T')[0];
+      const latestDateStr = latestDate.toISOString().split('T')[0];
 
       const cache = getGlobalCache();
-      const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: startDateStr, endDate: endDateStr, crossChainDataComplete });
+      const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete });
 
       const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
@@ -753,24 +802,24 @@ export const resolvers = {
       }
 
       const pageSize = 1000;
-      logger.info(`paginatedMetrics: Querying date range ${startDateStr} to ${endDateStr}, crossChainDataComplete: ${crossChainDataComplete}`);
+      logger.info(`paginatedMetrics: Querying date range ${earliestDateStr} to ${latestDateStr}, crossChainDataComplete: ${crossChainDataComplete}`);
 
       // Fetch all data for the date range
       const allTokenRecords = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenRecordsResponse>(
         TOKEN_RECORDS_DATE_RANGE,
-        () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
         logger
       );
 
       const allTokenSupplies = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenSuppliesResponse>(
         TOKEN_SUPPLIES_DATE_RANGE,
-        () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
         logger
       );
 
       const allProtocolMetrics = await queryAllSubgraphsWithPerChainVariables<SingleChainProtocolMetricsResponse>(
         PROTOCOL_METRICS_DATE_RANGE,
-        () => ({ startDate: startDateStr, endDate: endDateStr, pageSize }),
+        () => ({ startDate: earliestDateStr, endDate: latestDateStr, pageSize }),
         logger
       );
 
@@ -790,20 +839,42 @@ export const resolvers = {
       const suppliesByDate = new Map<string, TokenSupply[]>();
       const protocolByDate = new Map<string, ProtocolMetric[]>();
 
-      // Process token records - filter to latest block per day first
-      for (const record of responseToTokenRecordsArray(tokenRecordsResponse)) {
-        if (!recordsByDate.has(record.date)) {
-          recordsByDate.set(record.date, []);
+      // Process token records - filter to latest block per day first (PER CHAIN)
+      const chainMapping: Array<{key: keyof TokenRecordsResponse, name: string}> = [
+        {key: 'treasuryArbitrum_tokenRecords', name: 'Arbitrum'},
+        {key: 'treasuryEthereum_tokenRecords', name: 'Ethereum'},
+        {key: 'treasuryFantom_tokenRecords', name: 'Fantom'},
+        {key: 'treasuryPolygon_tokenRecords', name: 'Polygon'},
+        {key: 'treasuryBase_tokenRecords', name: 'Base'},
+        {key: 'treasuryBerachain_tokenRecords', name: 'Berachain'},
+      ];
+      for (const {key, name} of chainMapping) {
+        const chainRecords = filterTokenRecordsByDay(tokenRecordsResponse[key]);
+        for (const record of chainRecords) {
+          if (!recordsByDate.has(record.date)) {
+            recordsByDate.set(record.date, []);
+          }
+          recordsByDate.get(record.date)!.push({...record, blockchain: name});
         }
-        recordsByDate.get(record.date)!.push(record);
       }
 
-      // Process token supplies - filter to latest block per day first
-      for (const supply of responseToTokenSuppliesArray(tokenSuppliesResponse)) {
-        if (!suppliesByDate.has(supply.date)) {
-          suppliesByDate.set(supply.date, []);
+      // Process token supplies - filter to latest block per day first (PER CHAIN)
+      const suppliesChainMapping: Array<{key: keyof TokenSuppliesResponse, name: string}> = [
+        {key: 'treasuryArbitrum_tokenSupplies', name: 'Arbitrum'},
+        {key: 'treasuryEthereum_tokenSupplies', name: 'Ethereum'},
+        {key: 'treasuryFantom_tokenSupplies', name: 'Fantom'},
+        {key: 'treasuryPolygon_tokenSupplies', name: 'Polygon'},
+        {key: 'treasuryBase_tokenSupplies', name: 'Base'},
+        {key: 'treasuryBerachain_tokenSupplies', name: 'Berachain'},
+      ];
+      for (const {key, name} of suppliesChainMapping) {
+        const chainSupplies = filterTokenSuppliesByDay(tokenSuppliesResponse[key]);
+        for (const supply of chainSupplies) {
+          if (!suppliesByDate.has(supply.date)) {
+            suppliesByDate.set(supply.date, []);
+          }
+          suppliesByDate.get(supply.date)!.push({...supply, blockchain: name});
         }
-        suppliesByDate.get(supply.date)!.push(supply);
       }
 
       // Process protocol metrics - filter to latest block per day first
