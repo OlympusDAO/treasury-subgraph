@@ -7,6 +7,9 @@
   "author": "Jem <0x0xjem@gmail.com>",
   "license": "MIT",
   "private": true,
+  "resolutions": {
+    "graphql": "^16.8.0"
+  },
   "scripts": {
     "build": "turbo build",
     "lint": "turbo lint",

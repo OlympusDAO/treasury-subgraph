@@ -1,17 +1,22 @@
 {
   "name": "@olympusdao/treasury-subgraph",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "engines": {
     "node": ">= 18.0.0"
   },
   "license": "MIT",
   "private": true,
+  "resolutions": {
+    "graphql": "^16.8.0"
+  },
   "devDependencies": {
     "@pulumi/docker": "^4.4.1",
     "@pulumi/gcp": "^6.66.0",
     "@pulumi/pulumi": "^3.85.0",
     "@types/jest": "^29.5.1",
     "@types/node": "^18.16.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "date-fns": "^2.30.0",
     "jest": "^29.5.0",
     "jest-mock-extended": "^3.0.5",
@@ -20,20 +25,24 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@wundergraph/sdk": "^0.178.0",
-    "date-fns": "^2.30.0"
+    "apollo-server-express": "^3.12.1",
+    "cors": "^2.8.5",
+    "date-fns": "^2.30.0",
+    "express": "^4.18.2",
+    "graphql": "^16.8.0",
+    "graphql-request": "^6.1.0",
+    "graphql-tag": "^2.12.6",
+    "lru-cache": "^10.0.0"
   },
-  "main": "pulumi.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "wunderctl up --logs",
-    "prebuild": "echo \"WG_PUBLIC_NODE_URL is ${WG_PUBLIC_NODE_URL:?}\"",
-    "build": "wunderctl generate",
-    "build:release": "WG_PUBLIC_NODE_URL=https://olympus-treasury-subgraph-prod.web.app yarn build",
-    "build:local": "WG_PUBLIC_NODE_URL=http://localhost:9991 yarn build",
-    "pretest": "yarn build:local",
-    "pretest:ci": "yarn build:local",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "pretest": "yarn build",
     "test": "jest",
-    "test:ci": "WG_LOG_LEVEL=error jest --runInBand --ci",
+    "test:ci": "jest --runInBand --ci",
     "test:local": "jest -e ../../.env"
   }
 }

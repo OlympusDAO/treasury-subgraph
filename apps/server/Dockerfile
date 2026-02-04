@@ -6,22 +6,25 @@ WORKDIR /app
 
 COPY package.json /app/
 COPY tmp/yarn.lock /app/yarn.lock
-# We place the binary in /usr/bin/wunderctl so we can find it without a relative path
-ENV CI=true WG_COPY_BIN_PATH=/usr/bin/wunderctl
 RUN yarn install --frozen-lockfile --non-interactive --prefer-offline --no-audit
 
-### Build Wundergraph ###
+### Build ###
 
-# Copy the .wundergraph folder to the image
-COPY .wundergraph ./.wundergraph
+# Copy source code
+COPY tsconfig.json /app/
+COPY src /app/src
 
-# Listen to all interfaces, 127.0.0.1 might produce errors with ipv6 dual stack
-ENV WG_NODE_URL=http://127.0.0.1:9991 WG_NODE_INTERNAL_URL=http://127.0.0.1:9993 WG_NODE_HOST=0.0.0.0 WG_NODE_PORT=9991 WG_NODE_INTERNAL_PORT=9993 WG_SERVER_URL=http://127.0.0.1:9992 WG_SERVER_HOST=127.0.0.1 WG_SERVER_PORT=9992
-ARG ARBITRUM_SUBGRAPH_API_KEY
-RUN ARBITRUM_SUBGRAPH_API_KEY=$ARBITRUM_SUBGRAPH_API_KEY wunderctl generate --wundergraph-dir=.wundergraph
+# Build TypeScript
+RUN yarn build
 
 ### Server Setup ###
 
-# Expose only the node, server is private
+# Expose the GraphQL API
 EXPOSE 9991
-CMD wunderctl start --wundergraph-dir=.wundergraph
+
+# Set default environment variables
+ENV PORT=9991
+ENV NODE_ENV=production
+
+# Start the server
+CMD ["node", "dist/index.js"]
