@@ -10,9 +10,9 @@
     "graphql": "^16.8.0"
   },
   "devDependencies": {
-    "@pulumi/docker": "^4.4.1",
-    "@pulumi/gcp": "^6.66.0",
-    "@pulumi/pulumi": "^3.85.0",
+    "@pulumi/docker": "^4.11.0",
+    "@pulumi/gcp": "^9.11.0",
+    "@pulumi/pulumi": "^3.218.0",
     "@types/jest": "^29.5.1",
     "@types/node": "^18.16.7",
     "@types/cors": "^2.8.17",
