@@ -138,16 +138,16 @@ export const typeDefs = gql`
     health: Health!
 
     # Latest data
-    latestMetrics: Metric!
-    latestTokenSupplies: [TokenSupply!]!
-    latestTokenRecords: [TokenRecord!]!
-    latestProtocolMetrics: [ProtocolMetric!]
+    latestMetrics(ignoreCache: Boolean): Metric!
+    latestTokenSupplies(ignoreCache: Boolean): [TokenSupply!]!
+    latestTokenRecords(ignoreCache: Boolean): [TokenRecord!]!
+    latestProtocolMetrics(ignoreCache: Boolean): [ProtocolMetric!]
 
     # Earliest data
-    earliestMetrics: Metric!
-    earliestTokenSupplies: [TokenSupply!]!
-    earliestTokenRecords: [TokenRecord!]!
-    earliestProtocolMetrics: [ProtocolMetric!]
+    earliestMetrics(ignoreCache: Boolean): Metric!
+    earliestTokenSupplies(ignoreCache: Boolean): [TokenSupply!]!
+    earliestTokenRecords(ignoreCache: Boolean): [TokenRecord!]!
+    earliestProtocolMetrics(ignoreCache: Boolean): [ProtocolMetric!]
 
     # Paginated historical data
     paginatedMetrics(
@@ -155,23 +155,27 @@ export const typeDefs = gql`
       dateOffset: Int
       crossChainDataComplete: Boolean
       includeRecords: Boolean
+      ignoreCache: Boolean
     ): [Metric!]!
 
     paginatedTokenSupplies(
       startDate: String!
       dateOffset: Int
       crossChainDataComplete: Boolean
+      ignoreCache: Boolean
     ): [TokenSupply!]!
 
     paginatedTokenRecords(
       startDate: String!
       dateOffset: Int
       crossChainDataComplete: Boolean
+      ignoreCache: Boolean
     ): [TokenRecord!]!
 
     paginatedProtocolMetrics(
       startDate: String!
       dateOffset: Int
+      ignoreCache: Boolean
     ): [ProtocolMetric!]!
 
     # At specific block
@@ -183,5 +187,29 @@ export const typeDefs = gql`
       baseBlock: Float!
       berachainBlock: Float!
     ): Metric!
+    atBlockTokenRecords(
+      arbitrumBlock: Float!
+      ethereumBlock: Float!
+      fantomBlock: Float!
+      polygonBlock: Float!
+      baseBlock: Float!
+      berachainBlock: Float!
+    ): [TokenRecord!]!
+    atBlockTokenSupplies(
+      arbitrumBlock: Float!
+      ethereumBlock: Float!
+      fantomBlock: Float!
+      polygonBlock: Float!
+      baseBlock: Float!
+      berachainBlock: Float!
+    ): [TokenSupply!]!
+    atBlockProtocolMetrics(
+      arbitrumBlock: Float!
+      ethereumBlock: Float!
+      fantomBlock: Float!
+      polygonBlock: Float!
+      baseBlock: Float!
+      berachainBlock: Float!
+    ): [ProtocolMetric!]!
   }
 `;

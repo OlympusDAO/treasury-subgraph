@@ -66,11 +66,11 @@ export const resolvers = {
 
     // ============ LATEST QUERIES ============
 
-    async latestMetrics() {
+    async latestMetrics(_parent: unknown, args: { ignoreCache?: boolean }) {
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('latestMetrics');
 
-      const cached = await cache.get(cacheKey) as MetricWithMeta | null;
+      const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache }) as MetricWithMeta | null;
       if (cached) {
         return cached;
       }
@@ -156,7 +156,7 @@ export const resolvers = {
       return result;
     },
 
-    async latestTokenRecords() {
+    async latestTokenRecords(_parent: unknown, args: { ignoreCache?: boolean }) {
       const { results, successfulChains, failedChains } = await queryAllSubgraphs<
         SingleChainTokenRecordsResponse
       >(TOKEN_RECORDS_LATEST, {}, logger);
@@ -174,7 +174,7 @@ export const resolvers = {
       }));
     },
 
-    async latestTokenSupplies() {
+    async latestTokenSupplies(_parent: unknown, args: { ignoreCache?: boolean }) {
       const { results, successfulChains, failedChains } = await queryAllSubgraphs<
         SingleChainTokenSuppliesResponse
       >(TOKEN_SUPPLIES_LATEST, {}, logger);
@@ -192,7 +192,7 @@ export const resolvers = {
       }));
     },
 
-    async latestProtocolMetrics() {
+    async latestProtocolMetrics(_parent: unknown, args: { ignoreCache?: boolean }) {
       const { results, successfulChains, failedChains } = await queryAllSubgraphs<
         SingleChainProtocolMetricsResponse
       >(PROTOCOL_METRICS_LATEST, {}, logger);
@@ -212,11 +212,11 @@ export const resolvers = {
 
     // ============ EARLIEST QUERIES ============
 
-    async earliestMetrics() {
+    async earliestMetrics(_parent: unknown, args: { ignoreCache?: boolean }) {
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('earliestMetrics');
 
-      const cached = await cache.get(cacheKey) as MetricWithMeta | null;
+      const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache }) as MetricWithMeta | null;
       if (cached) {
         return cached;
       }
@@ -295,7 +295,8 @@ export const resolvers = {
       return result;
     },
 
-    async earliestTokenRecords() {
+    async earliestTokenRecords(_parent: unknown, args: { ignoreCache?: boolean }) {
+      // Note: ignoreCache is accepted for API compatibility but earliest queries don't use cache
       const { results } = await queryAllSubgraphs<SingleChainTokenRecordsResponse>(
         TOKEN_RECORDS_EARLIEST,
         {},
@@ -308,7 +309,8 @@ export const resolvers = {
       return records;
     },
 
-    async earliestTokenSupplies() {
+    async earliestTokenSupplies(_parent: unknown, args: { ignoreCache?: boolean }) {
+      // Note: ignoreCache is accepted for API compatibility but earliest queries don't use cache
       const { results } = await queryAllSubgraphs<SingleChainTokenSuppliesResponse>(
         TOKEN_SUPPLIES_EARLIEST,
         {},
@@ -321,7 +323,8 @@ export const resolvers = {
       return supplies;
     },
 
-    async earliestProtocolMetrics() {
+    async earliestProtocolMetrics(_parent: unknown, args: { ignoreCache?: boolean }) {
+      // Note: ignoreCache is accepted for API compatibility but earliest queries don't use cache
       const { results } = await queryAllSubgraphs<SingleChainProtocolMetricsResponse>(
         PROTOCOL_METRICS_EARLIEST,
         {},
@@ -420,11 +423,107 @@ export const resolvers = {
       return result;
     },
 
+    async atBlockTokenRecords(
+      _parent: unknown,
+      args: {
+        arbitrumBlock: number;
+        ethereumBlock: number;
+        fantomBlock: number;
+        polygonBlock: number;
+        baseBlock: number;
+        berachainBlock: number;
+      }
+    ) {
+      const blocks: Record<Chain, number> = {
+        ethereum: args.ethereumBlock,
+        arbitrum: args.arbitrumBlock,
+        fantom: args.fantomBlock,
+        polygon: args.polygonBlock,
+        base: args.baseBlock,
+        berachain: args.berachainBlock,
+      };
+
+      const pageSize = 1000;
+      const results = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenRecordsResponse>(
+        TOKEN_RECORDS_AT_BLOCK,
+        (chain) => ({ block: blocks[chain], pageSize }),
+        logger
+      );
+
+      return Array.from(results.results.entries()).flatMap(
+        ([chain, data]) => normalizeArray(data.tokenRecords).map(r => ({ ...r, blockchain: CHAIN_NAMES[chain] }))
+      );
+    },
+
+    async atBlockTokenSupplies(
+      _parent: unknown,
+      args: {
+        arbitrumBlock: number;
+        ethereumBlock: number;
+        fantomBlock: number;
+        polygonBlock: number;
+        baseBlock: number;
+        berachainBlock: number;
+      }
+    ) {
+      const blocks: Record<Chain, number> = {
+        ethereum: args.ethereumBlock,
+        arbitrum: args.arbitrumBlock,
+        fantom: args.fantomBlock,
+        polygon: args.polygonBlock,
+        base: args.baseBlock,
+        berachain: args.berachainBlock,
+      };
+
+      const pageSize = 1000;
+      const results = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenSuppliesResponse>(
+        TOKEN_SUPPLIES_AT_BLOCK,
+        (chain) => ({ block: blocks[chain], pageSize }),
+        logger
+      );
+
+      return Array.from(results.results.entries()).flatMap(
+        ([chain, data]) => normalizeArray(data.tokenSupplies).map(s => ({ ...s, blockchain: CHAIN_NAMES[chain] }))
+      );
+    },
+
+    async atBlockProtocolMetrics(
+      _parent: unknown,
+      args: {
+        arbitrumBlock: number;
+        ethereumBlock: number;
+        fantomBlock: number;
+        polygonBlock: number;
+        baseBlock: number;
+        berachainBlock: number;
+      }
+    ) {
+      const blocks: Record<Chain, number> = {
+        ethereum: args.ethereumBlock,
+        arbitrum: args.arbitrumBlock,
+        fantom: args.fantomBlock,
+        polygon: args.polygonBlock,
+        base: args.baseBlock,
+        berachain: args.berachainBlock,
+      };
+
+      const pageSize = 1000;
+      const results = await queryAllSubgraphsWithPerChainVariables<SingleChainProtocolMetricsResponse>(
+        PROTOCOL_METRICS_AT_BLOCK,
+        (chain) => ({ block: blocks[chain], pageSize }),
+        logger
+      );
+
+      return Array.from(results.results.entries()).flatMap(
+        ([chain, data]) => normalizeArray(data.protocolMetrics).map(m => ({ ...m, blockchain: CHAIN_NAMES[chain] }))
+      );
+    },
+
     // ============ PAGINATED QUERIES ============
 
     async paginatedTokenRecords(
       _parent: unknown,
-      args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean }
+      args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; ignoreCache?: boolean }
     ) {
       const { startDate, dateOffset = 30 } = args;
 
@@ -439,7 +538,7 @@ export const resolvers = {
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('paginatedTokenRecords', { startDate: startDateStr, endDate: endDateStr });
 
-      const cached = await cache.get(cacheKey);
+      const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
         return cached as TokenRecord[];
       }
@@ -473,7 +572,7 @@ export const resolvers = {
 
     async paginatedTokenSupplies(
       _parent: unknown,
-      args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean }
+      args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; ignoreCache?: boolean }
     ) {
       const { startDate, dateOffset = 30 } = args;
 
@@ -488,7 +587,7 @@ export const resolvers = {
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('paginatedTokenSupplies', { startDate: startDateStr, endDate: endDateStr });
 
-      const cached = await cache.get(cacheKey);
+      const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
         return cached as TokenSupply[];
       }
@@ -508,7 +607,7 @@ export const resolvers = {
       return supplies;
     },
 
-    async paginatedProtocolMetrics(_parent: unknown, args: { startDate: string; dateOffset?: number }) {
+    async paginatedProtocolMetrics(_parent: unknown, args: { startDate: string; dateOffset?: number; ignoreCache?: boolean }) {
       const { startDate, dateOffset = 30 } = args;
 
       // Calculate date range
@@ -522,7 +621,7 @@ export const resolvers = {
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('paginatedProtocolMetrics', { startDate: startDateStr, endDate: endDateStr });
 
-      const cached = await cache.get(cacheKey);
+      const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
         return cached as ProtocolMetric[];
       }
@@ -544,7 +643,7 @@ export const resolvers = {
 
     async paginatedMetrics(
       _parent: unknown,
-      args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; includeRecords?: boolean }
+      args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; includeRecords?: boolean; ignoreCache?: boolean }
     ) {
       const { startDate, dateOffset = 30 } = args;
 
@@ -559,7 +658,7 @@ export const resolvers = {
       const cache = getGlobalCache();
       const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: startDateStr, endDate: endDateStr });
 
-      const cached = await cache.get(cacheKey);
+      const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
         return cached as MetricWithMeta[];
       }
