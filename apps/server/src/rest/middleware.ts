@@ -39,19 +39,52 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
 /**
  * Parse wg_variables query parameter
  * Wundergraph uses: ?wg_variables={"param1":"value1","param2":value2}
+ *
+ * Note: Express's default query parser may have already parsed the JSON,
+ * so we need to handle both string and object cases.
  */
-export function parseWgVariables(req: Request): Record<string, unknown> | null {
-  const wgVariables = req.query.wg_variables as string;
+export function parseWgVariables(req: Request): Record<string, unknown> {
+  const wgVariables = req.query.wg_variables;
 
+  // No wg_variables provided
   if (!wgVariables) {
     return {};
   }
 
-  try {
-    // Handle URL-encoded JSON
-    const decoded = decodeURIComponent(wgVariables);
-    return JSON.parse(decoded) as Record<string, unknown>;
-  } catch (e) {
-    throw new Error(`Invalid wg_variables parameter: ${e}`);
+  // Express may have already parsed it as an object
+  if (typeof wgVariables === 'object') {
+    return wgVariables as Record<string, unknown>;
   }
+
+  // It's a string - try to parse it
+  if (typeof wgVariables === 'string') {
+    try {
+      // Try direct parse first (Express might have already decoded)
+      let parsed = JSON.parse(wgVariables);
+
+      // If parse succeeded but result is a string, try decoding and parsing again
+      if (typeof parsed === 'string') {
+        parsed = JSON.parse(parsed);
+      }
+
+      return parsed as Record<string, unknown>;
+    } catch {
+      // If direct parse fails, try URL-decoding first
+      try {
+        const decoded = decodeURIComponent(wgVariables);
+        let parsed = JSON.parse(decoded);
+
+        // Handle double-encoded case
+        if (typeof parsed === 'string') {
+          parsed = JSON.parse(parsed);
+        }
+
+        return parsed as Record<string, unknown>;
+      } catch (e) {
+        throw new Error(`Invalid wg_variables parameter: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  }
+
+  return {};
 }
