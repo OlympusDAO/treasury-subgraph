@@ -2,6 +2,9 @@ import { Metric as CoreMetric, getMetricObject } from '../core/metricHelper';
 import { TokenRecord, filterLatestBlockByDay as filterTokenRecordsByDay } from '../core/tokenRecordHelper';
 import { TokenSupply, filterLatestBlockByDay as filterTokenSuppliesByDay } from '../core/tokenSupplyHelper';
 import { ProtocolMetric, filterLatestBlockByDay as filterProtocolMetricsByDay } from '../core/protocolMetricHelper';
+import { filterCompleteRecords as filterCompleteTokenRecords } from '../core/tokenRecordHelper';
+import { filterCompleteRecords as filterCompleteTokenSupplies } from '../core/tokenSupplyHelper';
+import { TokenRecordsResponse, TokenSuppliesResponse } from '../core/types';
 import { Logger, ConsoleLogger } from '../core/types';
 import {
   Chain,
@@ -52,6 +55,76 @@ const logger = new ConsoleLogger('resolvers');
 // Helper function to convert null/undefined to empty arrays
 function normalizeArray<T>(arr: T[] | null | undefined): T[] {
   return arr || [];
+}
+
+/**
+ * Convert Map<Chain, SingleChainTokenRecordsResponse> to TokenRecordsResponse
+ */
+function mapToTokenRecordsResponse(map: Map<Chain, SingleChainTokenRecordsResponse>): TokenRecordsResponse {
+  return {
+    treasuryArbitrum_tokenRecords: normalizeArray(map.get('arbitrum')?.tokenRecords),
+    treasuryEthereum_tokenRecords: normalizeArray(map.get('ethereum')?.tokenRecords),
+    treasuryFantom_tokenRecords: normalizeArray(map.get('fantom')?.tokenRecords),
+    treasuryPolygon_tokenRecords: normalizeArray(map.get('polygon')?.tokenRecords),
+    treasuryBase_tokenRecords: normalizeArray(map.get('base')?.tokenRecords),
+    treasuryBerachain_tokenRecords: normalizeArray(map.get('berachain')?.tokenRecords),
+  };
+}
+
+/**
+ * Convert Map<Chain, SingleChainTokenSuppliesResponse> to TokenSuppliesResponse
+ */
+function mapToTokenSuppliesResponse(map: Map<Chain, SingleChainTokenSuppliesResponse>): TokenSuppliesResponse {
+  return {
+    treasuryArbitrum_tokenSupplies: normalizeArray(map.get('arbitrum')?.tokenSupplies),
+    treasuryEthereum_tokenSupplies: normalizeArray(map.get('ethereum')?.tokenSupplies),
+    treasuryFantom_tokenSupplies: normalizeArray(map.get('fantom')?.tokenSupplies),
+    treasuryPolygon_tokenSupplies: normalizeArray(map.get('polygon')?.tokenSupplies),
+    treasuryBase_tokenSupplies: normalizeArray(map.get('base')?.tokenSupplies),
+    treasuryBerachain_tokenSupplies: normalizeArray(map.get('berachain')?.tokenSupplies),
+  };
+}
+
+/**
+ * Convert TokenRecordsResponse back to flat array with blockchain property
+ */
+function responseToTokenRecordsArray(response: TokenRecordsResponse): TokenRecord[] {
+  const records: TokenRecord[] = [];
+  const chainMapping: Array<{key: keyof TokenRecordsResponse, name: string}> = [
+    {key: 'treasuryArbitrum_tokenRecords', name: 'Arbitrum'},
+    {key: 'treasuryEthereum_tokenRecords', name: 'Ethereum'},
+    {key: 'treasuryFantom_tokenRecords', name: 'Fantom'},
+    {key: 'treasuryPolygon_tokenRecords', name: 'Polygon'},
+    {key: 'treasuryBase_tokenRecords', name: 'Base'},
+    {key: 'treasuryBerachain_tokenRecords', name: 'Berachain'},
+  ];
+  for (const {key, name} of chainMapping) {
+    for (const record of response[key]) {
+      records.push({...record, blockchain: name});
+    }
+  }
+  return records;
+}
+
+/**
+ * Convert TokenSuppliesResponse back to flat array with blockchain property
+ */
+function responseToTokenSuppliesArray(response: TokenSuppliesResponse): TokenSupply[] {
+  const supplies: TokenSupply[] = [];
+  const chainMapping: Array<{key: keyof TokenSuppliesResponse, name: string}> = [
+    {key: 'treasuryArbitrum_tokenSupplies', name: 'Arbitrum'},
+    {key: 'treasuryEthereum_tokenSupplies', name: 'Ethereum'},
+    {key: 'treasuryFantom_tokenSupplies', name: 'Fantom'},
+    {key: 'treasuryPolygon_tokenSupplies', name: 'Polygon'},
+    {key: 'treasuryBase_tokenSupplies', name: 'Base'},
+    {key: 'treasuryBerachain_tokenSupplies', name: 'Berachain'},
+  ];
+  for (const {key, name} of chainMapping) {
+    for (const supply of response[key]) {
+      supplies.push({...supply, blockchain: name});
+    }
+  }
+  return supplies;
 }
 
 // Resolvers
@@ -525,7 +598,7 @@ export const resolvers = {
       _parent: unknown,
       args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; ignoreCache?: boolean }
     ) {
-      const { startDate, dateOffset = 30 } = args;
+      const { startDate, dateOffset = 30, crossChainDataComplete = false } = args;
 
       // Calculate date range (startDate going back dateOffset days)
       const start = new Date(startDate);
@@ -536,7 +609,7 @@ export const resolvers = {
       const endDateStr = start.toISOString().split('T')[0]; // start date (later)
 
       const cache = getGlobalCache();
-      const cacheKey = CacheManager.generateKey('paginatedTokenRecords', { startDate: startDateStr, endDate: endDateStr });
+      const cacheKey = CacheManager.generateKey('paginatedTokenRecords', { startDate: startDateStr, endDate: endDateStr, crossChainDataComplete });
 
       const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
@@ -545,7 +618,7 @@ export const resolvers = {
 
       const pageSize = 1000;
       const variables = { startDate: startDateStr, endDate: endDateStr, pageSize };
-      logger.info(`paginatedTokenRecords: Querying date range ${startDateStr} to ${endDateStr}`);
+      logger.info(`paginatedTokenRecords: Querying date range ${startDateStr} to ${endDateStr}, crossChainDataComplete: ${crossChainDataComplete}`);
 
       const results = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenRecordsResponse>(
         TOKEN_RECORDS_DATE_RANGE,
@@ -555,27 +628,29 @@ export const resolvers = {
 
       logger.info(`paginatedTokenRecords: Got results from ${results.successfulChains.length} chains, failed: ${results.failedChains.join(', ')}`);
 
-      const records = Array.from(results.results.entries()).flatMap(
-        ([chain, data]) => {
-          const chainRecords = normalizeArray(data.tokenRecords);
-          const filteredRecords = filterTokenRecordsByDay(chainRecords);
-          if (chainRecords.length > 0) {
-            logger.info(`paginatedTokenRecords: ${chain} returned ${chainRecords.length} records, filtered to ${filteredRecords.length}`);
-          }
-          return filteredRecords.map(r => ({ ...r, blockchain: CHAIN_NAMES[chain] }));
-        }
-      );
+      // Convert Map to Response format
+      let response = mapToTokenRecordsResponse(results.results);
 
-      logger.info(`paginatedTokenRecords: Total records: ${records.length}`);
-      await cache.set(cacheKey, records, 300000); // 5 minute TTL
-      return records;
+      // Apply filterCompleteRecords if crossChainDataComplete is true
+      if (crossChainDataComplete) {
+        logger.info(`paginatedTokenRecords: Applying crossChainDataComplete filter`);
+        response = filterCompleteTokenRecords(response, logger);
+      }
+
+      // Convert back to flat array with latest block filtering
+      const records = responseToTokenRecordsArray(response);
+      const filteredRecords = filterTokenRecordsByDay(records);
+
+      logger.info(`paginatedTokenRecords: Total records after filtering: ${filteredRecords.length}`);
+      await cache.set(cacheKey, filteredRecords, 300000); // 5 minute TTL
+      return filteredRecords;
     },
 
     async paginatedTokenSupplies(
       _parent: unknown,
       args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; ignoreCache?: boolean }
     ) {
-      const { startDate, dateOffset = 30 } = args;
+      const { startDate, dateOffset = 30, crossChainDataComplete = false } = args;
 
       // Calculate date range
       const start = new Date(startDate);
@@ -586,7 +661,7 @@ export const resolvers = {
       const endDateStr = start.toISOString().split('T')[0];
 
       const cache = getGlobalCache();
-      const cacheKey = CacheManager.generateKey('paginatedTokenSupplies', { startDate: startDateStr, endDate: endDateStr });
+      const cacheKey = CacheManager.generateKey('paginatedTokenSupplies', { startDate: startDateStr, endDate: endDateStr, crossChainDataComplete });
 
       const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
@@ -600,15 +675,22 @@ export const resolvers = {
         logger
       );
 
-      const supplies = Array.from(results.results.entries()).flatMap(
-        ([chain, data]) => {
-          const chainSupplies = normalizeArray(data.tokenSupplies);
-          return filterTokenSuppliesByDay(chainSupplies).map(s => ({ ...s, blockchain: CHAIN_NAMES[chain] }));
-        }
-      );
+      // Convert Map to Response format
+      let response = mapToTokenSuppliesResponse(results.results);
 
-      await cache.set(cacheKey, supplies, 300000);
-      return supplies;
+      // Apply filterCompleteRecords if crossChainDataComplete is true
+      if (crossChainDataComplete) {
+        logger.info(`paginatedTokenSupplies: Applying crossChainDataComplete filter`);
+        response = filterCompleteTokenSupplies(response, logger);
+      }
+
+      // Convert back to flat array with latest block filtering
+      const supplies = responseToTokenSuppliesArray(response);
+      const filteredSupplies = filterTokenSuppliesByDay(supplies);
+
+      logger.info(`paginatedTokenSupplies: Total supplies after filtering: ${filteredSupplies.length}`);
+      await cache.set(cacheKey, filteredSupplies, 300000);
+      return filteredSupplies;
     },
 
     async paginatedProtocolMetrics(_parent: unknown, args: { startDate: string; dateOffset?: number; ignoreCache?: boolean }) {
@@ -652,7 +734,7 @@ export const resolvers = {
       _parent: unknown,
       args: { startDate: string; dateOffset?: number; crossChainDataComplete?: boolean; includeRecords?: boolean; ignoreCache?: boolean }
     ) {
-      const { startDate, dateOffset = 30 } = args;
+      const { startDate, dateOffset = 30, crossChainDataComplete = false, includeRecords = false } = args;
 
       // Calculate date range
       const start = new Date(startDate);
@@ -663,7 +745,7 @@ export const resolvers = {
       const endDateStr = start.toISOString().split('T')[0];
 
       const cache = getGlobalCache();
-      const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: startDateStr, endDate: endDateStr });
+      const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: startDateStr, endDate: endDateStr, crossChainDataComplete });
 
       const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {
@@ -671,6 +753,7 @@ export const resolvers = {
       }
 
       const pageSize = 1000;
+      logger.info(`paginatedMetrics: Querying date range ${startDateStr} to ${endDateStr}, crossChainDataComplete: ${crossChainDataComplete}`);
 
       // Fetch all data for the date range
       const allTokenRecords = await queryAllSubgraphsWithPerChainVariables<SingleChainTokenRecordsResponse>(
@@ -691,41 +774,41 @@ export const resolvers = {
         logger
       );
 
+      // Convert to response format for filtering
+      let tokenRecordsResponse = mapToTokenRecordsResponse(allTokenRecords.results);
+      let tokenSuppliesResponse = mapToTokenSuppliesResponse(allTokenSupplies.results);
+
+      // Apply filterCompleteRecords if crossChainDataComplete is true
+      if (crossChainDataComplete) {
+        logger.info(`paginatedMetrics: Applying crossChainDataComplete filter`);
+        tokenRecordsResponse = filterCompleteTokenRecords(tokenRecordsResponse, logger);
+        tokenSuppliesResponse = filterCompleteTokenSupplies(tokenSuppliesResponse, logger);
+      }
+
       // Group by date and compute metrics
       const recordsByDate = new Map<string, TokenRecord[]>();
       const suppliesByDate = new Map<string, TokenSupply[]>();
       const protocolByDate = new Map<string, ProtocolMetric[]>();
 
       // Process token records - filter to latest block per day first
-      for (const [chain, data] of allTokenRecords.results.entries()) {
-        const chainRecords = normalizeArray(data.tokenRecords);
-        // Filter to only the latest block for each day to avoid double-counting
-        const filteredRecords = filterTokenRecordsByDay(chainRecords);
-        for (const record of filteredRecords) {
-          if (!recordsByDate.has(record.date)) {
-            recordsByDate.set(record.date, []);
-          }
-          recordsByDate.get(record.date)!.push({ ...record, blockchain: CHAIN_NAMES[chain] });
+      for (const record of responseToTokenRecordsArray(tokenRecordsResponse)) {
+        if (!recordsByDate.has(record.date)) {
+          recordsByDate.set(record.date, []);
         }
+        recordsByDate.get(record.date)!.push(record);
       }
 
       // Process token supplies - filter to latest block per day first
-      for (const [chain, data] of allTokenSupplies.results.entries()) {
-        const chainSupplies = normalizeArray(data.tokenSupplies);
-        // Filter to only the latest block for each day
-        const filteredSupplies = filterTokenSuppliesByDay(chainSupplies);
-        for (const supply of filteredSupplies) {
-          if (!suppliesByDate.has(supply.date)) {
-            suppliesByDate.set(supply.date, []);
-          }
-          suppliesByDate.get(supply.date)!.push({ ...supply, blockchain: CHAIN_NAMES[chain] });
+      for (const supply of responseToTokenSuppliesArray(tokenSuppliesResponse)) {
+        if (!suppliesByDate.has(supply.date)) {
+          suppliesByDate.set(supply.date, []);
         }
+        suppliesByDate.get(supply.date)!.push(supply);
       }
 
       // Process protocol metrics - filter to latest block per day first
       for (const [chain, data] of allProtocolMetrics.results.entries()) {
         const chainMetrics = normalizeArray(data.protocolMetrics);
-        // Filter to only the latest block for each day
         const filteredMetrics = filterProtocolMetricsByDay(chainMetrics);
         for (const metric of filteredMetrics) {
           if (!protocolByDate.has(metric.date)) {
@@ -733,6 +816,17 @@ export const resolvers = {
           }
           protocolByDate.get(metric.date)!.push({ ...metric, blockchain: CHAIN_NAMES[chain] });
         }
+      }
+
+      // If crossChainDataComplete is true, filter out dates later than the latest TokenSupply date
+      let latestTokenSupplyDate: string | null = null;
+      if (crossChainDataComplete && suppliesByDate.size > 0) {
+        for (const date of suppliesByDate.keys()) {
+          if (!latestTokenSupplyDate || new Date(date) > new Date(latestTokenSupplyDate)) {
+            latestTokenSupplyDate = date;
+          }
+        }
+        logger.info(`paginatedMetrics: Latest TokenSupply date: ${latestTokenSupplyDate}`);
       }
 
       // Get all unique dates and sort descending
@@ -747,13 +841,19 @@ export const resolvers = {
       // Compute metric for each date
       const metrics: MetricWithMeta[] = [];
       for (const date of allDates) {
+        // If crossChainDataComplete, skip dates later than latestTokenSupplyDate
+        if (latestTokenSupplyDate && new Date(date) > new Date(latestTokenSupplyDate)) {
+          logger.info(`paginatedMetrics: Skipping date ${date} (later than latest TokenSupply date)`);
+          continue;
+        }
+
         const dateRecords = recordsByDate.get(date) || [];
         const dateSupplies = suppliesByDate.get(date) || [];
         const dateProtocol = protocolByDate.get(date) || [];
 
         // Only add metric if we have data for this date
         if (dateRecords.length > 0 || dateSupplies.length > 0 || dateProtocol.length > 0) {
-          const metric = getMetricObject(logger, dateRecords, dateSupplies, dateProtocol);
+          const metric = getMetricObject(logger, dateRecords, dateSupplies, dateProtocol, { includeRecords, dateFallback: date });
           metrics.push(addMetricMeta(
             metric,
             Array.from(allTokenRecords.successfulChains).map(c => CHAIN_NAMES[c]),
@@ -762,6 +862,7 @@ export const resolvers = {
         }
       }
 
+      logger.info(`paginatedMetrics: Returning ${metrics.length} metrics`);
       await cache.set(cacheKey, metrics, 300000); // 5 minute TTL
       return metrics;
     },
