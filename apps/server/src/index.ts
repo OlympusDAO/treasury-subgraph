@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { typeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
+import { restRouter } from './rest';
 
 const PORT = process.env.PORT || 9991;
 
@@ -12,6 +13,9 @@ async function startServer() {
   // Enable CORS for all origins (can be restricted later)
   app.use(cors());
   app.use(express.json());
+
+  // Mount REST API router (before GraphQL)
+  app.use('/operations', restRouter);
 
   // Health check endpoint (before GraphQL)
   app.get('/health', (req, res) => {
@@ -53,6 +57,7 @@ async function startServer() {
   app.listen(PORT, () => {
     console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
     console.log(`📊 Health check at http://localhost:${PORT}/health`);
+    console.log(`🔌 REST API at http://localhost:${PORT}/operations`);
   });
 
   // Graceful shutdown
