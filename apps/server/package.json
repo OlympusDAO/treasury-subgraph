@@ -34,7 +34,7 @@
     "graphql-tag": "^2.12.6",
     "lru-cache": "^10.0.0"
   },
-  "main": "dist/index.js",
+  "main": "pulumi.ts",
   "scripts": {
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
