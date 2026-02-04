@@ -1,7 +1,7 @@
 import { Metric as CoreMetric, getMetricObject } from '../core/metricHelper';
-import { TokenRecord } from '../core/tokenRecordHelper';
-import { TokenSupply } from '../core/tokenSupplyHelper';
-import { ProtocolMetric } from '../core/protocolMetricHelper';
+import { TokenRecord, filterLatestBlockByDay as filterTokenRecordsByDay } from '../core/tokenRecordHelper';
+import { TokenSupply, filterLatestBlockByDay as filterTokenSuppliesByDay } from '../core/tokenSupplyHelper';
+import { ProtocolMetric, filterLatestBlockByDay as filterProtocolMetricsByDay } from '../core/protocolMetricHelper';
 import { Logger, ConsoleLogger } from '../core/types';
 import {
   Chain,
@@ -557,11 +557,12 @@ export const resolvers = {
 
       const records = Array.from(results.results.entries()).flatMap(
         ([chain, data]) => {
-          const count = normalizeArray(data.tokenRecords).length;
-          if (count > 0) {
-            logger.info(`paginatedTokenRecords: ${chain} returned ${count} records`);
+          const chainRecords = normalizeArray(data.tokenRecords);
+          const filteredRecords = filterTokenRecordsByDay(chainRecords);
+          if (chainRecords.length > 0) {
+            logger.info(`paginatedTokenRecords: ${chain} returned ${chainRecords.length} records, filtered to ${filteredRecords.length}`);
           }
-          return normalizeArray(data.tokenRecords).map(r => ({ ...r, blockchain: CHAIN_NAMES[chain] }));
+          return filteredRecords.map(r => ({ ...r, blockchain: CHAIN_NAMES[chain] }));
         }
       );
 
@@ -600,7 +601,10 @@ export const resolvers = {
       );
 
       const supplies = Array.from(results.results.entries()).flatMap(
-        ([chain, data]) => normalizeArray(data.tokenSupplies).map(s => ({ ...s, blockchain: CHAIN_NAMES[chain] }))
+        ([chain, data]) => {
+          const chainSupplies = normalizeArray(data.tokenSupplies);
+          return filterTokenSuppliesByDay(chainSupplies).map(s => ({ ...s, blockchain: CHAIN_NAMES[chain] }));
+        }
       );
 
       await cache.set(cacheKey, supplies, 300000);
@@ -634,7 +638,10 @@ export const resolvers = {
       );
 
       const metrics = Array.from(results.results.entries()).flatMap(
-        ([chain, data]) => normalizeArray(data.protocolMetrics).map(m => ({ ...m, blockchain: CHAIN_NAMES[chain] }))
+        ([chain, data]) => {
+          const chainMetrics = normalizeArray(data.protocolMetrics);
+          return filterProtocolMetricsByDay(chainMetrics).map(m => ({ ...m, blockchain: CHAIN_NAMES[chain] }));
+        }
       );
 
       await cache.set(cacheKey, metrics, 300000);
@@ -689,9 +696,12 @@ export const resolvers = {
       const suppliesByDate = new Map<string, TokenSupply[]>();
       const protocolByDate = new Map<string, ProtocolMetric[]>();
 
-      // Process token records
+      // Process token records - filter to latest block per day first
       for (const [chain, data] of allTokenRecords.results.entries()) {
-        for (const record of normalizeArray(data.tokenRecords)) {
+        const chainRecords = normalizeArray(data.tokenRecords);
+        // Filter to only the latest block for each day to avoid double-counting
+        const filteredRecords = filterTokenRecordsByDay(chainRecords);
+        for (const record of filteredRecords) {
           if (!recordsByDate.has(record.date)) {
             recordsByDate.set(record.date, []);
           }
@@ -699,9 +709,12 @@ export const resolvers = {
         }
       }
 
-      // Process token supplies
+      // Process token supplies - filter to latest block per day first
       for (const [chain, data] of allTokenSupplies.results.entries()) {
-        for (const supply of normalizeArray(data.tokenSupplies)) {
+        const chainSupplies = normalizeArray(data.tokenSupplies);
+        // Filter to only the latest block for each day
+        const filteredSupplies = filterTokenSuppliesByDay(chainSupplies);
+        for (const supply of filteredSupplies) {
           if (!suppliesByDate.has(supply.date)) {
             suppliesByDate.set(supply.date, []);
           }
@@ -709,9 +722,12 @@ export const resolvers = {
         }
       }
 
-      // Process protocol metrics
+      // Process protocol metrics - filter to latest block per day first
       for (const [chain, data] of allProtocolMetrics.results.entries()) {
-        for (const metric of normalizeArray(data.protocolMetrics)) {
+        const chainMetrics = normalizeArray(data.protocolMetrics);
+        // Filter to only the latest block for each day
+        const filteredMetrics = filterProtocolMetricsByDay(chainMetrics);
+        for (const metric of filteredMetrics) {
           if (!protocolByDate.has(metric.date)) {
             protocolByDate.set(metric.date, []);
           }
