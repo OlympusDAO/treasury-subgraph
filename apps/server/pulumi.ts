@@ -104,11 +104,9 @@ const cloudRun = new gcp.cloudrunv2.Service(
             },
             cpuIdle: true,
           },
-          ports: [
-            {
-              containerPort: 9991,
-            }
-          ],
+          ports: {
+            containerPort: 9991,
+          },
           // Needed at runtime
           envs: [
             {
