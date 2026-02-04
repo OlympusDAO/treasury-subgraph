@@ -10,12 +10,9 @@ const PORT = process.env.PORT || 9991;
 async function startServer() {
   const app = express();
 
-  // Enable CORS for all origins with credentials support
-  // credentials: true allows cookies and auth headers to be sent/received
-  app.use(cors({ origin: true, credentials: true }));
-  app.use(express.json());
-
-  // Normalize URLs by removing duplicate slashes (more forgiving)
+  // Normalize URLs by removing duplicate slashes (must be before CORS)
+  // This ensures CORS preflight requests with malformed URLs like //operations
+  // are normalized before CORS processing
   app.use((req, res, next) => {
     const originalUrl = req.url;
     const normalizedUrl = originalUrl.replace(/\/+/g, '/');
@@ -24,6 +21,11 @@ async function startServer() {
     }
     next();
   });
+
+  // Enable CORS for all origins with credentials support
+  // credentials: true allows cookies and auth headers to be sent/received
+  app.use(cors({ origin: true, credentials: true }));
+  app.use(express.json());
 
   // Use simple query parser to preserve raw JSON in wg_variables
   // The default 'qs' parser tries to parse {} as nested objects, breaking JSON params
