@@ -188,36 +188,47 @@ export interface AtBlockInput {
 }
 
 /**
- * Operations type mapping for type-safe queries
- * Maps operation names to their input and response types
+ * Wundergraph-compatible response wrapper
+ * Matches the response format from the old Wundergraph client
  */
-export interface Operations {
-  'health': { input?: never; response: Health };
-  'latest/metrics': { input?: IgnoreCacheInput; response: Metric };
-  'latest/tokenRecords': { input?: IgnoreCacheInput; response: TokenRecord[] };
-  'latest/tokenSupplies': { input?: IgnoreCacheInput; response: TokenSupply[] };
-  'latest/protocolMetrics': { input?: IgnoreCacheInput; response: ProtocolMetric[] };
-  'earliest/metrics': { input?: IgnoreCacheInput; response: Metric };
-  'earliest/tokenRecords': { input?: IgnoreCacheInput; response: TokenRecord[] };
-  'earliest/tokenSupplies': { input?: IgnoreCacheInput; response: TokenSupply[] };
-  'earliest/protocolMetrics': { input?: IgnoreCacheInput; response: ProtocolMetric[] };
-  'paginated/metrics': { input: PaginatedMetricsInput; response: Metric[] };
-  'paginated/tokenRecords': { input: PaginatedTokenRecordsInput; response: TokenRecord[] };
-  'paginated/tokenSupplies': { input: PaginatedTokenSuppliesInput; response: TokenSupply[] };
-  'paginated/protocolMetrics': { input: PaginatedProtocolMetricsInput; response: ProtocolMetric[] };
-  'atBlock/metrics': { input: AtBlockInput; response: Metric };
-  'atBlock/tokenRecords': { input: AtBlockInput; response: TokenRecord[] };
-  'atBlock/tokenSupplies': { input: AtBlockInput; response: TokenSupply[] };
-  'atBlock/internal/protocolMetrics': { input: AtBlockInput; response: ProtocolMetric[] };
+export interface WundergraphResponse<T> {
+  data: T;
+  errors?: Array<{ message: string }>;
 }
 
 /**
- * Queries type maps operation names to their response data types only
+ * Operations type mapping for type-safe queries
+ * Maps operation names to their input and response types
+ * Response is wrapped in { data: T } for Wundergraph compatibility
+ */
+export interface Operations {
+  'health': { input?: never; response: { data: Health } };
+  'latest/metrics': { input?: IgnoreCacheInput; response: { data: Metric } };
+  'latest/tokenRecords': { input?: IgnoreCacheInput; response: { data: TokenRecord[] } };
+  'latest/tokenSupplies': { input?: IgnoreCacheInput; response: { data: TokenSupply[] } };
+  'latest/protocolMetrics': { input?: IgnoreCacheInput; response: { data: ProtocolMetric[] } };
+  'earliest/metrics': { input?: IgnoreCacheInput; response: { data: Metric } };
+  'earliest/tokenRecords': { input?: IgnoreCacheInput; response: { data: TokenRecord[] } };
+  'earliest/tokenSupplies': { input?: IgnoreCacheInput; response: { data: TokenSupply[] } };
+  'earliest/protocolMetrics': { input?: IgnoreCacheInput; response: { data: ProtocolMetric[] } };
+  'paginated/metrics': { input: PaginatedMetricsInput; response: { data: Metric[] } };
+  'paginated/tokenRecords': { input: PaginatedTokenRecordsInput; response: { data: TokenRecord[] } };
+  'paginated/tokenSupplies': { input: PaginatedTokenSuppliesInput; response: { data: TokenSupply[] } };
+  'paginated/protocolMetrics': { input: PaginatedProtocolMetricsInput; response: { data: ProtocolMetric[] } };
+  'atBlock/metrics': { input: AtBlockInput; response: { data: Metric } };
+  'atBlock/tokenRecords': { input: AtBlockInput; response: { data: TokenRecord[] } };
+  'atBlock/tokenSupplies': { input: AtBlockInput; response: { data: TokenSupply[] } };
+  'atBlock/internal/protocolMetrics': { input: AtBlockInput; response: { data: ProtocolMetric[] } };
+}
+
+/**
+ * Queries type maps operation names to their response types
  * This is useful for type inference and React Query integration
+ * Responses are wrapped in { data: T } for Wundergraph compatibility
  *
  * Example usage:
- * type MetricsResponse = Queries['latest/metrics']; // Metric
- * type RecordsResponse = Queries['latest/tokenRecords']; // TokenRecord[]
+ * type MetricsResponse = Queries['latest/metrics']; // { data: Metric }
+ * type RecordsResponse = Queries['latest/tokenRecords']; // { data: TokenRecord[] }
  */
 export type Queries = {
   [K in keyof Operations]: Operations[K]['response'];

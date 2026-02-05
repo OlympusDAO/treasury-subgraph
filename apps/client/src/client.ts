@@ -1,5 +1,5 @@
-import type { Operations, Queries } from './types';
-export type { Operations, Queries };
+import type { Operations, Queries, WundergraphResponse } from './types';
+export type { Operations, Queries, WundergraphResponse };
 
 export interface ClientConfig {
   /**
@@ -86,14 +86,9 @@ export class TreasurySubgraphClient {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const json = await response.json();
-
-      // Server wraps responses in wundergraphResponse format: { data: T }
-      if (json.data !== undefined) {
-        return json.data as T;
-      }
-
-      return json as T;
+      // Server returns { data: T, errors?: [...] } format
+      // Return as-is for Wundergraph compatibility
+      return await response.json() as T;
     } finally {
       clearTimeout(timeoutId);
     }
