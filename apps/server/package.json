@@ -45,6 +45,6 @@
     "pretest": "yarn build",
     "test": "jest",
     "test:ci": "jest --runInBand --ci",
-    "test:local": "jest -e ../../.env"
+    "test:local": "dotenv -e ../../.env -- jest"
   }
 }
