@@ -210,3 +210,15 @@ export interface Operations {
   'atBlock/tokenSupplies': { input: AtBlockInput; response: TokenSupply[] };
   'atBlock/internal/protocolMetrics': { input: AtBlockInput; response: ProtocolMetric[] };
 }
+
+/**
+ * Queries type maps operation names to their response data types only
+ * This is useful for type inference and React Query integration
+ *
+ * Example usage:
+ * type MetricsResponse = Queries['latest/metrics']; // Metric
+ * type RecordsResponse = Queries['latest/tokenRecords']; // TokenRecord[]
+ */
+export type Queries = {
+  [K in keyof Operations]: Operations[K]['response'];
+};

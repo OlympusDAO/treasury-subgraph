@@ -1,4 +1,5 @@
-import type { Operations } from './types';
+import type { Operations, Queries } from './types';
+export type { Operations, Queries };
 
 export interface ClientConfig {
   /**

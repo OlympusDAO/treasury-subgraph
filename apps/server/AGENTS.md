@@ -176,6 +176,16 @@ The `apps/client/` package provides a TypeScript client for consuming this API.
 - Production URL baked in at build time via `WG_PUBLIC_NODE_URL` env var
 - Can be overridden at runtime via `baseUrl` config
 
+### Exports
+
+The client package exports:
+- `createClient(config?)` - Factory function to create a client instance
+- `TreasurySubgraphClient` - Main client class with `query()` method
+- `ClientConfig` - Configuration interface
+- `Operations` - Type mapping operation names to `{ input?, response }`
+- `Queries` - Type mapping operation names to response types only (useful for React Query integration)
+- All domain types: `Health`, `Metric`, `TokenRecord`, `TokenSupply`, `ProtocolMetric`, etc.
+
 ### Usage
 ```typescript
 import { createClient } from '@olympusdao/treasury-subgraph-client';
