@@ -932,7 +932,7 @@ export const resolvers = {
       const latestDateStr = getISO8601DateString(new Date());
 
       const cache = getGlobalCache();
-      const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete });
+      const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete, includeRecords });
 
       const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {

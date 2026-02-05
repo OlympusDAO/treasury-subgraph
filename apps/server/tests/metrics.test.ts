@@ -154,10 +154,15 @@ describe("paginated", () => {
       });
 
     const records = response.body.data;
-    const recordLength = records ? records.length : 0;
-    expect(recordLength).toBeGreaterThan(0);
+    // Find a record that has data for required chains (Ethereum and Arbitrum)
+    const recordWithRequiredData = records!.find(r =>
+      r.ohmTotalSupplyRecords?.Arbitrum?.length > 0 &&
+      r.ohmTotalSupplyRecords?.Ethereum?.length > 0
+    );
 
-    const firstRecord = records![0];
+    expect(recordWithRequiredData).toBeDefined();
+
+    const firstRecord = recordWithRequiredData!;
     const totalSupplyRecords = firstRecord.ohmTotalSupplyRecords;
     const circulatingSupplyRecords = firstRecord.ohmCirculatingSupplyRecords;
     const floatingSupplyRecords = firstRecord.ohmFloatingSupplyRecords;
@@ -165,6 +170,7 @@ describe("paginated", () => {
     const treasuryMarketValueRecords = firstRecord.treasuryMarketValueRecords;
     const treasuryLiquidBackingRecords = firstRecord.treasuryLiquidBackingRecords;
 
+    // Required chains - must have data
     expect(totalSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
     expect(totalSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
 
@@ -182,6 +188,17 @@ describe("paginated", () => {
 
     expect(treasuryLiquidBackingRecords?.Arbitrum.length).toBeGreaterThan(0);
     expect(treasuryLiquidBackingRecords?.Ethereum.length).toBeGreaterThan(0);
+
+    // Optional chains - just check they exist as arrays (may be empty)
+    const optionalChains = ['Base', 'Berachain', 'Fantom', 'Polygon'] as const;
+    for (const chain of optionalChains) {
+      expect(Array.isArray(totalSupplyRecords?.[chain])).toBe(true);
+      expect(Array.isArray(circulatingSupplyRecords?.[chain])).toBe(true);
+      expect(Array.isArray(floatingSupplyRecords?.[chain])).toBe(true);
+      expect(Array.isArray(backedSupplyRecords?.[chain])).toBe(true);
+      expect(Array.isArray(treasuryMarketValueRecords?.[chain])).toBe(true);
+      expect(Array.isArray(treasuryLiquidBackingRecords?.[chain])).toBe(true);
+    }
   }, 60 * 1000);
 
   test("includeRecords false", async () => {
@@ -219,7 +236,7 @@ describe("latest", () => {
   test("returns the latest results for each chain", async () => {
     // Grab the results from the raw operation
     const rawResponse = await request(app)
-      .get('/operations/tokenRecordsLatest');
+      .get('/operations/latest/tokenRecords');
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResponse.body.data?.treasuryArbitrum_tokenRecords[0];
@@ -237,6 +254,9 @@ describe("latest", () => {
     const polygonRawResult = rawResponse.body.data?.treasuryPolygon_tokenRecords[0];
     const polygonRawBlock: number = parseNumber(polygonRawResult?.block);
     const polygonRawTimestamp: number = parseNumber(polygonRawResult?.timestamp);
+    const berachainRawResult = rawResponse.body.data?.treasuryBerachain_tokenRecords?.[0];
+    const berachainRawBlock: number = parseNumber(berachainRawResult?.block) || 0;
+    const berachainRawTimestamp: number = parseNumber(berachainRawResult?.timestamp) || 0;
 
     // Grab the results from the latest operation
     const response = await request(app)
@@ -253,6 +273,7 @@ describe("latest", () => {
     expect(record?.blocks.Ethereum).toEqual(ethereumRawBlock);
     expect(record?.blocks.Fantom).toEqual(fantomRawBlock);
     expect(record?.blocks.Polygon).toEqual(polygonRawBlock);
+    expect(record?.blocks.Berachain).toEqual(berachainRawBlock);
 
     // Check that the timestamp is the same
     expect(record?.timestamps.Arbitrum).toEqual(arbitrumRawTimestamp);
@@ -260,6 +281,7 @@ describe("latest", () => {
     expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
+    expect(record?.timestamps.Berachain).toEqual(berachainRawTimestamp);
   });
 
   test("subsequent results are equal", async () => {
@@ -279,7 +301,7 @@ describe("earliest", () => {
   test("returns the earliest results for each chain", async () => {
     // Grab the results from the raw operation
     const rawResponse = await request(app)
-      .get('/operations/tokenRecordsEarliest');
+      .get('/operations/earliest/tokenRecords');
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResponse.body.data?.treasuryArbitrum_tokenRecords[0];
@@ -297,6 +319,9 @@ describe("earliest", () => {
     const polygonRawResult = rawResponse.body.data?.treasuryPolygon_tokenRecords[0];
     const polygonRawBlock: number = parseNumber(polygonRawResult?.block);
     const polygonRawTimestamp: number = parseNumber(polygonRawResult?.timestamp);
+    const berachainRawResult = rawResponse.body.data?.treasuryBerachain_tokenRecords?.[0];
+    const berachainRawBlock: number = parseNumber(berachainRawResult?.block) || 0;
+    const berachainRawTimestamp: number = parseNumber(berachainRawResult?.timestamp) || 0;
 
     // Grab the results from the earliest operation
     const response = await request(app)
@@ -313,6 +338,7 @@ describe("earliest", () => {
     expect(record?.blocks.Ethereum).toEqual(ethereumRawBlock);
     expect(record?.blocks.Fantom).toEqual(fantomRawBlock);
     expect(record?.blocks.Polygon).toEqual(polygonRawBlock);
+    expect(record?.blocks.Berachain).toEqual(berachainRawBlock);
 
     // Check that the timestamp is the same
     expect(record?.timestamps.Arbitrum).toEqual(arbitrumRawTimestamp);
@@ -320,6 +346,7 @@ describe("earliest", () => {
     expect(record?.timestamps.Ethereum).toEqual(ethereumRawTimestamp);
     expect(record?.timestamps.Fantom).toEqual(fantomRawTimestamp);
     expect(record?.timestamps.Polygon).toEqual(polygonRawTimestamp);
+    expect(record?.timestamps.Berachain).toEqual(berachainRawTimestamp);
   });
 
   test("subsequent results are equal", async () => {
