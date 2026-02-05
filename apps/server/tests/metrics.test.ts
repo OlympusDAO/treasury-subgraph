@@ -155,7 +155,7 @@ describe("paginated", () => {
 
     const records = response.body.data;
     // Find a record that has data for required chains (Ethereum and Arbitrum)
-    const recordWithRequiredData = records!.find(r =>
+    const recordWithRequiredData = records!.find((r: any) =>
       r.ohmTotalSupplyRecords?.Arbitrum?.length > 0 &&
       r.ohmTotalSupplyRecords?.Ethereum?.length > 0
     );
@@ -236,7 +236,7 @@ describe("latest", () => {
   test("returns the latest results for each chain", async () => {
     // Grab the results from the raw operation
     const rawResponse = await request(app)
-      .get('/operations/latest/tokenRecords');
+      .get('/operations/tokenRecordsLatest');
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResponse.body.data?.treasuryArbitrum_tokenRecords[0];
@@ -301,7 +301,7 @@ describe("earliest", () => {
   test("returns the earliest results for each chain", async () => {
     // Grab the results from the raw operation
     const rawResponse = await request(app)
-      .get('/operations/earliest/tokenRecords');
+      .get('/operations/tokenRecordsEarliest');
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResponse.body.data?.treasuryArbitrum_tokenRecords[0];

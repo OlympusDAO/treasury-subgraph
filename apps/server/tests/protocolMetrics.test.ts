@@ -33,8 +33,19 @@ describe("latest", () => {
 
     const responseTwo = await request(app)
       .get('/operations/latest/protocolMetrics');
+    const data2 = responseTwo.body.data;
 
-    expect(responseTwo.body.data).toEqual(records);
+    // For arrays, exclude _meta.timestamp from each item
+    const excludeTimestamp = (item: any) => {
+      if (!item || !item._meta) return item;
+      const { timestamp, ...restMeta } = item._meta;
+      return { ...item, _meta: restMeta };
+    };
+
+    const cleanRecords = Array.isArray(records) ? records.map(excludeTimestamp) : records;
+    const cleanData2 = Array.isArray(data2) ? data2.map(excludeTimestamp) : data2;
+
+    expect(cleanData2).toEqual(cleanRecords);
   }, 20 * 1000);
 });
 

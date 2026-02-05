@@ -159,6 +159,36 @@ export const typeDefs = gql`
     version: String!
   }
 
+  # Raw chain-specific token records response (Wundergraph compatible)
+  type TokenRecordsRawResponse {
+    treasuryArbitrum_tokenRecords: [TokenRecord!]!
+    treasuryEthereum_tokenRecords: [TokenRecord!]!
+    treasuryFantom_tokenRecords: [TokenRecord!]!
+    treasuryPolygon_tokenRecords: [TokenRecord!]!
+    treasuryBase_tokenRecords: [TokenRecord!]!
+    treasuryBerachain_tokenRecords: [TokenRecord!]!
+  }
+
+  # Raw chain-specific token supplies response (Wundergraph compatible)
+  type TokenSuppliesRawResponse {
+    treasuryArbitrum_tokenSupplies: [TokenSupply!]!
+    treasuryEthereum_tokenSupplies: [TokenSupply!]!
+    treasuryFantom_tokenSupplies: [TokenSupply!]!
+    treasuryPolygon_tokenSupplies: [TokenSupply!]!
+    treasuryBase_tokenSupplies: [TokenSupply!]!
+    treasuryBerachain_tokenSupplies: [TokenSupply!]!
+  }
+
+  # Raw chain-specific protocol metrics response (Wundergraph compatible)
+  type ProtocolMetricsRawResponse {
+    treasuryArbitrum_protocolMetrics: [ProtocolMetric!]!
+    treasuryEthereum_protocolMetrics: [ProtocolMetric!]!
+    treasuryFantom_protocolMetrics: [ProtocolMetric!]!
+    treasuryPolygon_protocolMetrics: [ProtocolMetric!]!
+    treasuryBase_protocolMetrics: [ProtocolMetric!]!
+    treasuryBerachain_protocolMetrics: [ProtocolMetric!]!
+  }
+
   # Queries
   type Query {
     # Health check
@@ -170,11 +200,21 @@ export const typeDefs = gql`
     latestTokenRecords(ignoreCache: Boolean): [TokenRecord!]!
     latestProtocolMetrics(ignoreCache: Boolean): [ProtocolMetric!]
 
+    # Raw format data (Wundergraph compatible)
+    latestTokenRecordsRaw(ignoreCache: Boolean): TokenRecordsRawResponse!
+    latestTokenSuppliesRaw(ignoreCache: Boolean): TokenSuppliesRawResponse!
+    latestProtocolMetricsRaw(ignoreCache: Boolean): ProtocolMetricsRawResponse!
+
     # Earliest data
     earliestMetrics(ignoreCache: Boolean): Metric!
     earliestTokenSupplies(ignoreCache: Boolean): [TokenSupply!]!
     earliestTokenRecords(ignoreCache: Boolean): [TokenRecord!]!
     earliestProtocolMetrics(ignoreCache: Boolean): [ProtocolMetric!]
+
+    # Raw format earliest data (Wundergraph compatible)
+    earliestTokenRecordsRaw(ignoreCache: Boolean): TokenRecordsRawResponse!
+    earliestTokenSuppliesRaw(ignoreCache: Boolean): TokenSuppliesRawResponse!
+    earliestProtocolMetricsRaw(ignoreCache: Boolean): ProtocolMetricsRawResponse!
 
     # Paginated historical data
     paginatedMetrics(

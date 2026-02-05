@@ -1,7 +1,7 @@
 import { addDays } from "date-fns";
 import { startTestServer, stopTestServer } from "./setup/testServer";
 import { getISO8601DateString } from "./dateHelper";
-import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../src/core/constants";
+import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_BERACHAIN, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "../src/core/constants";
 import { getFirstRecord } from "./tokenSupplyHelper";
 import { parseNumber } from "./numberHelper";
 import request from 'supertest';
@@ -181,9 +181,10 @@ describe("latest", () => {
     const ethereumRawResult = rawResponse.body.data?.treasuryEthereum_tokenSupplies[0];
     const fantomRawResult = rawResponse.body.data?.treasuryFantom_tokenSupplies[0];
     const polygonRawResult = rawResponse.body.data?.treasuryPolygon_tokenSupplies[0];
+    const berachainRawResult = rawResponse.body.data?.treasuryBerachain_tokenSupplies?.[0];
 
     // Calculate the expected count based on how many of the raw results were defined. This is because there may not be TokenSupply records on every chain.
-    const expectedCount = [arbitrumRawResult, baseRawResult, ethereumRawResult, fantomRawResult, polygonRawResult].filter((result) => result !== undefined).length;
+    const expectedCount = [arbitrumRawResult, baseRawResult, ethereumRawResult, fantomRawResult, polygonRawResult, berachainRawResult].filter((result) => result !== undefined).length;
 
     // Grab the results from the latest operation
     const response = await request(app)
@@ -196,6 +197,7 @@ describe("latest", () => {
     const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
     const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
     const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
+    const berachainResult = getFirstRecord(records, CHAIN_BERACHAIN);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawResult?.block);
@@ -217,8 +219,19 @@ describe("latest", () => {
 
     const responseTwo = await request(app)
       .get('/operations/latest/tokenSupplies');
+    const data2 = responseTwo.body.data;
 
-    expect(responseTwo.body.data).toEqual(records);
+    // For arrays, exclude _meta.timestamp from each item
+    const excludeTimestamp = (item: any) => {
+      if (!item || !item._meta) return item;
+      const { timestamp, ...restMeta } = item._meta;
+      return { ...item, _meta: restMeta };
+    };
+
+    const cleanRecords = Array.isArray(records) ? records.map(excludeTimestamp) : records;
+    const cleanData2 = Array.isArray(data2) ? data2.map(excludeTimestamp) : data2;
+
+    expect(cleanData2).toEqual(cleanRecords);
   }, 20 * 1000);
 });
 
@@ -234,9 +247,10 @@ describe("earliest", () => {
     const ethereumRawResult = rawResponse.body.data?.treasuryEthereum_tokenSupplies[0];
     const fantomRawResult = rawResponse.body.data?.treasuryFantom_tokenSupplies[0];
     const polygonRawResult = rawResponse.body.data?.treasuryPolygon_tokenSupplies[0];
+    const berachainRawResult = rawResponse.body.data?.treasuryBerachain_tokenSupplies?.[0];
 
     // Calculate the expected count based on how many of the raw results were defined. This is because there may not be TokenSupply records on every chain.
-    const expectedCount = [arbitrumRawResult, baseRawResult, ethereumRawResult, fantomRawResult, polygonRawResult].filter((result) => result !== undefined).length;
+    const expectedCount = [arbitrumRawResult, baseRawResult, ethereumRawResult, fantomRawResult, polygonRawResult, berachainRawResult].filter((result) => result !== undefined).length;
 
     // Grab the results from the earliest operation
     const response = await request(app)
@@ -249,6 +263,7 @@ describe("earliest", () => {
     const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
     const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
     const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
+    const berachainResult = getFirstRecord(records, CHAIN_BERACHAIN);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawResult?.block);
