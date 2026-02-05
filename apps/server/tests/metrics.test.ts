@@ -1,24 +1,43 @@
 import { addDays } from "date-fns";
-import { createTestServer } from "../.wundergraph/generated/testing";
+import { startTestServer, stopTestServer } from "./setup/testServer";
 import { getISO8601DateString } from "./dateHelper";
-import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY } from "../.wundergraph/constants";
+import {
+  CHAIN_ARBITRUM,
+  CHAIN_BASE,
+  CHAIN_ETHEREUM,
+  CHAIN_FANTOM,
+  CHAIN_POLYGON,
+  TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS,
+  TOKEN_SUPPLY_TYPE_BONDS_PREMINTED,
+  TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS,
+  TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT,
+  TOKEN_SUPPLY_TYPE_LENDING,
+  TOKEN_SUPPLY_TYPE_LIQUIDITY,
+  TOKEN_SUPPLY_TYPE_OFFSET,
+  TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY,
+  TOKEN_SUPPLY_TYPE_TREASURY,
+} from "../src/core/constants";
 import { getSupplyBalanceForTypes } from "./metricsHelper";
-import { TokenRecord, filterReduce, filter as filterTokenRecords, getFirstRecord as getFirstTokenRecord } from "./tokenRecordHelper";
-import { TokenSupply, filter as filterTokenSupplies } from "./tokenSupplyHelper";
-import { ProtocolMetric } from "./protocolMetricHelper";
+import type { TokenRecord } from "./tokenRecordHelper";
+import { filter as filterTokenRecords, getFirstRecord as getFirstTokenRecord } from "./tokenRecordHelper";
+import type { TokenSupply } from "./tokenSupplyHelper";
+import { filter as filterTokenSupplies } from "./tokenSupplyHelper";
+import type { ProtocolMetric } from "./protocolMetricHelper";
 import { parseNumber } from "./numberHelper";
+import request from 'supertest';
 
 const BUYBACK_MS = "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase();
 const DAO_WALLET = "0x245cc372c84b3645bf0ffe6538620b04a217988b".toLowerCase();
 
-const wg = createTestServer();
+let app: any;
 
 beforeAll(async () => {
-  await wg.start();
+  const server = await startTestServer();
+  app = server.app;
 });
 
 afterAll(async () => {
-  await wg.stop();
+  await stopTestServer();
 });
 
 beforeEach(async () => {
@@ -33,41 +52,38 @@ jest.setTimeout(10 * 1000);
 
 describe("paginated", () => {
   test("recent results", async () => {
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: getStartDate(-1),
-      }
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: getStartDate(-1) })
+      });
 
-    const records = result.data;
+    const records = response.body.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
   });
 
   test("returns results", async () => {
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: getStartDate(-5),
-      }
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: getStartDate(-5) })
+      });
 
-    const records = result.data;
+    const records = response.body.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
   });
 
   test("returns recent results beyond first page", async () => {
-    const startDateString = getStartDate(-20); // default date offset of 10
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: startDateString,
-      }
-    });
+    const startDateString = getStartDate(-20);
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: startDateString })
+      });
 
-    const records = result.data;
+    const records = response.body.data;
     const recordsNotNull = records ? records : [];
     // Most recent date
     expect(recordsNotNull[0].date).toEqual(getISO8601DateString(new Date()));
@@ -76,70 +92,68 @@ describe("paginated", () => {
   }, 60 * 1000);
 
   test("subsequent results are equal", async () => {
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: getStartDate(-1),
-      }
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: getStartDate(-1) })
+      });
 
-    const records = result.data;
+    const records = response.body.data;
 
-    const resultTwo = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: getStartDate(-1),
-      }
-    });
+    const responseTwo = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: getStartDate(-1) })
+      });
 
-    expect(resultTwo.data).toEqual(records);
+    expect(responseTwo.body.data).toEqual(records);
   }, 20 * 1000);
 
   test("subsequent results are equal, long timeframe", async () => {
     // This tests both setting and getting a large amount of data, which can error out
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: getStartDate(-60),
-      }
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: getStartDate(-60) })
+      });
 
-    const records = result.data;
+    const records = response.body.data;
 
-    const resultTwo = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: getStartDate(-60),
-      }
-    });
+    const responseTwo = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: getStartDate(-60) })
+      });
 
-    expect(resultTwo.data).toEqual(records);
+    expect(responseTwo.body.data).toEqual(records);
   }, 90 * 1000);
 
   test("crossChainDataComplete true", async () => {
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: getStartDate(-5),
-        crossChainDataComplete: true,
-      }
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({
+          startDate: getStartDate(-5),
+          crossChainDataComplete: true
+        })
+      });
 
-    const records = result.data;
+    const records = response.body.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
   });
 
   test("includeRecords true", async () => {
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: getStartDate(-5),
-        includeRecords: true,
-      }
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({
+          startDate: getStartDate(-5),
+          includeRecords: true
+        })
+      });
 
-    const records = result.data;
+    const records = response.body.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
 
@@ -171,15 +185,16 @@ describe("paginated", () => {
   }, 60 * 1000);
 
   test("includeRecords false", async () => {
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: getStartDate(-5),
-        includeRecords: false,
-      }
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({
+          startDate: getStartDate(-5),
+          includeRecords: false
+        })
+      });
 
-    const records = result.data;
+    const records = response.body.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
 
@@ -203,34 +218,32 @@ describe("paginated", () => {
 describe("latest", () => {
   test("returns the latest results for each chain", async () => {
     // Grab the results from the raw operation
-    const rawResult = await wg.client().query({
-      operationName: "tokenRecordsLatest",
-    });
+    const rawResponse = await request(app)
+      .get('/operations/tokenRecordsLatest');
 
     // Raw data has an array property for each chain
-    const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenRecords[0];
+    const arbitrumRawResult = rawResponse.body.data?.treasuryArbitrum_tokenRecords[0];
     const arbitrumRawBlock: number = parseNumber(arbitrumRawResult?.block);
     const arbitrumRawTimestamp: number = parseNumber(arbitrumRawResult?.timestamp);
-    const baseRawResult = rawResult.data?.treasuryBase_tokenRecords[0];
+    const baseRawResult = rawResponse.body.data?.treasuryBase_tokenRecords[0];
     const baseRawBlock: number = parseNumber(baseRawResult?.block);
     const baseRawTimestamp: number = parseNumber(baseRawResult?.timestamp);
-    const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenRecords[0];
+    const ethereumRawResult = rawResponse.body.data?.treasuryEthereum_tokenRecords[0];
     const ethereumRawBlock: number = parseNumber(ethereumRawResult?.block);
     const ethereumRawTimestamp: number = parseNumber(ethereumRawResult?.timestamp);
-    const fantomRawResult = rawResult.data?.treasuryFantom_tokenRecords[0];
+    const fantomRawResult = rawResponse.body.data?.treasuryFantom_tokenRecords[0];
     const fantomRawBlock: number = parseNumber(fantomRawResult?.block);
     const fantomRawTimestamp: number = parseNumber(fantomRawResult?.timestamp);
-    const polygonRawResult = rawResult.data?.treasuryPolygon_tokenRecords[0];
+    const polygonRawResult = rawResponse.body.data?.treasuryPolygon_tokenRecords[0];
     const polygonRawBlock: number = parseNumber(polygonRawResult?.block);
     const polygonRawTimestamp: number = parseNumber(polygonRawResult?.timestamp);
 
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "latest/metrics",
-    });
+    const response = await request(app)
+      .get('/operations/latest/metrics');
 
     // Single record
-    const record = result.data;
+    const record = response.body.data;
 
     expect(record).not.toBeNull();
 
@@ -250,51 +263,47 @@ describe("latest", () => {
   });
 
   test("subsequent results are equal", async () => {
-    const result = await wg.client().query({
-      operationName: "latest/metrics",
-    });
+    const response = await request(app)
+      .get('/operations/latest/metrics');
 
-    const records = result.data;
+    const records = response.body.data;
 
-    const resultTwo = await wg.client().query({
-      operationName: "latest/metrics",
-    });
+    const responseTwo = await request(app)
+      .get('/operations/latest/metrics');
 
-    expect(resultTwo.data).toEqual(records);
+    expect(responseTwo.body.data).toEqual(records);
   }, 20 * 1000);
 });
 
 describe("earliest", () => {
   test("returns the earliest results for each chain", async () => {
     // Grab the results from the raw operation
-    const rawResult = await wg.client().query({
-      operationName: "tokenRecordsEarliest",
-    });
+    const rawResponse = await request(app)
+      .get('/operations/tokenRecordsEarliest');
 
     // Raw data has an array property for each chain
-    const arbitrumRawResult = rawResult.data?.treasuryArbitrum_tokenRecords[0];
+    const arbitrumRawResult = rawResponse.body.data?.treasuryArbitrum_tokenRecords[0];
     const arbitrumRawBlock: number = parseNumber(arbitrumRawResult?.block);
     const arbitrumRawTimestamp: number = parseNumber(arbitrumRawResult?.timestamp);
-    const baseRawResult = rawResult.data?.treasuryBase_tokenRecords[0];
+    const baseRawResult = rawResponse.body.data?.treasuryBase_tokenRecords[0];
     const baseRawBlock: number = parseNumber(baseRawResult?.block);
     const baseRawTimestamp: number = parseNumber(baseRawResult?.timestamp);
-    const ethereumRawResult = rawResult.data?.treasuryEthereum_tokenRecords[0];
+    const ethereumRawResult = rawResponse.body.data?.treasuryEthereum_tokenRecords[0];
     const ethereumRawBlock: number = parseNumber(ethereumRawResult?.block);
     const ethereumRawTimestamp: number = parseNumber(ethereumRawResult?.timestamp);
-    const fantomRawResult = rawResult.data?.treasuryFantom_tokenRecords[0];
+    const fantomRawResult = rawResponse.body.data?.treasuryFantom_tokenRecords[0];
     const fantomRawBlock: number = parseNumber(fantomRawResult?.block);
     const fantomRawTimestamp: number = parseNumber(fantomRawResult?.timestamp);
-    const polygonRawResult = rawResult.data?.treasuryPolygon_tokenRecords[0];
+    const polygonRawResult = rawResponse.body.data?.treasuryPolygon_tokenRecords[0];
     const polygonRawBlock: number = parseNumber(polygonRawResult?.block);
     const polygonRawTimestamp: number = parseNumber(polygonRawResult?.timestamp);
 
     // Grab the results from the earliest operation
-    const result = await wg.client().query({
-      operationName: "earliest/metrics",
-    });
+    const response = await request(app)
+      .get('/operations/earliest/metrics');
 
     // Single record
-    const record = result.data;
+    const record = response.body.data;
 
     expect(record).not.toBeNull();
 
@@ -314,17 +323,15 @@ describe("earliest", () => {
   });
 
   test("subsequent results are equal", async () => {
-    const result = await wg.client().query({
-      operationName: "earliest/metrics",
-    });
+    const response = await request(app)
+      .get('/operations/earliest/metrics');
 
-    const records = result.data;
+    const records = response.body.data;
 
-    const resultTwo = await wg.client().query({
-      operationName: "earliest/metrics",
-    });
+    const responseTwo = await request(app)
+      .get('/operations/earliest/metrics');
 
-    expect(resultTwo.data).toEqual(records);
+    expect(responseTwo.body.data).toEqual(records);
   }, 20 * 1000);
 });
 
@@ -333,44 +340,44 @@ describe("atBlock", () => {
     const startDate = getISO8601DateString(addDays(new Date(), -1));
 
     // Grab the results for the previous day (hence not the result of the latest query)
-    const rawResult = await wg.client().query({
-      operationName: "paginated/tokenRecords",
-      input: {
-        startDate: startDate,
-      },
-    });
+    const rawResponse = await request(app)
+      .get('/operations/paginated/tokenRecords')
+      .query({
+        wg_variables: JSON.stringify({ startDate: startDate })
+      });
 
     // Raw data has an array property for each chain
-    const arbitrumRawResult = getFirstTokenRecord(rawResult.data, CHAIN_ARBITRUM, startDate);
+    const arbitrumRawResult = getFirstTokenRecord(rawResponse.body.data, CHAIN_ARBITRUM, startDate);
     const arbitrumRawBlock: number = parseNumber(arbitrumRawResult?.block);
     const arbitrumRawTimestamp: number = parseNumber(arbitrumRawResult?.timestamp);
-    const baseRawResult = getFirstTokenRecord(rawResult.data, CHAIN_BASE, startDate);
+    const baseRawResult = getFirstTokenRecord(rawResponse.body.data, CHAIN_BASE, startDate);
     const baseRawBlock: number = parseNumber(baseRawResult?.block);
     const baseRawTimestamp: number = parseNumber(baseRawResult?.timestamp);
-    const ethereumRawResult = getFirstTokenRecord(rawResult.data, CHAIN_ETHEREUM, startDate);
+    const ethereumRawResult = getFirstTokenRecord(rawResponse.body.data, CHAIN_ETHEREUM, startDate);
     const ethereumRawBlock: number = parseNumber(ethereumRawResult?.block);
     const ethereumRawTimestamp: number = parseNumber(ethereumRawResult?.timestamp);
-    const fantomRawResult = getFirstTokenRecord(rawResult.data, CHAIN_FANTOM, startDate);
+    const fantomRawResult = getFirstTokenRecord(rawResponse.body.data, CHAIN_FANTOM, startDate);
     const fantomRawBlock: number = parseNumber(fantomRawResult?.block);
     const fantomRawTimestamp: number = parseNumber(fantomRawResult?.timestamp);
-    const polygonRawResult = getFirstTokenRecord(rawResult.data, CHAIN_POLYGON, startDate);
+    const polygonRawResult = getFirstTokenRecord(rawResponse.body.data, CHAIN_POLYGON, startDate);
     const polygonRawBlock: number = parseNumber(polygonRawResult?.block);
     const polygonRawTimestamp: number = parseNumber(polygonRawResult?.timestamp);
 
     // Grab the results from the earliest operation
-    const result = await wg.client().query({
-      operationName: "atBlock/metrics",
-      input: {
-        arbitrumBlock: arbitrumRawBlock,
-        baseBlock: baseRawBlock,
-        ethereumBlock: ethereumRawBlock,
-        fantomBlock: fantomRawBlock,
-        polygonBlock: polygonRawBlock,
-      }
-    });
+    const response = await request(app)
+      .get('/operations/atBlock/metrics')
+      .query({
+        wg_variables: JSON.stringify({
+          arbitrumBlock: arbitrumRawBlock,
+          baseBlock: baseRawBlock,
+          ethereumBlock: ethereumRawBlock,
+          fantomBlock: fantomRawBlock,
+          polygonBlock: polygonRawBlock,
+        })
+      });
 
     // Single record
-    const record = result.data;
+    const record = response.body.data;
 
     expect(record).not.toBeNull();
 
@@ -395,31 +402,28 @@ describe("metrics", () => {
 
   const getRecords = async (startDate: string): Promise<[TokenRecord[], TokenSupply[], ProtocolMetric[]]> => {
     // Grab the TokenRecord results
-    const rawTokenRecordsResult = await wg.client().query({
-      operationName: "paginated/tokenRecords",
-      input: {
-        startDate: startDate,
-      },
-    });
-    const combinedTokenRecords = filterTokenRecords(rawTokenRecordsResult.data, undefined, START_DATE);
+    const rawTokenRecordsResponse = await request(app)
+      .get('/operations/paginated/tokenRecords')
+      .query({
+        wg_variables: JSON.stringify({ startDate: startDate })
+      });
+    const combinedTokenRecords = filterTokenRecords(rawTokenRecordsResponse.body.data, undefined, START_DATE);
 
     // Grab the results from the raw TokenSupply operation
-    const rawTokenSuppliesResult = await wg.client().query({
-      operationName: "paginated/tokenSupplies",
-      input: {
-        startDate: startDate,
-      },
-    });
-    const combinedTokenSupplies = filterTokenSupplies(rawTokenSuppliesResult.data, undefined, START_DATE);
+    const rawTokenSuppliesResponse = await request(app)
+      .get('/operations/paginated/tokenSupplies')
+      .query({
+        wg_variables: JSON.stringify({ startDate: startDate })
+      });
+    const combinedTokenSupplies = filterTokenSupplies(rawTokenSuppliesResponse.body.data, undefined, START_DATE);
 
     // Grab the results from the raw TokenSupply operation
-    const rawProtocolMetricsResult = await wg.client().query({
-      operationName: "paginated/protocolMetrics",
-      input: {
-        startDate: START_DATE,
-      },
-    });
-    const combinedProtocolMetrics = rawProtocolMetricsResult.data || [];
+    const rawProtocolMetricsResponse = await request(app)
+      .get('/operations/paginated/protocolMetrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: START_DATE })
+      });
+    const combinedProtocolMetrics = rawProtocolMetricsResponse.body.data || [];
 
     return [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics];
   };
@@ -442,7 +446,7 @@ describe("metrics", () => {
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
-    const ethereumProtocolMetrics = combinedProtocolMetrics.filter(record => record.block === ethereumTokenRecords[0].block);
+    const ethereumProtocolMetrics = combinedProtocolMetrics.filter((record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block);
     const ohmIndex = +ethereumProtocolMetrics[0].currentIndex;
 
     // Calculate expected results
@@ -455,16 +459,15 @@ describe("metrics", () => {
     const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
 
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: START_DATE,
-      },
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: START_DATE })
+      });
 
     // Fetch the Metric record for the same date
-    const records = result.data;
-    const record = records?.filter(record => record.date === START_DATE)[0];
+    const records = response.body.data;
+    const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmTotalSupply).toBeCloseTo(expectedSupply);
@@ -493,7 +496,7 @@ describe("metrics", () => {
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
-    const ethereumProtocolMetrics = combinedProtocolMetrics.filter(record => record.block === ethereumTokenRecords[0].block);
+    const ethereumProtocolMetrics = combinedProtocolMetrics.filter((record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block);
 
     const ohmIndex = +ethereumProtocolMetrics[0].currentIndex;
 
@@ -514,16 +517,15 @@ describe("metrics", () => {
     const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
 
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: START_DATE,
-      },
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: START_DATE })
+      });
 
     // Fetch the Metric record for the same date
-    const records = result.data;
-    const record = records?.filter(record => record.date === START_DATE)[0];
+    const records = response.body.data;
+    const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmCirculatingSupply).toBeCloseTo(expectedSupply);
@@ -552,7 +554,7 @@ describe("metrics", () => {
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
-    const ethereumProtocolMetrics = combinedProtocolMetrics.filter(record => record.block === ethereumTokenRecords[0].block);
+    const ethereumProtocolMetrics = combinedProtocolMetrics.filter((record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block);
 
     const ohmIndex = +ethereumProtocolMetrics[0].currentIndex;
 
@@ -574,16 +576,15 @@ describe("metrics", () => {
     const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
 
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: START_DATE,
-      },
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: START_DATE })
+      });
 
     // Fetch the Metric record for the same date
-    const records = result.data;
-    const record = records?.filter(record => record.date === START_DATE)[0];
+    const records = response.body.data;
+    const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmFloatingSupply).toBeCloseTo(expectedSupply);
@@ -612,7 +613,7 @@ describe("metrics", () => {
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
-    const ethereumProtocolMetrics = combinedProtocolMetrics.filter(record => record.block === ethereumTokenRecords[0].block);
+    const ethereumProtocolMetrics = combinedProtocolMetrics.filter((record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block);
 
     const ohmIndex = +ethereumProtocolMetrics[0].currentIndex;
 
@@ -636,16 +637,15 @@ describe("metrics", () => {
     const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
 
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: START_DATE,
-      },
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: START_DATE })
+      });
 
     // Fetch the Metric record for the same date
-    const records = result.data;
-    const record = records?.filter(record => record.date === START_DATE)[0];
+    const records = response.body.data;
+    const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmBackedSupply).toBeCloseTo(expectedSupply);
@@ -658,16 +658,15 @@ describe("metrics", () => {
 
   test("gOHM backed supply is accurate", async () => {
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: START_DATE,
-      },
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: START_DATE })
+      });
 
     // Fetch the Metric record for the same date
-    const records = result.data;
-    const record = records?.filter(record => record.date === START_DATE)[0];
+    const records = response.body.data;
+    const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     // The calculation logic of the backed supply metrics is already tested, so this just checks that the derived metric is correct
@@ -692,17 +691,18 @@ describe("metrics", () => {
     const marketValuePolygon = filterReduce(polygonTokenRecords, () => true);
 
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: START_DATE,
-        includeRecords: true,
-      },
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({
+          startDate: START_DATE,
+          includeRecords: true
+        })
+      });
 
     // Fetch the Metric record for the same date
-    const records = result.data;
-    const record = records?.filter(record => record.date === START_DATE)[0];
+    const records = response.body.data;
+    const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.treasuryMarketValue).toBeCloseTo(marketValue);
@@ -714,7 +714,7 @@ describe("metrics", () => {
 
     // Ensure that it excludes OHM in treasury addresses
     expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
-      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+      (record: TokenRecord) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
     ).length).toEqual(0);
 
     const isOHM = (value: TokenRecord): boolean => {
@@ -742,7 +742,7 @@ describe("metrics", () => {
     expect(record?.treasuryMarketValue).toEqual(marketValueExcludeOhm + buybackOhmValue);
 
     const buybackOhmRecords = record?.treasuryMarketValueRecords?.Ethereum.filter(
-      (record) => isOHM(record) && record.sourceAddress.toLowerCase() == BUYBACK_MS
+      (record: TokenRecord) => isOHM(record) && record.sourceAddress.toLowerCase() == BUYBACK_MS
     ) || [];
     expect(buybackOhmRecords.length).toBeGreaterThan(0);
   }, 30 * 1000);
@@ -765,17 +765,18 @@ describe("metrics", () => {
     const liquidBackingValuePolygon = filterReduce(polygonTokenRecords, (value) => value.isLiquid == true, true);
 
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: START_DATE,
-        includeRecords: true,
-      },
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({
+          startDate: START_DATE,
+          includeRecords: true
+        })
+      });
 
     // Fetch the Metric record for the same date
-    const records = result.data;
-    const record = records?.filter(record => record.date === START_DATE)[0];
+    const records = response.body.data;
+    const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.treasuryLiquidBacking).toBeCloseTo(liquidBackingValue);
@@ -787,31 +788,30 @@ describe("metrics", () => {
 
     // Ensure that it excludes OHM in treasury addresses
     expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
-      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+      (record: TokenRecord) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
     ).length).toEqual(0);
 
     // Ensure that it excludes OHM in the buyback addresses
     expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
-      (record) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == BUYBACK_MS
+      (record: TokenRecord) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == BUYBACK_MS
     ).length).toEqual(0);
   });
 
   test("OHM index", async () => {
     const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
 
-    const ohmIndex = +combinedProtocolMetrics.filter(record => record.date === START_DATE)[0].currentIndex;
+    const ohmIndex = +combinedProtocolMetrics.filter((record: ProtocolMetric) => record.date === START_DATE)[0].currentIndex;
 
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: START_DATE,
-      },
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: START_DATE })
+      });
 
     // Fetch the Metric record for the same date
-    const records = result.data;
-    const record = records?.filter(record => record.date === START_DATE)[0];
+    const records = response.body.data;
+    const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmIndex).toEqual(ohmIndex);
@@ -819,16 +819,15 @@ describe("metrics", () => {
 
   test("liquid backing metrics", async () => {
     // Grab the results from the latest operation
-    const result = await wg.client().query({
-      operationName: "paginated/metrics",
-      input: {
-        startDate: START_DATE,
-      },
-    });
+    const response = await request(app)
+      .get('/operations/paginated/metrics')
+      .query({
+        wg_variables: JSON.stringify({ startDate: START_DATE })
+      });
 
     // Fetch the Metric record for the same date
-    const records = result.data;
-    const record = records?.filter(record => record.date === START_DATE)[0];
+    const records = response.body.data;
+    const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     // The calculation logic of the liquid backing and backed supply metrics are already tested above, so this just checks that the derived metric is correct
@@ -836,3 +835,14 @@ describe("metrics", () => {
     expect(record?.treasuryLiquidBackingPerGOhmBacked).toBeCloseTo(record?.treasuryLiquidBacking! / record?.gOhmBackedSupply!);
   });
 });
+
+// Helper function for filterReduce
+const filterReduce = (
+  records: TokenRecord[],
+  filterPredicate: (value: TokenRecord) => unknown,
+  valueExcludingOhm = false,
+): number => {
+  return records.filter(filterPredicate).reduce((previousValue, currentRecord) => {
+    return previousValue + (valueExcludingOhm ? +currentRecord.valueExcludingOhm : +currentRecord.value);
+  }, 0);
+};

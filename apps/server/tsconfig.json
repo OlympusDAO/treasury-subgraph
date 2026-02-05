@@ -17,5 +17,10 @@
     "types": ["node"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", ".wundergraph", "tests"]
+  "exclude": ["node_modules", "dist", ".wundergraph", "tests"],
+  "ts-node": {
+    "compilerOptions": {
+      "types": ["node", "jest"]
+    }
+  }
 }

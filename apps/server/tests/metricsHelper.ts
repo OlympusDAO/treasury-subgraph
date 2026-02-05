@@ -1,6 +1,4 @@
-import { TokenSuppliesResponseData } from "../.wundergraph/generated/models";
-
-type TokenSupply = TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"][0];
+import type { TokenSupply } from "../src/core/tokenSupplyHelper";
 
 const OHM_ADDRESSES: string[] = [
   "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase(), // Mainnet
