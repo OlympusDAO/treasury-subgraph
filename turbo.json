@@ -6,8 +6,7 @@
         "^build"
       ],
       "outputs": [
-        "dist",
-        ".wundergraph/generated/**"
+        "dist"
       ],
       "env": [
         "WG_PUBLIC_NODE_URL",

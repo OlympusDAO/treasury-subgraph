@@ -44,7 +44,6 @@ apps/server/
 │   │   └── index.ts
 │   └── cache/
 │       └── cacheManager.ts  # LRU cache implementation
-├── .wundergraph/            # Legacy WunderGraph files (keep for reference)
 ├── tests/                   # Jest test suite
 ├── pulumi.ts               # Infrastructure as Code (Cloud Run deployment)
 ├── Dockerfile              # Container build
@@ -143,12 +142,10 @@ npx tsc --noEmit
 
 ## Important Notes for Agents
 
-1. **The `.wundergraph/` directory is legacy** - New code goes in `src/`
+1. **Wundergraph has been removed** - The system now uses Apollo Server with REST endpoints
 2. **Helper files in `src/core/` were copied from `.wundergraph/`** - They contain critical business logic
 3. **GraphQL version conflict** - We use `typeDefs as any` cast due to graphql version mismatch in workspace
-4. **Polygon subgraph is currently failing** - This was the original issue that prompted the rewrite
-5. **Paginated queries are not yet implemented** - They return empty arrays (marked with TODO)
-6. **Client package must be maintained** - The `apps/client/` package is used by other repositories and must remain API-compatible
+4. **Client package architecture (v2.0)** - See "Client Package" section below
 
 ## Common Tasks
 
@@ -167,3 +164,38 @@ npx tsc --noEmit
 1. Add query to `src/graphql/schema.ts`
 2. Add resolver to `src/graphql/resolvers.ts`
 3. Add subgraph queries to `src/subgraph/queries.ts` if needed
+
+## Client Package
+
+The `apps/client/` package provides a TypeScript client for consuming this API.
+
+### Architecture (v2.0)
+- No Wundergraph dependency - uses native `fetch`
+- Exports `createClient()` function
+- Client has `query({ operationName, input })` method
+- Production URL baked in at build time via `WG_PUBLIC_NODE_URL` env var
+- Can be overridden at runtime via `baseUrl` config
+
+### Usage
+```typescript
+import { createClient } from '@olympusdao/treasury-subgraph-client';
+
+const client = createClient();
+const metrics = await client.query({
+  operationName: 'latest/metrics',
+  input: { ignoreCache: true }
+});
+```
+
+### Building
+```bash
+cd apps/client
+yarn build
+```
+
+### Building for Production
+The production URL is baked in at build time:
+```bash
+# Uses .env.prod for WG_PUBLIC_NODE_URL
+yarn build:release
+```
