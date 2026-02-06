@@ -27,6 +27,7 @@ jobs:
 
       - name: Run security audit
         run: |
+          EXIT_CODE=0
           yarn audit --level moderate --json > /dev/null 2>&1 || EXIT_CODE=$?
           yarn audit --level moderate
           if [ $EXIT_CODE -ge 4 ]; then
