@@ -25,14 +25,14 @@ yarn lint:check
 yarn build
 
 # Step 3: Pulumi preview (dev stack)
-cd apps/server && pulumi preview --stack dev
+cd apps/server && pulumi preview --stack dev --show-full-output
 ```
 
 ## What It Does
 
 1. **Lint check** - Runs Biome linter to check code quality and formatting
 2. **Build** - Compiles TypeScript for all packages (typecheck runs automatically via prebuild hook)
-3. **Pulumi preview** - Shows infrastructure changes for the dev stack
+3. **Pulumi preview** - Shows infrastructure changes for the dev stack (with full output)
 
 ## Notes
 
