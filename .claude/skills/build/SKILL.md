@@ -1,11 +1,11 @@
 ---
 name: build
-description: Build the TypeScript server code. Use this when the user asks to build, compile, or run a build.
+description: Build TypeScript code for client and server packages. Use this when the user asks to build, compile, or run a build.
 ---
 
-# Build Server
+# Build
 
-This skill builds the TypeScript server code into JavaScript.
+This skill builds the TypeScript code for the treasury-subgraph monorepo.
 
 ## Usage
 
@@ -15,26 +15,44 @@ Run this skill when:
 - After making TypeScript changes
 - To verify the code compiles successfully
 
-## Command
+## Build Commands
+
+### All Packages (Root Level)
+
+```bash
+# Build all packages
+yarn build
+```
+
+### Server Package
 
 ```bash
 cd apps/server && yarn build
 ```
 
-## What It Does
+Builds the Apollo Server GraphQL API:
+- Runs `tsc` (TypeScript compiler)
+- Outputs JavaScript files to `dist/` directory
+- Generates declaration files (`.d.ts`) and source maps
 
-1. Runs `tsc` (TypeScript compiler)
-2. Outputs JavaScript files to `dist/` directory
-3. Generates declaration files (`.d.ts`)
-4. Creates source maps for debugging
+### Client Package
 
-## Output Location
+```bash
+cd apps/client && yarn build
+```
 
-Built files are placed in:
-- `apps/server/dist/` - JavaScript output
+Builds the TypeScript client library:
+- Uses `tsup` for fast bundling
+- Outputs CommonJS (`client.js`) and ES Module (`client.mjs`) formats
+- Generates type definitions (`client.d.ts`)
+- Creates source maps
+
+## Output Locations
+
+- `apps/server/dist/` - Server JavaScript output
+- `apps/client/dist/` - Client library bundle
 
 ## Next Steps After Build
 
-- Run the server: `yarn start` or `node dist/index.js`
-- Deploy to Cloud Run
-- Run tests: `yarn test`
+- **Server**: Run locally with `yarn start` or `node dist/index.js`
+- **Client**: Import from `dist/` or publish to npm
