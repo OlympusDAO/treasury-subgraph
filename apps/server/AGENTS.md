@@ -150,7 +150,8 @@ yarn build:release
 3. **GraphQL version conflict** - We use `typeDefs as any` cast due to graphql version mismatch in workspace
 4. **Client package architecture (v2.0)** - See "Client Package" section below
 5. **Client package must be maintained** - The `apps/client/` package is used by other repositories and must remain API-compatible
-6. **ALWAYS obtain approval before making commits** - Do not use git commit commands without explicit user approval. Ask the user before committing any changes.
+6. **Commit after completing each task/milestone** - After finishing each discrete task or group of related changes, commit the work with a descriptive message. This ensures progress is saved incrementally and makes review easier.
+7. **ALWAYS obtain approval before making commits** - Do not use git commit commands without explicit user approval. Ask the user before committing any changes.
 
 ## Common Tasks
 
