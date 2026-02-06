@@ -4,7 +4,7 @@ import { TokenSupply, filterLatestBlockByDay as filterTokenSuppliesByDay } from 
 import { ProtocolMetric, filterLatestBlockByDay as filterProtocolMetricsByDay } from '../core/protocolMetricHelper';
 import { filterCompleteRecords as filterCompleteTokenRecords } from '../core/tokenRecordHelper';
 import { filterCompleteRecords as filterCompleteTokenSupplies } from '../core/tokenSupplyHelper';
-import { TokenRecordsResponse, TokenSuppliesResponse } from '../core/types';
+import { TokenRecordsResponse, TokenSuppliesResponse, ProtocolMetricsResponse } from '../core/types';
 import { Logger, ConsoleLogger } from '../core/types';
 import { getOffsetDays, getNextStartDate, getNextEndDate, getISO8601DateString } from '../core/dateHelper';
 import {
@@ -126,6 +126,20 @@ function responseToTokenSuppliesArray(response: TokenSuppliesResponse): TokenSup
     }
   }
   return supplies;
+}
+
+/**
+ * Convert Map<Chain, SingleChainProtocolMetricsResponse> to ProtocolMetricsResponse
+ */
+function mapToProtocolMetricsResponse(map: Map<Chain, SingleChainProtocolMetricsResponse>): ProtocolMetricsResponse {
+  return {
+    treasuryArbitrum_protocolMetrics: normalizeArray(map.get('arbitrum')?.protocolMetrics),
+    treasuryEthereum_protocolMetrics: normalizeArray(map.get('ethereum')?.protocolMetrics),
+    treasuryFantom_protocolMetrics: normalizeArray(map.get('fantom')?.protocolMetrics),
+    treasuryPolygon_protocolMetrics: normalizeArray(map.get('polygon')?.protocolMetrics),
+    treasuryBase_protocolMetrics: normalizeArray(map.get('base')?.protocolMetrics),
+    treasuryBerachain_protocolMetrics: normalizeArray(map.get('berachain')?.protocolMetrics),
+  };
 }
 
 // Resolvers
@@ -287,6 +301,38 @@ export const resolvers = {
       }));
     },
 
+    // ============ LATEST RAW QUERIES (Wundergraph compatible) ============
+
+    async latestTokenRecordsRaw(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`latestTokenRecordsRaw called with: ignoreCache=${args.ignoreCache ?? false}`);
+      const { results } = await queryAllSubgraphs<SingleChainTokenRecordsResponse>(
+        TOKEN_RECORDS_LATEST,
+        {},
+        logger
+      );
+      return mapToTokenRecordsResponse(results);
+    },
+
+    async latestTokenSuppliesRaw(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`latestTokenSuppliesRaw called with: ignoreCache=${args.ignoreCache ?? false}`);
+      const { results } = await queryAllSubgraphs<SingleChainTokenSuppliesResponse>(
+        TOKEN_SUPPLIES_LATEST,
+        {},
+        logger
+      );
+      return mapToTokenSuppliesResponse(results);
+    },
+
+    async latestProtocolMetricsRaw(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`latestProtocolMetricsRaw called with: ignoreCache=${args.ignoreCache ?? false}`);
+      const { results } = await queryAllSubgraphs<SingleChainProtocolMetricsResponse>(
+        PROTOCOL_METRICS_LATEST,
+        {},
+        logger
+      );
+      return mapToProtocolMetricsResponse(results);
+    },
+
     // ============ EARLIEST QUERIES ============
 
     async earliestMetrics(_parent: unknown, args: { ignoreCache?: boolean }) {
@@ -415,6 +461,38 @@ export const resolvers = {
         ([chain, data]) => normalizeArray(data.protocolMetrics).map(m => ({ ...m, blockchain: CHAIN_NAMES[chain] }))
       );
       return metrics;
+    },
+
+    // ============ EARLIEST RAW QUERIES (Wundergraph compatible) ============
+
+    async earliestTokenRecordsRaw(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`earliestTokenRecordsRaw called with: ignoreCache=${args.ignoreCache ?? false}`);
+      const { results } = await queryAllSubgraphs<SingleChainTokenRecordsResponse>(
+        TOKEN_RECORDS_EARLIEST,
+        {},
+        logger
+      );
+      return mapToTokenRecordsResponse(results);
+    },
+
+    async earliestTokenSuppliesRaw(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`earliestTokenSuppliesRaw called with: ignoreCache=${args.ignoreCache ?? false}`);
+      const { results } = await queryAllSubgraphs<SingleChainTokenSuppliesResponse>(
+        TOKEN_SUPPLIES_EARLIEST,
+        {},
+        logger
+      );
+      return mapToTokenSuppliesResponse(results);
+    },
+
+    async earliestProtocolMetricsRaw(_parent: unknown, args: { ignoreCache?: boolean }) {
+      logger.info(`earliestProtocolMetricsRaw called with: ignoreCache=${args.ignoreCache ?? false}`);
+      const { results } = await queryAllSubgraphs<SingleChainProtocolMetricsResponse>(
+        PROTOCOL_METRICS_EARLIEST,
+        {},
+        logger
+      );
+      return mapToProtocolMetricsResponse(results);
     },
 
     // ============ AT BLOCK QUERY ============
@@ -932,7 +1010,7 @@ export const resolvers = {
       const latestDateStr = getISO8601DateString(new Date());
 
       const cache = getGlobalCache();
-      const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete });
+      const cacheKey = CacheManager.generateKey('paginatedMetrics', { startDate: earliestDateStr, endDate: latestDateStr, crossChainDataComplete, includeRecords });
 
       const cached = await cache.get(cacheKey, { bypassCache: args.ignoreCache });
       if (cached) {

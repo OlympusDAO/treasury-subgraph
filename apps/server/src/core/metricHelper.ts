@@ -619,6 +619,24 @@ export const getMetricObject = (log: Logger, tokenRecords: TokenRecord[], tokenS
     const date = options && options.dateFallback ? options.dateFallback : "";
     const timestamp = options && options.dateFallback ? new Date(options.dateFallback).getTime() / 1000 : 0;
 
+    const emptyChainRecords = {
+      [Chains.ARBITRUM]: [] as TokenSupply[],
+      [Chains.ETHEREUM]: [] as TokenSupply[],
+      [Chains.FANTOM]: [] as TokenSupply[],
+      [Chains.POLYGON]: [] as TokenSupply[],
+      [Chains.BASE]: [] as TokenSupply[],
+      [Chains.BERACHAIN]: [] as TokenSupply[],
+    };
+
+    const emptyChainTokenRecords = {
+      [Chains.ARBITRUM]: [] as TokenRecord[],
+      [Chains.ETHEREUM]: [] as TokenRecord[],
+      [Chains.FANTOM]: [] as TokenRecord[],
+      [Chains.POLYGON]: [] as TokenRecord[],
+      [Chains.BASE]: [] as TokenRecord[],
+      [Chains.BERACHAIN]: [] as TokenRecord[],
+    };
+
     return {
       date: date,
       blocks: {
@@ -714,6 +732,15 @@ export const getMetricObject = (log: Logger, tokenRecords: TokenRecord[], tokenS
       treasuryLiquidBackingPerOhmFloating: 0,
       treasuryLiquidBackingPerOhmBacked: 0,
       treasuryLiquidBackingPerGOhmBacked: 0,
+      // Optional properties - included when includeRecords is true
+      ...includeRecords ? {
+        ohmTotalSupplyRecords: emptyChainRecords,
+        ohmCirculatingSupplyRecords: emptyChainRecords,
+        ohmFloatingSupplyRecords: emptyChainRecords,
+        ohmBackedSupplyRecords: emptyChainRecords,
+        treasuryMarketValueRecords: emptyChainTokenRecords,
+        treasuryLiquidBackingRecords: emptyChainTokenRecords,
+      } : {},
     }
   }
 

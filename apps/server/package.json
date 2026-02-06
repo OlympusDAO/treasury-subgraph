@@ -18,9 +18,11 @@
     "@types/node": "^20.19.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/supertest": "^6.0.2",
     "date-fns": "^2.30.0",
     "jest": "^29.7.0",
     "jest-mock-extended": "^3.0.5",
+    "supertest": "^6.3.4",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
@@ -44,6 +46,6 @@
     "pretest": "yarn build",
     "test": "jest",
     "test:ci": "jest --runInBand --ci",
-    "test:local": "jest -e ../../.env"
+    "test:local": "dotenv -e ../../.env -- jest"
   }
 }

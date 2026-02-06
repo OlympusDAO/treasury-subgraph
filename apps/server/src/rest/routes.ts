@@ -6,12 +6,16 @@ import {
   latestTokenRecordsHandler,
   latestTokenSuppliesHandler,
   latestProtocolMetricsHandler,
+  tokenRecordsLatestRawHandler,
+  tokenSuppliesLatestRawHandler,
 } from './handlers/latest';
 import {
   earliestMetricsHandler,
   earliestTokenRecordsHandler,
   earliestTokenSuppliesHandler,
   earliestProtocolMetricsHandler,
+  tokenRecordsEarliestRawHandler,
+  tokenSuppliesEarliestRawHandler,
 } from './handlers/earliest';
 import {
   paginatedMetricsHandler,
@@ -40,11 +44,19 @@ export function registerRoutes(router: Router): void {
   router.get('/latest/tokenSupplies', asyncHandler(latestTokenSuppliesHandler));
   router.get('/latest/protocolMetrics', asyncHandler(latestProtocolMetricsHandler));
 
+  // Raw format endpoints (Wundergraph compatible)
+  router.get('/tokenRecordsLatest', asyncHandler(tokenRecordsLatestRawHandler));
+  router.get('/tokenSuppliesLatest', asyncHandler(tokenSuppliesLatestRawHandler));
+
   // Earliest endpoints (4)
   router.get('/earliest/metrics', asyncHandler(earliestMetricsHandler));
   router.get('/earliest/tokenRecords', asyncHandler(earliestTokenRecordsHandler));
   router.get('/earliest/tokenSupplies', asyncHandler(earliestTokenSuppliesHandler));
   router.get('/earliest/protocolMetrics', asyncHandler(earliestProtocolMetricsHandler));
+
+  // Raw format endpoints (Wundergraph compatible)
+  router.get('/tokenRecordsEarliest', asyncHandler(tokenRecordsEarliestRawHandler));
+  router.get('/tokenSuppliesEarliest', asyncHandler(tokenSuppliesEarliestRawHandler));
 
   // Paginated endpoints (4)
   router.get('/paginated/metrics', asyncHandler(paginatedMetricsHandler));
