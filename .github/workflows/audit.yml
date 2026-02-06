@@ -29,7 +29,7 @@ jobs:
         run: |
           OUTPUT=$(yarn audit --level moderate 2>&1)
           echo "$OUTPUT"
-          if echo "$OUTPUT" | grep -iE 'moderate|high'; then
+          if echo "$OUTPUT" | grep -iE 'critical|moderate|high'; then
             echo "::error::Moderate or high vulnerabilities found"
             exit 1
           fi
