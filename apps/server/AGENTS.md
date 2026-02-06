@@ -146,6 +146,8 @@ npx tsc --noEmit
 2. **Helper files in `src/core/` were copied from `.wundergraph/`** - They contain critical business logic
 3. **GraphQL version conflict** - We use `typeDefs as any` cast due to graphql version mismatch in workspace
 4. **Client package architecture (v2.0)** - See "Client Package" section below
+5. **Client package must be maintained** - The `apps/client/` package is used by other repositories and must remain API-compatible
+6. **ALWAYS obtain approval before making commits** - Do not use git commit commands without explicit user approval. Ask the user before committing any changes.
 
 ## Common Tasks
 

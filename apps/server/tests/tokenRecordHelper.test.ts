@@ -1,6 +1,6 @@
-import { RequestLogger } from "@wundergraph/sdk/server";
-import { TokenRecordsLatestResponseData } from "../.wundergraph/generated/models";
-import { TokenRecord, filterCompleteRecords, filterLatestBlockByDay } from "../.wundergraph/tokenRecordHelper";
+import { Logger, TokenRecordsResponse } from "../src/core/types";
+import type { TokenRecord } from "../src/core/tokenRecordHelper";
+import { filterCompleteRecords, filterLatestBlockByDay } from "../src/core/tokenRecordHelper";
 
 import { mock } from "jest-mock-extended";
 
@@ -50,13 +50,13 @@ describe("filterLatestBlockByDay", () => {
 });
 
 describe("filterCompleteRecords", () => {
-  let mockLog: RequestLogger;
+  let mockLog: Logger;
   beforeAll(() => {
-    mockLog = mock<RequestLogger>();
+    mockLog = mock<Logger>();
   });
 
   it("should return records up to the latest Arbitrum date if lagging", () => {
-    const records: TokenRecordsLatestResponseData = {
+    const records: TokenRecordsResponse = {
       treasuryArbitrum_tokenRecords: [
         getSampleRecord("2", "2021-01-02", 2),
         getSampleRecord("1", "2021-01-01", 1),
@@ -68,7 +68,8 @@ describe("filterCompleteRecords", () => {
         getSampleRecord("1", "2021-01-01", 1),
       ],
       treasuryFantom_tokenRecords: [],
-      treasuryPolygon_tokenRecords: []
+      treasuryPolygon_tokenRecords: [],
+      treasuryBerachain_tokenRecords: []
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -85,7 +86,7 @@ describe("filterCompleteRecords", () => {
   });
 
   it("should return records up to the latest Ethereum date if lagging", () => {
-    const records: TokenRecordsLatestResponseData = {
+    const records: TokenRecordsResponse = {
       treasuryArbitrum_tokenRecords: [
         getSampleRecord("3", "2021-01-03", 3),
         getSampleRecord("2", "2021-01-02", 2),
@@ -97,7 +98,8 @@ describe("filterCompleteRecords", () => {
         getSampleRecord("1", "2021-01-01", 1),
       ],
       treasuryFantom_tokenRecords: [],
-      treasuryPolygon_tokenRecords: []
+      treasuryPolygon_tokenRecords: [],
+      treasuryBerachain_tokenRecords: []
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -114,7 +116,7 @@ describe("filterCompleteRecords", () => {
   });
 
   it("should return no records if Ethereum length is 0", () => {
-    const records: TokenRecordsLatestResponseData = {
+    const records: TokenRecordsResponse = {
       treasuryArbitrum_tokenRecords: [
         getSampleRecord("3", "2021-01-03", 3),
         getSampleRecord("2", "2021-01-02", 2),
@@ -123,7 +125,8 @@ describe("filterCompleteRecords", () => {
       treasuryBase_tokenRecords: [],
       treasuryEthereum_tokenRecords: [],
       treasuryFantom_tokenRecords: [],
-      treasuryPolygon_tokenRecords: []
+      treasuryPolygon_tokenRecords: [],
+      treasuryBerachain_tokenRecords: []
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -133,7 +136,7 @@ describe("filterCompleteRecords", () => {
   });
 
   it("should return no records if Arbitrum length is 0", () => {
-    const records: TokenRecordsLatestResponseData = {
+    const records: TokenRecordsResponse = {
       treasuryArbitrum_tokenRecords: [],
       treasuryEthereum_tokenRecords: [
         getSampleRecord("3", "2021-01-03", 3),
@@ -142,7 +145,8 @@ describe("filterCompleteRecords", () => {
       ],
       treasuryBase_tokenRecords: [],
       treasuryFantom_tokenRecords: [],
-      treasuryPolygon_tokenRecords: []
+      treasuryPolygon_tokenRecords: [],
+      treasuryBerachain_tokenRecords: []
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);

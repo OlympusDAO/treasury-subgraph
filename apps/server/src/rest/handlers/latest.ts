@@ -49,3 +49,27 @@ export async function latestProtocolMetricsHandler(req: Request, res: Response):
   const result = await resolvers.Query.latestProtocolMetrics(null, params);
   res.json(wundergraphResponse(result));
 }
+
+/**
+ * GET /operations/tokenRecordsLatest
+ * Raw format (Wundergraph compatible)
+ * Returns chain-specific format: { treasuryArbitrum_tokenRecords: [...], ... }
+ * Query params (via wg_variables): { ignoreCache?: boolean }
+ */
+export async function tokenRecordsLatestRawHandler(req: Request, res: Response): Promise<void> {
+  const params = parseWgVariables(req) as { ignoreCache?: boolean };
+  const result = await resolvers.Query.latestTokenRecordsRaw(null, params);
+  res.json(wundergraphResponse(result));
+}
+
+/**
+ * GET /operations/tokenSuppliesLatest
+ * Raw format (Wundergraph compatible)
+ * Returns chain-specific format: { treasuryArbitrum_tokenSupplies: [...], ... }
+ * Query params (via wg_variables): { ignoreCache?: boolean }
+ */
+export async function tokenSuppliesLatestRawHandler(req: Request, res: Response): Promise<void> {
+  const params = parseWgVariables(req) as { ignoreCache?: boolean };
+  const result = await resolvers.Query.latestTokenSuppliesRaw(null, params);
+  res.json(wundergraphResponse(result));
+}

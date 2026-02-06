@@ -1,6 +1,6 @@
-import { TokenSuppliesResponseData } from "../.wundergraph/generated/models";
+import type { TokenSupply } from "../src/core/tokenSupplyHelper";
 
-export type TokenSupply = TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"][0];
+export type { TokenSupply };
 
 export const filter = (records: TokenSupply[] | undefined, chain?: string, date?: string): TokenSupply[] => {
   if (!records) {

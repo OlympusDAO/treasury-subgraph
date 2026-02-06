@@ -1,3 +1,3 @@
-import { RawInternalProtocolMetricsResponseData } from "../.wundergraph/generated/models";
+import type { ProtocolMetric } from "../src/core/protocolMetricHelper";
 
-export type ProtocolMetric = RawInternalProtocolMetricsResponseData["treasuryEthereum_protocolMetrics"][0];
+export type { ProtocolMetric };

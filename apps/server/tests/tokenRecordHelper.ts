@@ -1,6 +1,6 @@
-import { TokenRecordsResponseData } from "../.wundergraph/generated/models";
+import type { TokenRecord } from "../src/core/tokenRecordHelper";
 
-export type TokenRecord = TokenRecordsResponseData["treasuryEthereum_tokenRecords"][0];
+export type { TokenRecord };
 
 export const filter = (records: TokenRecord[] | undefined, chain?: string, date?: string): TokenRecord[] => {
   if (!records) {
