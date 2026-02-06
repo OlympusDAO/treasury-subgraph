@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "turbo build",
-    "build:prod": "turbo run build:release --force",
+    "build:prod": "dotenv -e .env.prod -- turbo run build:release --force",
     "lint": "turbo lint",
     "server:start": "cd apps/server && dotenv -e ../../.env -- yarn start",
     "changelog": "cd apps/client && yarn changelog",
