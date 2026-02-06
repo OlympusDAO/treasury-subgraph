@@ -138,6 +138,9 @@ yarn test
 
 # Type check
 npx tsc --noEmit
+
+# Build for production (uses .env.prod)
+yarn build:release
 ```
 
 ## Important Notes for Agents
@@ -211,3 +214,5 @@ The production URL is baked in at build time:
 # Uses .env.prod for WG_PUBLIC_NODE_URL
 yarn build:release
 ```
+
+**Note:** The client has a `devDependency` on the server package to ensure proper build ordering. When building the monorepo with `yarn build:prod`, the server builds first, then the client.

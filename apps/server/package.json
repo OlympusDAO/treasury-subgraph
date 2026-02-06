@@ -42,6 +42,7 @@
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "build": "tsc",
+    "build:release": "tsc",
     "build:watch": "tsc --watch",
     "pretest": "yarn build",
     "test": "jest",

@@ -33,6 +33,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@olympusdao/treasury-subgraph": "*",
     "auto-changelog": "^2.4.0",
     "tsup": "^8.0.0",
     "typescript": "^5.3.0"
