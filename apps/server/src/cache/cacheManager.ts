@@ -117,9 +117,16 @@ export class CacheManager<T = any> {
     factory: () => Promise<T>,
     ttl?: number
   ): Promise<T> {
-    const cached = await this.get(key);
-    if (cached !== null) {
-      return cached;
+    const entry = this.cache.get(key);
+
+    // Check if entry exists (even if data is null)
+    if (entry) {
+      const now = Date.now();
+      if (now - entry.timestamp <= entry.ttl) {
+        return entry.data;
+      }
+      // Entry expired, delete it
+      this.cache.delete(key);
     }
 
     const data = await factory();
@@ -141,8 +148,8 @@ export function getGlobalCache(): CacheManager {
   return globalCache;
 }
 
-export function clearGlobalCache(): void {
+export async function clearGlobalCache(): Promise<void> {
   if (globalCache) {
-    globalCache.clear();
+    await globalCache.clear();
   }
 }

@@ -204,7 +204,8 @@ export const resolvers = {
         logger
       );
 
-      // Combine all successful chains
+      // Combine all successful chains (union - chain is successful if any query succeeded)
+      // This allows partial data returns when some subgraphs are unavailable
       const allSuccessfulChains = new Set([
         ...allTokenRecords.successfulChains,
         ...allTokenSupplies.successfulChains,
@@ -245,6 +246,8 @@ export const resolvers = {
     },
 
     async latestTokenRecords(_parent: unknown, args: { ignoreCache?: boolean }) {
+      // ignoreCache is accepted for API consistency but is ignored
+      // (this resolver doesn't use caching - data is always fresh)
       logger.info(`latestTokenRecords called with: ignoreCache=${args.ignoreCache ?? false}`);
       const { results, successfulChains, failedChains } = await queryAllSubgraphs<
         SingleChainTokenRecordsResponse
@@ -264,6 +267,8 @@ export const resolvers = {
     },
 
     async latestTokenSupplies(_parent: unknown, args: { ignoreCache?: boolean }) {
+      // ignoreCache is accepted for API consistency but is ignored
+      // (this resolver doesn't use caching - data is always fresh)
       logger.info(`latestTokenSupplies called with: ignoreCache=${args.ignoreCache ?? false}`);
       const { results, successfulChains, failedChains } = await queryAllSubgraphs<
         SingleChainTokenSuppliesResponse
@@ -283,6 +288,8 @@ export const resolvers = {
     },
 
     async latestProtocolMetrics(_parent: unknown, args: { ignoreCache?: boolean }) {
+      // ignoreCache is accepted for API consistency but is ignored
+      // (this resolver doesn't use caching - data is always fresh)
       logger.info(`latestProtocolMetrics called with: ignoreCache=${args.ignoreCache ?? false}`);
       const { results, successfulChains, failedChains } = await queryAllSubgraphs<
         SingleChainProtocolMetricsResponse

@@ -27,7 +27,7 @@
 - Update @types/jest from ^29.5.1 to ^29.5.12
 - Update ts-jest from ^29.1.0 to ^29.1.2
 - Update ts-node from ^10.9.1 to ^10.9.2
-- Update @pulumi/gcp from ^9.11.0 to ^6.67.0 (major version bump per pulumi's new versioning)
+- Downgrade @pulumi/gcp from ^9.11.0 to ^6.67.0 (currently installed: ^6.67.0)
 - Update syncpack from ^9.8.6 to ^13.0.4
 - Fix security vulnerabilities in syncpack dependencies (zod, semver)
 - Add resolution for @babel/runtime to fix date-fns indirect vulnerability

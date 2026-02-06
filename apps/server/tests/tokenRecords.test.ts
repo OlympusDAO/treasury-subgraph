@@ -166,7 +166,7 @@ describe("paginated", () => {
     const records = response.body.data;
     const filteredRecords = records ? records.filter((record: any) => record.blockchain === CHAIN_POLYGON) : [];
     if (filteredRecords.length === 0) { console.warn("Polygon subgraph has no data - skipping test"); return; }
-  expect(filteredRecords.length).toBeGreaterThan(0);
+    expect(filteredRecords.length).toBeGreaterThan(0);
   });
 });
 

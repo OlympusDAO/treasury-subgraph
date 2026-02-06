@@ -83,12 +83,22 @@ export class TreasurySubgraphClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const body = await response.text().catch(() => '');
+        throw new Error(`HTTP ${response.status}: ${response.statusText}${body ? ` - ${body}` : ''}`);
       }
 
       // Server returns { data: T, errors?: [...] } format
       // Return as-is for Wundergraph compatibility
-      return await response.json() as T;
+      try {
+        return await response.json() as T;
+      } catch (jsonError) {
+        throw new Error(`Failed to parse JSON response from ${url.toString()}`);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`Request timeout after ${this.timeout}ms`);
+      }
+      throw error;
     } finally {
       clearTimeout(timeoutId);
     }

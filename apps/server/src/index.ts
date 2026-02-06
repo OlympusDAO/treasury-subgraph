@@ -70,8 +70,8 @@ async function startServer() {
   // Apply GraphQL middleware
   server.applyMiddleware({ app, path: '/graphql' });
 
-  // Start listening
-  app.listen(PORT, () => {
+  // Start listening and store server reference
+  const httpServer = app.listen(PORT, () => {
     console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
     console.log(`📊 Health check at http://localhost:${PORT}/health`);
     console.log(`🔌 REST API at http://localhost:${PORT}/operations`);
@@ -81,6 +81,15 @@ async function startServer() {
   const shutdown = async () => {
     console.log('Shutting down gracefully...');
     await server.stop();
+
+    // Close HTTP server
+    await new Promise<void>((resolve) => {
+      httpServer.close(() => {
+        console.log('HTTP server closed');
+        resolve();
+      });
+    });
+
     process.exit(0);
   };
 
