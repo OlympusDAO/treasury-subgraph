@@ -1,5 +1,5 @@
 import { addDays } from "date-fns";
-import type { Express } from "express";
+import type { Application } from "express";
 import request from "supertest";
 import {
   CHAIN_ARBITRUM,
@@ -14,7 +14,7 @@ import { parseNumber } from "./numberHelper";
 import { startTestServer, stopTestServer } from "./setup/testServer";
 import { getFirstRecord } from "./tokenSupplyHelper";
 
-let app: Express;
+let app: Application;
 
 beforeAll(async () => {
   const server = await startTestServer();

@@ -1,10 +1,10 @@
 import { addDays } from "date-fns";
-import type { Express } from "express";
+import type { Application } from "express";
 import request from "supertest";
 import { getISO8601DateString } from "./dateHelper";
 import { startTestServer, stopTestServer } from "./setup/testServer";
 
-let app: Express;
+let app: Application;
 
 beforeAll(async () => {
   const server = await startTestServer();

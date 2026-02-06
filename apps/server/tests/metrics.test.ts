@@ -1,5 +1,5 @@
 import { addDays } from "date-fns";
-import type { Express } from "express";
+import type { Application } from "express";
 import request from "supertest";
 import {
   CHAIN_ARBITRUM,
@@ -33,7 +33,7 @@ import { filter as filterTokenSupplies } from "./tokenSupplyHelper";
 const BUYBACK_MS = "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase();
 const DAO_WALLET = "0x245cc372c84b3645bf0ffe6538620b04a217988b".toLowerCase();
 
-let app: Express;
+let app: Application;
 
 beforeAll(async () => {
   const server = await startTestServer();
@@ -175,8 +175,8 @@ describe("paginated", () => {
       // Find a record that has data for required chains (Ethereum and Arbitrum)
       const recordWithRequiredData = records?.find(
         (r: { ohmTotalSupplyRecords?: Record<string, unknown[]>; [key: string]: unknown }) =>
-          r.ohmTotalSupplyRecords?.Arbitrum?.length > 0 &&
-          r.ohmTotalSupplyRecords?.Ethereum?.length > 0
+          (r.ohmTotalSupplyRecords?.Arbitrum?.length ?? 0) > 0 &&
+          (r.ohmTotalSupplyRecords?.Ethereum?.length ?? 0) > 0
       );
 
       expect(recordWithRequiredData).toBeDefined();
