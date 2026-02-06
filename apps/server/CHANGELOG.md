@@ -1,5 +1,18 @@
 # Changelog
 
+## [v2.0.2] - 2026-02-06
+
+### Security & CI Improvements
+
+- Update dependencies to resolve moderate/high vulnerabilities
+- Improve security audit CI workflow:
+  - Configure audit to only fail on moderate+ severity vulnerabilities
+  - Add critical severity check to audit workflow
+  - Use yarn audit exit code mask for proper severity filtering
+  - Initialize EXIT_CODE to properly handle successful audits
+  - Fix regex pattern for vulnerability parsing
+  - Allow audit display output to pass with set -e safety
+
 ## [v2.0.1]
 
 - Update apollo-server-express from ^3.12.1 to ^3.13.0
