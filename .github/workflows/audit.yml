@@ -26,7 +26,13 @@ jobs:
         run: yarn
 
       - name: Run security audit
-        run: yarn audit --level moderate
+        run: |
+          OUTPUT=$(yarn audit --level moderate 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -E '^[[:space:]]*(moderate|high)[[:space:]]+'; then
+            echo "::error::Moderate or high vulnerabilities found"
+            exit 1
+          fi
 
       - name: Comment PR on failure
         if: failure() && github.event_name == 'pull_request'
