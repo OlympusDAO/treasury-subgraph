@@ -11,9 +11,9 @@
     "@babel/runtime": "^7.26.10"
   },
   "devDependencies": {
-    "@pulumi/docker": "^4.11.0",
-    "@pulumi/gcp": "^6.67.0",
-    "@pulumi/pulumi": "^3.218.0",
+    "@pulumi/docker": "^4.12.0",
+    "@pulumi/gcp": "^9.11.0",
+    "@pulumi/pulumi": "^3.219.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.19.0",
     "@types/cors": "^2.8.17",

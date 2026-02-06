@@ -143,6 +143,26 @@ npx tsc --noEmit
 yarn build:release
 ```
 
+## Deployment (Pulumi)
+
+The infrastructure is managed through Pulumi and deployed to Google Cloud Run.
+
+```bash
+# Select the Pulumi stack (dev/prod)
+pulumi stack select dev
+
+# Preview deployment changes
+pulumi up
+
+# Deploy without confirmation (use with caution)
+pulumi up --yes
+
+# Destroy infrastructure
+pulumi destroy
+```
+
+**Important:** Always run `yarn build` before `pulumi up` to ensure the latest code is compiled. The Docker image built during deployment will include the compiled JavaScript from `dist/`.
+
 ## Important Notes for Agents
 
 1. **Wundergraph has been removed** - The system now uses Apollo Server with REST endpoints
