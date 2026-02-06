@@ -40,6 +40,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "prebuild": "yarn typecheck",
     "build": "tsc",
     "build:release": "tsc",
     "build:watch": "tsc --watch",

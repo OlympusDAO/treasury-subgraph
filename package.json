@@ -14,7 +14,8 @@
   "scripts": {
     "build": "turbo build",
     "build:release": "dotenv -e .env.prod -- turbo run build:release --force",
-    "lint": "turbo lint",
+    "lint": "biome check --write .",
+    "lint:check": "biome check .",
     "server:start": "cd apps/server && dotenv -e ../../.env -- yarn start",
     "changelog": "cd apps/client && yarn changelog",
     "depcheck": "syncpack",
@@ -28,6 +29,7 @@
     "apps/*"
   ],
   "devDependencies": {
+    "@biomejs/biome": "2.3.14",
     "dotenv-cli": "^11.0.0",
     "syncpack": "^13.0.4",
     "turbo": "^1.9.3"
