@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [v2.0.0] - 2026-02-06
+
+### Breaking: Remove Wundergraph Dependency
+
+Complete rewrite after Wundergraph was discontinued. API compatibility maintained for consumers.
+
+**Client Package Changes**
+- Removed @wundergraph/sdk dependency
+- Implemented native fetch HTTP client
+- New TreasurySubgraphClient class with same query() interface
+- Production URL baked in at build time via __DEFAULT_BASE_URL__
+- Added Queries type export for type completeness
+- Response format wrapped in { data: T } for Wundergraph compatibility
+- Fixed build:prod script to properly load .env.prod using dotenv-cli
+- Node.js 20+ required
+
+**Backward Compatibility**
+- Same createClient() factory function
+- Same query() method signature
+- All TypeScript types maintained
+
 ## [v1.4.0]
 
 - Change base URL to point to new host
