@@ -25,7 +25,6 @@
     "build:release": "tsup",
     "dev": "tsup --watch",
     "changelog": "auto-changelog -p --hide-credit --commit-limit false",
-    "publish-package": "yarn publish --access public --non-interactive --otp $YARN_OTP",
     "typecheck": "tsc --noEmit"
   },
   "engines": {

@@ -79,12 +79,12 @@ NOTE: the Upstash credentials in the production project and environment should b
 ### Deployment - Client NPM Package
 
 1. Set the required values in `.env.prod`
-2. Authenticate with the NPM package registry: `npm login`
-3. Update the `version` in `apps/client/package.json`
-4. Update the changelog
-5. Run the following command: `yarn publish-package`
-
-    - Prefix the command with `YARN_OTP=<OTP VALUE>`
+2. Update the `version` in `apps/client/package.json`
+3. Update the changelog
+4. Build the release: `yarn build:release`
+5. Change to the client directory: `cd apps/client`
+6. Run: `yarn publish --access public`
+7. Answer the prompts (npm will ask for OTP if 2FA is enabled)
 
 NOTE: You must be a member of the `@olympusdao` org in NPM in order to publish.
 

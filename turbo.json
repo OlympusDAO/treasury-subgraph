@@ -40,18 +40,5 @@
         ".env.prod"
       ]
     },
-    "publish-package": {
-      "dependsOn": [
-        "build:release"
-      ],
-      "env": [
-        "ARBITRUM_SUBGRAPH_API_KEY",
-        "YARN_OTP"
-      ],
-      "cache": false,
-      "dotEnv": [
-        ".env.prod"
-      ]
-    }
   }
 }
