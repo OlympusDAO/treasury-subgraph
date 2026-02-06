@@ -5,6 +5,9 @@ if (!process.env.WG_PUBLIC_NODE_URL) {
   throw new Error('WG_PUBLIC_NODE_URL environment variable is required for release builds. Please set it in .env.prod');
 }
 
+// Strip trailing slash from the URL to avoid double slashes when used
+const BASE_URL = process.env.WG_PUBLIC_NODE_URL.replace(/\/$/, '');
+
 export default defineConfig({
   entry: ['src/client.ts'],
   splitting: false,
@@ -17,6 +20,6 @@ export default defineConfig({
   sourcemap: true,
   // Define build-time constants (URL is baked in during production build)
   define: {
-    __DEFAULT_BASE_URL__: JSON.stringify(process.env.WG_PUBLIC_NODE_URL),
+    __DEFAULT_BASE_URL__: JSON.stringify(BASE_URL),
   },
 });
