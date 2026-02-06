@@ -151,7 +151,10 @@ The infrastructure is managed through Pulumi and deployed to Google Cloud Run.
 # Select the Pulumi stack (dev/prod)
 pulumi stack select dev
 
-# Preview deployment changes (interactive)
+# Preview deployment changes (validation - recommended before every deploy)
+pulumi preview --stack dev
+
+# Apply deployment changes (after reviewing preview)
 pulumi up
 
 # Destroy infrastructure
