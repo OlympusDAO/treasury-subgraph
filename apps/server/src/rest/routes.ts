@@ -1,34 +1,34 @@
-import { Router } from 'express';
-import { asyncHandler } from './middleware';
+import type { Router } from "express";
 import {
-  healthHandler,
-  latestMetricsHandler,
-  latestTokenRecordsHandler,
-  latestTokenSuppliesHandler,
-  latestProtocolMetricsHandler,
-  tokenRecordsLatestRawHandler,
-  tokenSuppliesLatestRawHandler,
-} from './handlers/latest';
-import {
-  earliestMetricsHandler,
-  earliestTokenRecordsHandler,
-  earliestTokenSuppliesHandler,
-  earliestProtocolMetricsHandler,
-  tokenRecordsEarliestRawHandler,
-  tokenSuppliesEarliestRawHandler,
-} from './handlers/earliest';
-import {
-  paginatedMetricsHandler,
-  paginatedTokenRecordsHandler,
-  paginatedTokenSuppliesHandler,
-  paginatedProtocolMetricsHandler,
-} from './handlers/paginated';
-import {
+  atBlockInternalProtocolMetricsHandler,
   atBlockMetricsHandler,
   atBlockTokenRecordsHandler,
   atBlockTokenSuppliesHandler,
-  atBlockInternalProtocolMetricsHandler,
-} from './handlers/atBlock';
+} from "./handlers/atBlock";
+import {
+  earliestMetricsHandler,
+  earliestProtocolMetricsHandler,
+  earliestTokenRecordsHandler,
+  earliestTokenSuppliesHandler,
+  tokenRecordsEarliestRawHandler,
+  tokenSuppliesEarliestRawHandler,
+} from "./handlers/earliest";
+import {
+  healthHandler,
+  latestMetricsHandler,
+  latestProtocolMetricsHandler,
+  latestTokenRecordsHandler,
+  latestTokenSuppliesHandler,
+  tokenRecordsLatestRawHandler,
+  tokenSuppliesLatestRawHandler,
+} from "./handlers/latest";
+import {
+  paginatedMetricsHandler,
+  paginatedProtocolMetricsHandler,
+  paginatedTokenRecordsHandler,
+  paginatedTokenSuppliesHandler,
+} from "./handlers/paginated";
+import { asyncHandler } from "./middleware";
 
 /**
  * Register all REST routes
@@ -36,37 +36,40 @@ import {
  */
 export function registerRoutes(router: Router): void {
   // Health check
-  router.get('/health', asyncHandler(healthHandler));
+  router.get("/health", asyncHandler(healthHandler));
 
   // Latest endpoints (4)
-  router.get('/latest/metrics', asyncHandler(latestMetricsHandler));
-  router.get('/latest/tokenRecords', asyncHandler(latestTokenRecordsHandler));
-  router.get('/latest/tokenSupplies', asyncHandler(latestTokenSuppliesHandler));
-  router.get('/latest/protocolMetrics', asyncHandler(latestProtocolMetricsHandler));
+  router.get("/latest/metrics", asyncHandler(latestMetricsHandler));
+  router.get("/latest/tokenRecords", asyncHandler(latestTokenRecordsHandler));
+  router.get("/latest/tokenSupplies", asyncHandler(latestTokenSuppliesHandler));
+  router.get("/latest/protocolMetrics", asyncHandler(latestProtocolMetricsHandler));
 
   // Raw format endpoints (Wundergraph compatible)
-  router.get('/tokenRecordsLatest', asyncHandler(tokenRecordsLatestRawHandler));
-  router.get('/tokenSuppliesLatest', asyncHandler(tokenSuppliesLatestRawHandler));
+  router.get("/tokenRecordsLatest", asyncHandler(tokenRecordsLatestRawHandler));
+  router.get("/tokenSuppliesLatest", asyncHandler(tokenSuppliesLatestRawHandler));
 
   // Earliest endpoints (4)
-  router.get('/earliest/metrics', asyncHandler(earliestMetricsHandler));
-  router.get('/earliest/tokenRecords', asyncHandler(earliestTokenRecordsHandler));
-  router.get('/earliest/tokenSupplies', asyncHandler(earliestTokenSuppliesHandler));
-  router.get('/earliest/protocolMetrics', asyncHandler(earliestProtocolMetricsHandler));
+  router.get("/earliest/metrics", asyncHandler(earliestMetricsHandler));
+  router.get("/earliest/tokenRecords", asyncHandler(earliestTokenRecordsHandler));
+  router.get("/earliest/tokenSupplies", asyncHandler(earliestTokenSuppliesHandler));
+  router.get("/earliest/protocolMetrics", asyncHandler(earliestProtocolMetricsHandler));
 
   // Raw format endpoints (Wundergraph compatible)
-  router.get('/tokenRecordsEarliest', asyncHandler(tokenRecordsEarliestRawHandler));
-  router.get('/tokenSuppliesEarliest', asyncHandler(tokenSuppliesEarliestRawHandler));
+  router.get("/tokenRecordsEarliest", asyncHandler(tokenRecordsEarliestRawHandler));
+  router.get("/tokenSuppliesEarliest", asyncHandler(tokenSuppliesEarliestRawHandler));
 
   // Paginated endpoints (4)
-  router.get('/paginated/metrics', asyncHandler(paginatedMetricsHandler));
-  router.get('/paginated/tokenRecords', asyncHandler(paginatedTokenRecordsHandler));
-  router.get('/paginated/tokenSupplies', asyncHandler(paginatedTokenSuppliesHandler));
-  router.get('/paginated/protocolMetrics', asyncHandler(paginatedProtocolMetricsHandler));
+  router.get("/paginated/metrics", asyncHandler(paginatedMetricsHandler));
+  router.get("/paginated/tokenRecords", asyncHandler(paginatedTokenRecordsHandler));
+  router.get("/paginated/tokenSupplies", asyncHandler(paginatedTokenSuppliesHandler));
+  router.get("/paginated/protocolMetrics", asyncHandler(paginatedProtocolMetricsHandler));
 
   // AtBlock endpoints (4)
-  router.get('/atBlock/metrics', asyncHandler(atBlockMetricsHandler));
-  router.get('/atBlock/tokenRecords', asyncHandler(atBlockTokenRecordsHandler));
-  router.get('/atBlock/tokenSupplies', asyncHandler(atBlockTokenSuppliesHandler));
-  router.get('/atBlock/internal/protocolMetrics', asyncHandler(atBlockInternalProtocolMetricsHandler));
+  router.get("/atBlock/metrics", asyncHandler(atBlockMetricsHandler));
+  router.get("/atBlock/tokenRecords", asyncHandler(atBlockTokenRecordsHandler));
+  router.get("/atBlock/tokenSupplies", asyncHandler(atBlockTokenSuppliesHandler));
+  router.get(
+    "/atBlock/internal/protocolMetrics",
+    asyncHandler(atBlockInternalProtocolMetricsHandler)
+  );
 }

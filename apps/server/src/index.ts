@@ -1,9 +1,9 @@
-import { ApolloServer } from 'apollo-server-express';
-import express from 'express';
-import cors from 'cors';
-import { typeDefs } from './graphql/schema';
-import { resolvers } from './graphql/resolvers';
-import { restRouter } from './rest';
+import { ApolloServer } from "apollo-server-express";
+import cors from "cors";
+import express from "express";
+import { resolvers } from "./graphql/resolvers";
+import { typeDefs } from "./graphql/schema";
+import { restRouter } from "./rest";
 
 const PORT = process.env.PORT || 9991;
 
@@ -15,7 +15,7 @@ async function startServer() {
   // are normalized before CORS processing
   app.use((req, res, next) => {
     const originalUrl = req.url;
-    const normalizedUrl = originalUrl.replace(/\/+/g, '/');
+    const normalizedUrl = originalUrl.replace(/\/+/g, "/");
     if (originalUrl !== normalizedUrl) {
       req.url = normalizedUrl;
     }
@@ -29,17 +29,17 @@ async function startServer() {
 
   // Use simple query parser to preserve raw JSON in wg_variables
   // The default 'qs' parser tries to parse {} as nested objects, breaking JSON params
-  app.set('query parser', 'simple');
+  app.set("query parser", "simple");
 
   // Mount REST API router (before GraphQL)
-  app.use('/operations', restRouter);
+  app.use("/operations", restRouter);
 
   // Health check endpoint (before GraphQL)
-  app.get('/health', (req, res) => {
+  app.get("/health", (req, res) => {
     res.json({
-      status: 'ok',
+      status: "ok",
       timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version || '2.0.0',
+      version: process.env.npm_package_version || "2.0.0",
     });
   });
 
@@ -47,7 +47,7 @@ async function startServer() {
   const server = new ApolloServer({
     typeDefs: typeDefs as any, // Cast to bypass graphql version conflict
     resolvers,
-    introspection: process.env.NODE_ENV !== 'production',
+    introspection: process.env.NODE_ENV !== "production",
     context: ({ req }) => {
       return {
         req,
@@ -56,10 +56,10 @@ async function startServer() {
     },
     formatError: (error) => {
       // Log errors but don't expose internal details
-      console.error('GraphQL Error:', error);
+      console.error("GraphQL Error:", error);
       return {
         message: error.message,
-        code: error.extensions?.code || 'INTERNAL_SERVER_ERROR',
+        code: error.extensions?.code || "INTERNAL_SERVER_ERROR",
         path: error.path,
       };
     },
@@ -68,7 +68,7 @@ async function startServer() {
   await server.start();
 
   // Apply GraphQL middleware
-  server.applyMiddleware({ app, path: '/graphql' });
+  server.applyMiddleware({ app, path: "/graphql" });
 
   // Start listening and store server reference
   const httpServer = app.listen(PORT, () => {
@@ -79,13 +79,13 @@ async function startServer() {
 
   // Graceful shutdown
   const shutdown = async () => {
-    console.log('Shutting down gracefully...');
+    console.log("Shutting down gracefully...");
     await server.stop();
 
     // Close HTTP server
     await new Promise<void>((resolve) => {
       httpServer.close(() => {
-        console.log('HTTP server closed');
+        console.log("HTTP server closed");
         resolve();
       });
     });
@@ -93,12 +93,12 @@ async function startServer() {
     process.exit(0);
   };
 
-  process.on('SIGTERM', shutdown);
-  process.on('SIGINT', shutdown);
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 }
 
 // Start the server
 startServer().catch((error) => {
-  console.error('Failed to start server:', error);
+  console.error("Failed to start server:", error);
   process.exit(1);
 });

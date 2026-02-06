@@ -1,6 +1,13 @@
-import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_BERACHAIN, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
-import { TokenSupply, TokenSuppliesResponse, Logger } from "./types";
+import {
+  CHAIN_ARBITRUM,
+  CHAIN_BASE,
+  CHAIN_BERACHAIN,
+  CHAIN_ETHEREUM,
+  CHAIN_FANTOM,
+  CHAIN_POLYGON,
+} from "./constants";
 import { parseNumber } from "./numberHelper";
+import type { Logger, TokenSuppliesResponse, TokenSupply } from "./types";
 
 export type { TokenSupply };
 
@@ -11,16 +18,18 @@ type TokenSupplyByDate = {
 };
 
 export const filterLatestBlockByDay = (records: TokenSupply[]): TokenSupply[] => {
-  const filteredData = Object.values(records.reduce((acc: Record<string, TokenSupplyByDate>, curr: TokenSupply) => {
-    const { date, block } = curr;
-    const blockNumber = parseNumber(block);
-    if (!acc[date] || acc[date].block < blockNumber) {
-      acc[date] = { date, block: blockNumber, records: [curr] };
-    } else if (acc[date].block === blockNumber) {
-      acc[date].records.push(curr);
-    }
-    return acc;
-  }, {})).flatMap((record: TokenSupplyByDate) => record.records);
+  const filteredData = Object.values(
+    records.reduce((acc: Record<string, TokenSupplyByDate>, curr: TokenSupply) => {
+      const { date, block } = curr;
+      const blockNumber = parseNumber(block);
+      if (!acc[date] || acc[date].block < blockNumber) {
+        acc[date] = { date, block: blockNumber, records: [curr] };
+      } else if (acc[date].block === blockNumber) {
+        acc[date].records.push(curr);
+      }
+      return acc;
+    }, {})
+  ).flatMap((record: TokenSupplyByDate) => record.records);
 
   return filteredData;
 };
@@ -53,11 +62,14 @@ export const sortRecordsDescending = (records: TokenSupply[]): TokenSupply[] => 
   });
 };
 
-export const setBlockchainProperty = (records: TokenSupply[], blockchain: string): TokenSupply[] => {
+export const setBlockchainProperty = (
+  records: TokenSupply[],
+  blockchain: string
+): TokenSupply[] => {
   return records.map((record: TokenSupply) => {
     return { ...record, blockchain: blockchain };
   });
-}
+};
 
 /**
  * Filters `records` to only include records with a complete set of cross-chain data.
@@ -68,12 +80,15 @@ export const setBlockchainProperty = (records: TokenSupply[], blockchain: string
  *
  * @param records
  */
-export const filterCompleteRecords = (records: TokenSuppliesResponse, log: Logger): TokenSuppliesResponse => {
+export const filterCompleteRecords = (
+  records: TokenSuppliesResponse,
+  log: Logger
+): TokenSuppliesResponse => {
   const FUNC = `tokenSupply/filterCompleteRecords`;
 
   // Only check Arbitrum and Ethereum for completeness
-  const arbitrumDates = new Set(records.treasuryArbitrum_tokenSupplies.map(r => r.date));
-  const ethereumDates = new Set(records.treasuryEthereum_tokenSupplies.map(r => r.date));
+  const arbitrumDates = new Set(records.treasuryArbitrum_tokenSupplies.map((r) => r.date));
+  const ethereumDates = new Set(records.treasuryEthereum_tokenSupplies.map((r) => r.date));
 
   if (!arbitrumDates.size || !ethereumDates.size) {
     log.warn(`${FUNC}: Arbitrum or Ethereum records are empty.`);
@@ -113,20 +128,39 @@ export const filterCompleteRecords = (records: TokenSuppliesResponse, log: Logge
 
   // Filter out records with dates newer than the latest complete date
   const filteredRecords: TokenSuppliesResponse = {
-    treasuryArbitrum_tokenSupplies: records.treasuryArbitrum_tokenSupplies.filter(r => r.date <= latestCompleteDate),
-    treasuryEthereum_tokenSupplies: records.treasuryEthereum_tokenSupplies.filter(r => r.date <= latestCompleteDate),
-    treasuryFantom_tokenSupplies: records.treasuryFantom_tokenSupplies.filter(r => r.date <= latestCompleteDate),
-    treasuryPolygon_tokenSupplies: records.treasuryPolygon_tokenSupplies.filter(r => r.date <= latestCompleteDate),
-    treasuryBase_tokenSupplies: records.treasuryBase_tokenSupplies.filter(r => r.date <= latestCompleteDate),
-    treasuryBerachain_tokenSupplies: records.treasuryBerachain_tokenSupplies.filter(r => r.date <= latestCompleteDate),
+    treasuryArbitrum_tokenSupplies: records.treasuryArbitrum_tokenSupplies.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryEthereum_tokenSupplies: records.treasuryEthereum_tokenSupplies.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryFantom_tokenSupplies: records.treasuryFantom_tokenSupplies.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryPolygon_tokenSupplies: records.treasuryPolygon_tokenSupplies.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryBase_tokenSupplies: records.treasuryBase_tokenSupplies.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryBerachain_tokenSupplies: records.treasuryBerachain_tokenSupplies.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
   };
 
-  log.info(`${FUNC}: Filtered out dates after ${latestCompleteDate} (latest date with data in both Arbitrum and Ethereum)`);
+  log.info(
+    `${FUNC}: Filtered out dates after ${latestCompleteDate} (latest date with data in both Arbitrum and Ethereum)`
+  );
 
   return filteredRecords;
-}
+};
 
-export const flattenRecords = (records: TokenSuppliesResponse, blockchain: boolean, latestBlock: boolean, log: Logger): TokenSupply[] => {
+export const flattenRecords = (
+  records: TokenSuppliesResponse,
+  blockchain: boolean,
+  latestBlock: boolean,
+  log: Logger
+): TokenSupply[] => {
   const FUNC = "tokenSupply/flattenRecords";
   const combinedRecords: TokenSupply[] = [];
 
@@ -148,9 +182,13 @@ export const flattenRecords = (records: TokenSuppliesResponse, blockchain: boole
     }
 
     if (latestBlock) {
-      log.info(`${FUNC}: Filtering latest block for ${key} records with length ${currentRecords.length}`);
+      log.info(
+        `${FUNC}: Filtering latest block for ${key} records with length ${currentRecords.length}`
+      );
       currentRecords = filterLatestBlockByDay(currentRecords);
-      log.info(`${FUNC}: Filtered latest block for ${key} records with revised length ${currentRecords.length}`);
+      log.info(
+        `${FUNC}: Filtered latest block for ${key} records with revised length ${currentRecords.length}`
+      );
     }
 
     combinedRecords.push(...currentRecords);

@@ -1,27 +1,39 @@
-import { GraphQLClient, RequestDocument } from 'graphql-request';
-import { Logger } from '../core/types';
+import { GraphQLClient, type RequestDocument } from "graphql-request";
+import type { Logger } from "../core/types";
 
 // Subgraph configuration
-const SUBGRAPH_API_KEY = process.env.ARBITRUM_SUBGRAPH_API_KEY || '';
-const SUBGRAPH_BASE_URL = 'https://gateway-arbitrum.network.thegraph.com/api';
+const SUBGRAPH_API_KEY = process.env.ARBITRUM_SUBGRAPH_API_KEY || "";
+const SUBGRAPH_BASE_URL = "https://gateway-arbitrum.network.thegraph.com/api";
 
 const resolveSubgraphUrl = (url: string): string => {
   if (!SUBGRAPH_API_KEY) {
-    throw new Error('ARBITRUM_SUBGRAPH_API_KEY is not set');
+    throw new Error("ARBITRUM_SUBGRAPH_API_KEY is not set");
   }
-  return url.replace('[api-key]', SUBGRAPH_API_KEY);
+  return url.replace("[api-key]", SUBGRAPH_API_KEY);
 };
 
 export const SUBGRAPH_URLS: Record<string, string> = {
-  ethereum: resolveSubgraphUrl(`${SUBGRAPH_BASE_URL}/[api-key]/subgraphs/id/7jeChfyUTWRyp2JxPGuuzxvGt3fDKMkC9rLjm7sfLcNp`),
-  arbitrum: resolveSubgraphUrl(`${SUBGRAPH_BASE_URL}/[api-key]/deployments/id/QmNQfMN2GjnGYx2mGo92gAc7z47fMbTMRR9M1gGEUjLZHX`),
-  fantom: resolveSubgraphUrl(`${SUBGRAPH_BASE_URL}/[api-key]/deployments/id/QmNUJtrE5Hiwj5eBeF5gSubY2vhuMdjaZnZsaq6vVY2aba`),
-  polygon: resolveSubgraphUrl(`${SUBGRAPH_BASE_URL}/[api-key]/deployments/id/QmdDUpqEzfKug1ER6HWM8c7U6wf3wtEtRBvXV7LkVoBi9f`),
-  base: resolveSubgraphUrl(`${SUBGRAPH_BASE_URL}/[api-key]/deployments/id/QmWj7CDe7VivLqX49g6nXjni8w3XFokY5Pwiau78xyox9p`),
-  berachain: resolveSubgraphUrl(`${SUBGRAPH_BASE_URL}/[api-key]/subgraphs/id/5KjntDTvo4DumbAkXdkrzNBdta2NujCc73TRYwgTdVun`),
+  ethereum: resolveSubgraphUrl(
+    `${SUBGRAPH_BASE_URL}/[api-key]/subgraphs/id/7jeChfyUTWRyp2JxPGuuzxvGt3fDKMkC9rLjm7sfLcNp`
+  ),
+  arbitrum: resolveSubgraphUrl(
+    `${SUBGRAPH_BASE_URL}/[api-key]/deployments/id/QmNQfMN2GjnGYx2mGo92gAc7z47fMbTMRR9M1gGEUjLZHX`
+  ),
+  fantom: resolveSubgraphUrl(
+    `${SUBGRAPH_BASE_URL}/[api-key]/deployments/id/QmNUJtrE5Hiwj5eBeF5gSubY2vhuMdjaZnZsaq6vVY2aba`
+  ),
+  polygon: resolveSubgraphUrl(
+    `${SUBGRAPH_BASE_URL}/[api-key]/deployments/id/QmdDUpqEzfKug1ER6HWM8c7U6wf3wtEtRBvXV7LkVoBi9f`
+  ),
+  base: resolveSubgraphUrl(
+    `${SUBGRAPH_BASE_URL}/[api-key]/deployments/id/QmWj7CDe7VivLqX49g6nXjni8w3XFokY5Pwiau78xyox9p`
+  ),
+  berachain: resolveSubgraphUrl(
+    `${SUBGRAPH_BASE_URL}/[api-key]/subgraphs/id/5KjntDTvo4DumbAkXdkrzNBdta2NujCc73TRYwgTdVun`
+  ),
 };
 
-export type Chain = 'ethereum' | 'arbitrum' | 'fantom' | 'polygon' | 'base' | 'berachain';
+export type Chain = "ethereum" | "arbitrum" | "fantom" | "polygon" | "base" | "berachain";
 
 // GraphQL Client cache (reused across requests)
 const clients = new Map<Chain, GraphQLClient>();
@@ -36,7 +48,7 @@ function getClient(chain: Chain): GraphQLClient {
       chain,
       new GraphQLClient(url, {
         headers: {
-          'User-Agent': 'treasury-subgraph/2.0.0',
+          "User-Agent": "treasury-subgraph/2.0.0",
         },
         // Use fetch timeout via AbortController instead (graphql-request doesn't support timeout directly)
       })
@@ -55,16 +67,16 @@ const FAILURE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Errors that indicate permanent failures (no point in retrying)
 const PERMANENT_ERROR_PATTERNS = [
-  'subgraph not found',
-  'no allocations',
-  'subgraph deployment not found',
-  'invalid subgraph name',
+  "subgraph not found",
+  "no allocations",
+  "subgraph deployment not found",
+  "invalid subgraph name",
 ];
 
 function isPermanentError(error: unknown): boolean {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
-    return PERMANENT_ERROR_PATTERNS.some(pattern => message.includes(pattern));
+    return PERMANENT_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
   }
   return false;
 }
@@ -147,17 +159,14 @@ export async function querySubgraph<T>(
       // Don't retry on certain errors
       if (error instanceof Error) {
         // Validation errors shouldn't be retried
-        if (error.message.includes('GraphQL') && error.message.includes('Variable')) {
+        if (error.message.includes("GraphQL") && error.message.includes("Variable")) {
           throw error;
         }
       }
 
       // If this isn't the last attempt, wait and retry
       if (attempt < opts.maxRetries) {
-        const backoffDelay = Math.min(
-          opts.initialDelay * Math.pow(2, attempt),
-          opts.maxDelay
-        );
+        const backoffDelay = Math.min(opts.initialDelay * 2 ** attempt, opts.maxDelay);
         logger?.warn(
           `querySubgraph (${chain}): Attempt ${attempt + 1} failed, retrying in ${backoffDelay}ms`,
           error instanceof Error ? error.message : String(error)
@@ -193,7 +202,7 @@ export async function querySubgraphsParallel<T>(
 
   results.forEach((result, index) => {
     const chain = chains[index];
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       resultMap.set(chain, result.value);
       successfulChains.push(chain);
     } else {
@@ -207,7 +216,7 @@ export async function querySubgraphsParallel<T>(
 
   if (failedChains.length > 0) {
     logger?.warn(
-      `querySubgraphsParallel: ${failedChains.length} chains failed: ${failedChains.join(', ')}`
+      `querySubgraphsParallel: ${failedChains.length} chains failed: ${failedChains.join(", ")}`
     );
   }
 
@@ -226,7 +235,7 @@ export async function queryAllSubgraphs<T>(
   successfulChains: Chain[];
   failedChains: Chain[];
 }> {
-  const chains: Chain[] = ['ethereum', 'arbitrum', 'fantom', 'polygon', 'base', 'berachain'];
+  const chains: Chain[] = ["ethereum", "arbitrum", "fantom", "polygon", "base", "berachain"];
   const results = await Promise.allSettled(
     chains.map((chain) => querySubgraph<T>(chain, query, variables, {}, logger))
   );
@@ -237,7 +246,7 @@ export async function queryAllSubgraphs<T>(
 
   results.forEach((result, index) => {
     const chain = chains[index];
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       resultMap.set(chain, result.value);
       successfulChains.push(chain);
     } else {
@@ -261,7 +270,7 @@ export async function queryAllSubgraphsWithPerChainVariables<T>(
   successfulChains: Chain[];
   failedChains: Chain[];
 }> {
-  const chains: Chain[] = ['ethereum', 'arbitrum', 'fantom', 'polygon', 'base', 'berachain'];
+  const chains: Chain[] = ["ethereum", "arbitrum", "fantom", "polygon", "base", "berachain"];
   const results = await Promise.allSettled(
     chains.map((chain) => {
       const variables = getVariablesForChain(chain);
@@ -275,7 +284,7 @@ export async function queryAllSubgraphsWithPerChainVariables<T>(
 
   results.forEach((result, index) => {
     const chain = chains[index];
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       resultMap.set(chain, result.value);
       successfulChains.push(chain);
     } else {

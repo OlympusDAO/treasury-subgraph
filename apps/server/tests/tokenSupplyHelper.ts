@@ -2,7 +2,11 @@ import type { TokenSupply } from "../src/core/tokenSupplyHelper";
 
 export type { TokenSupply };
 
-export const filter = (records: TokenSupply[] | undefined, chain?: string, date?: string): TokenSupply[] => {
+export const filter = (
+  records: TokenSupply[] | undefined,
+  chain?: string,
+  date?: string
+): TokenSupply[] => {
   if (!records) {
     return [];
   }
@@ -19,7 +23,11 @@ export const filter = (records: TokenSupply[] | undefined, chain?: string, date?
   return filteredRecords;
 };
 
-export const getFirstRecord = (records: TokenSupply[] | undefined, chain?: string, date?: string): TokenSupply | null => {
+export const getFirstRecord = (
+  records: TokenSupply[] | undefined,
+  chain?: string,
+  date?: string
+): TokenSupply | null => {
   const filteredRecords = filter(records, chain, date);
 
   return filteredRecords.length > 0 ? filteredRecords[0] : null;

@@ -31,13 +31,14 @@ const getBalanceMultiplier = (record: TokenSupply, ohmIndex: number): number => 
 export const getSupplyBalanceForTypes = (
   records: TokenSupply[],
   includedTypes: string[],
-  ohmIndex: number,
+  ohmIndex: number
 ): [number, TokenSupply[]] => {
-  const filteredRecords = records.filter(record => includedTypes.includes(record.type));
+  const filteredRecords = records.filter((record) => includedTypes.includes(record.type));
 
   const supplyBalance = filteredRecords.reduce(
-    (previousValue, record) => previousValue + +record.supplyBalance * getBalanceMultiplier(record, ohmIndex),
-    0,
+    (previousValue, record) =>
+      previousValue + +record.supplyBalance * getBalanceMultiplier(record, ohmIndex),
+    0
   );
 
   return [supplyBalance, filteredRecords];

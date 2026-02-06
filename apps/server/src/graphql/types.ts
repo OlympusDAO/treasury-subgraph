@@ -1,4 +1,4 @@
-import { Metric as CoreMetric } from '../core/metricHelper';
+import type { Metric as CoreMetric } from "../core/metricHelper";
 
 // Extended Metric type with _meta field for GraphQL
 export interface MetricWithMeta extends CoreMetric {

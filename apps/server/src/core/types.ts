@@ -94,7 +94,7 @@ export interface Logger {
 
 // Simple console logger implementation
 export class ConsoleLogger implements Logger {
-  constructor(private context: string = '') {}
+  constructor(private context: string = "") {}
 
   private format(message: string): string {
     return this.context ? `${this.context}: ${message}` : message;

@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import { resolvers } from '../../graphql/resolvers';
-import { parseWgVariables, wundergraphResponse } from '../middleware';
+import type { Request, Response } from "express";
+import { resolvers } from "../../graphql/resolvers";
+import { parseWgVariables, wundergraphResponse } from "../middleware";
 
 /**
  * Health check handler

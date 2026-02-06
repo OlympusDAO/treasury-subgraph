@@ -1,6 +1,13 @@
-import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_BERACHAIN, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
-import { ProtocolMetric, ProtocolMetricsResponse, Logger } from "./types";
+import {
+  CHAIN_ARBITRUM,
+  CHAIN_BASE,
+  CHAIN_BERACHAIN,
+  CHAIN_ETHEREUM,
+  CHAIN_FANTOM,
+  CHAIN_POLYGON,
+} from "./constants";
 import { parseNumber } from "./numberHelper";
+import type { Logger, ProtocolMetric, ProtocolMetricsResponse } from "./types";
 
 export type { ProtocolMetric };
 
@@ -11,16 +18,18 @@ type ProtocolMetricByDate = {
 };
 
 export const filterLatestBlockByDay = (records: ProtocolMetric[]): ProtocolMetric[] => {
-  const filteredData = Object.values(records.reduce((acc: Record<string, ProtocolMetricByDate>, curr: ProtocolMetric) => {
-    const { date, block } = curr;
-    const blockNumber = parseNumber(block);
-    if (!acc[date] || acc[date].block < blockNumber) {
-      acc[date] = { date, block: blockNumber, records: [curr] };
-    } else if (acc[date].block === blockNumber) {
-      acc[date].records.push(curr);
-    }
-    return acc;
-  }, {})).flatMap((record: ProtocolMetricByDate) => record.records);
+  const filteredData = Object.values(
+    records.reduce((acc: Record<string, ProtocolMetricByDate>, curr: ProtocolMetric) => {
+      const { date, block } = curr;
+      const blockNumber = parseNumber(block);
+      if (!acc[date] || acc[date].block < blockNumber) {
+        acc[date] = { date, block: blockNumber, records: [curr] };
+      } else if (acc[date].block === blockNumber) {
+        acc[date].records.push(curr);
+      }
+      return acc;
+    }, {})
+  ).flatMap((record: ProtocolMetricByDate) => record.records);
 
   return filteredData;
 };
@@ -53,7 +62,11 @@ export const sortRecordsDescending = (records: ProtocolMetric[]): ProtocolMetric
   });
 };
 
-export const flattenRecords = (records: ProtocolMetricsResponse, latestBlock: boolean, log: Logger): ProtocolMetric[] => {
+export const flattenRecords = (
+  records: ProtocolMetricsResponse,
+  latestBlock: boolean,
+  log: Logger
+): ProtocolMetric[] => {
   const FUNC = "protocolMetric/flattenRecords";
   const combinedRecords: ProtocolMetric[] = [];
 
@@ -71,9 +84,13 @@ export const flattenRecords = (records: ProtocolMetricsResponse, latestBlock: bo
     let currentRecords: ProtocolMetric[] = value;
 
     if (latestBlock) {
-      log.info(`${FUNC}: Filtering latest block for ${key} records with length ${currentRecords.length}`);
+      log.info(
+        `${FUNC}: Filtering latest block for ${key} records with length ${currentRecords.length}`
+      );
       currentRecords = filterLatestBlockByDay(currentRecords);
-      log.info(`${FUNC}: Filtered latest block for ${key} records with revised length ${currentRecords.length}`);
+      log.info(
+        `${FUNC}: Filtered latest block for ${key} records with revised length ${currentRecords.length}`
+      );
     }
 
     combinedRecords.push(...currentRecords);

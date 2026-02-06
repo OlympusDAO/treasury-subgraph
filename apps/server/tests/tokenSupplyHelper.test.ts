@@ -1,8 +1,7 @@
-import { Logger, TokenSuppliesResponse } from "../src/core/types";
+import { mock } from "jest-mock-extended";
 import type { TokenSupply } from "../src/core/tokenSupplyHelper";
 import { filterCompleteRecords, filterLatestBlockByDay } from "../src/core/tokenSupplyHelper";
-
-import { mock } from "jest-mock-extended";
+import type { Logger, TokenSuppliesResponse } from "../src/core/types";
 
 const getSampleRecord = (id: string, date: string, block: number): TokenSupply => {
   return {
@@ -20,8 +19,8 @@ const getSampleRecord = (id: string, date: string, block: number): TokenSupply =
     supplyBalance: "",
     pool: null,
     poolAddress: null,
-  }
-}
+  };
+};
 
 describe("filterLatestBlockByDay", () => {
   it("should return the latest block for each day", () => {
@@ -66,7 +65,7 @@ describe("filterCompleteRecords", () => {
       ],
       treasuryFantom_tokenSupplies: [],
       treasuryPolygon_tokenSupplies: [],
-      treasuryBerachain_tokenSupplies: []
+      treasuryBerachain_tokenSupplies: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -96,7 +95,7 @@ describe("filterCompleteRecords", () => {
       ],
       treasuryFantom_tokenSupplies: [],
       treasuryPolygon_tokenSupplies: [],
-      treasuryBerachain_tokenSupplies: []
+      treasuryBerachain_tokenSupplies: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -123,7 +122,7 @@ describe("filterCompleteRecords", () => {
       treasuryEthereum_tokenSupplies: [],
       treasuryFantom_tokenSupplies: [],
       treasuryPolygon_tokenSupplies: [],
-      treasuryBerachain_tokenSupplies: []
+      treasuryBerachain_tokenSupplies: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -143,7 +142,7 @@ describe("filterCompleteRecords", () => {
       treasuryBase_tokenSupplies: [],
       treasuryFantom_tokenSupplies: [],
       treasuryPolygon_tokenSupplies: [],
-      treasuryBerachain_tokenSupplies: []
+      treasuryBerachain_tokenSupplies: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);

@@ -1,6 +1,13 @@
-import { CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_BERACHAIN, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON } from "./constants";
-import { TokenRecord, TokenRecordsResponse, Logger } from "./types";
+import {
+  CHAIN_ARBITRUM,
+  CHAIN_BASE,
+  CHAIN_BERACHAIN,
+  CHAIN_ETHEREUM,
+  CHAIN_FANTOM,
+  CHAIN_POLYGON,
+} from "./constants";
 import { parseNumber } from "./numberHelper";
+import type { Logger, TokenRecord, TokenRecordsResponse } from "./types";
 
 export type { TokenRecord };
 
@@ -18,16 +25,18 @@ type TokenRecordByDate = {
  */
 export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] => {
   const FUNC = `tokenRecord/filterLatestBlockByDay`;
-  const filteredData = Object.values(records.reduce((acc: Record<string, TokenRecordByDate>, curr: TokenRecord) => {
-    const { date, block } = curr;
-    const blockNumber = parseNumber(block);
-    if (!acc[date] || acc[date].block < blockNumber) {
-      acc[date] = { date, block: blockNumber, records: [curr] };
-    } else if (acc[date].block === blockNumber) {
-      acc[date].records.push(curr);
-    }
-    return acc;
-  }, {})).flatMap((record: TokenRecordByDate) => record.records);
+  const filteredData = Object.values(
+    records.reduce((acc: Record<string, TokenRecordByDate>, curr: TokenRecord) => {
+      const { date, block } = curr;
+      const blockNumber = parseNumber(block);
+      if (!acc[date] || acc[date].block < blockNumber) {
+        acc[date] = { date, block: blockNumber, records: [curr] };
+      } else if (acc[date].block === blockNumber) {
+        acc[date].records.push(curr);
+      }
+      return acc;
+    }, {})
+  ).flatMap((record: TokenRecordByDate) => record.records);
 
   return filteredData;
 };
@@ -69,18 +78,25 @@ export const sortRecordsDescending = (records: TokenRecord[]): TokenRecord[] => 
  *
  * @param records
  */
-export const filterCompleteRecords = (records: TokenRecordsResponse, log: Logger): TokenRecordsResponse => {
+export const filterCompleteRecords = (
+  records: TokenRecordsResponse,
+  log: Logger
+): TokenRecordsResponse => {
   const FUNC = `tokenRecord/filterCompleteRecords`;
 
   // Only check Arbitrum and Ethereum for completeness
-  const arbitrumDates = new Set(records.treasuryArbitrum_tokenRecords.map(r => r.date));
-  const ethereumDates = new Set(records.treasuryEthereum_tokenRecords.map(r => r.date));
+  const arbitrumDates = new Set(records.treasuryArbitrum_tokenRecords.map((r) => r.date));
+  const ethereumDates = new Set(records.treasuryEthereum_tokenRecords.map((r) => r.date));
 
   const sortedArbitrumDates = Array.from(arbitrumDates).sort();
   const sortedEthereumDates = Array.from(ethereumDates).sort();
 
-  log.info(`${FUNC}: Arbitrum has ${arbitrumDates.size} dates: [${sortedArbitrumDates.join(', ')}]`);
-  log.info(`${FUNC}: Ethereum has ${ethereumDates.size} dates: [${sortedEthereumDates.join(', ')}]`);
+  log.info(
+    `${FUNC}: Arbitrum has ${arbitrumDates.size} dates: [${sortedArbitrumDates.join(", ")}]`
+  );
+  log.info(
+    `${FUNC}: Ethereum has ${ethereumDates.size} dates: [${sortedEthereumDates.join(", ")}]`
+  );
 
   if (!arbitrumDates.size || !ethereumDates.size) {
     log.warn(`${FUNC}: Arbitrum or Ethereum records are empty.`);
@@ -103,17 +119,23 @@ export const filterCompleteRecords = (records: TokenRecordsResponse, log: Logger
   }
 
   // Find dates that are in one but not the other
-  const arbitrumOnly = Array.from(arbitrumDates).filter(d => !ethereumDates.has(d)).sort();
-  const ethereumOnly = Array.from(ethereumDates).filter(d => !arbitrumDates.has(d)).sort();
+  const arbitrumOnly = Array.from(arbitrumDates)
+    .filter((d) => !ethereumDates.has(d))
+    .sort();
+  const ethereumOnly = Array.from(ethereumDates)
+    .filter((d) => !arbitrumDates.has(d))
+    .sort();
 
   if (arbitrumOnly.length > 0) {
-    log.warn(`${FUNC}: Dates only in Arbitrum: [${arbitrumOnly.join(', ')}]`);
+    log.warn(`${FUNC}: Dates only in Arbitrum: [${arbitrumOnly.join(", ")}]`);
   }
   if (ethereumOnly.length > 0) {
-    log.warn(`${FUNC}: Dates only in Ethereum: [${ethereumOnly.join(', ')}]`);
+    log.warn(`${FUNC}: Dates only in Ethereum: [${ethereumOnly.join(", ")}]`);
   }
 
-  log.info(`${FUNC}: Found ${completeDates.size} dates with data in both Arbitrum and Ethereum: [${Array.from(completeDates).sort().join(', ')}]`);
+  log.info(
+    `${FUNC}: Found ${completeDates.size} dates with data in both Arbitrum and Ethereum: [${Array.from(completeDates).sort().join(", ")}]`
+  );
 
   if (completeDates.size === 0) {
     log.warn(`${FUNC}: No dates with data in both Arbitrum and Ethereum.`);
@@ -135,20 +157,38 @@ export const filterCompleteRecords = (records: TokenRecordsResponse, log: Logger
 
   // Filter out records with dates newer than the latest complete date
   const filteredRecords: TokenRecordsResponse = {
-    treasuryArbitrum_tokenRecords: records.treasuryArbitrum_tokenRecords.filter(r => r.date <= latestCompleteDate),
-    treasuryEthereum_tokenRecords: records.treasuryEthereum_tokenRecords.filter(r => r.date <= latestCompleteDate),
-    treasuryFantom_tokenRecords: records.treasuryFantom_tokenRecords.filter(r => r.date <= latestCompleteDate),
-    treasuryPolygon_tokenRecords: records.treasuryPolygon_tokenRecords.filter(r => r.date <= latestCompleteDate),
-    treasuryBase_tokenRecords: records.treasuryBase_tokenRecords.filter(r => r.date <= latestCompleteDate),
-    treasuryBerachain_tokenRecords: records.treasuryBerachain_tokenRecords.filter(r => r.date <= latestCompleteDate),
+    treasuryArbitrum_tokenRecords: records.treasuryArbitrum_tokenRecords.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryEthereum_tokenRecords: records.treasuryEthereum_tokenRecords.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryFantom_tokenRecords: records.treasuryFantom_tokenRecords.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryPolygon_tokenRecords: records.treasuryPolygon_tokenRecords.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryBase_tokenRecords: records.treasuryBase_tokenRecords.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
+    treasuryBerachain_tokenRecords: records.treasuryBerachain_tokenRecords.filter(
+      (r) => r.date <= latestCompleteDate
+    ),
   };
 
-  log.info(`${FUNC}: After filtering - Arbitrum: ${filteredRecords.treasuryArbitrum_tokenRecords.length}, Ethereum: ${filteredRecords.treasuryEthereum_tokenRecords.length}`);
+  log.info(
+    `${FUNC}: After filtering - Arbitrum: ${filteredRecords.treasuryArbitrum_tokenRecords.length}, Ethereum: ${filteredRecords.treasuryEthereum_tokenRecords.length}`
+  );
 
   return filteredRecords;
-}
+};
 
-export const flattenRecords = (records: TokenRecordsResponse, latestBlock: boolean, log: Logger): TokenRecord[] => {
+export const flattenRecords = (
+  records: TokenRecordsResponse,
+  latestBlock: boolean,
+  log: Logger
+): TokenRecord[] => {
   const FUNC = "tokenRecord/flattenRecords";
   const combinedRecords: TokenRecord[] = [];
 
@@ -166,9 +206,13 @@ export const flattenRecords = (records: TokenRecordsResponse, latestBlock: boole
     let currentRecords: TokenRecord[] = value;
 
     if (latestBlock) {
-      log.info(`${FUNC}: Filtering latest block for ${key} records with length ${currentRecords.length}`);
+      log.info(
+        `${FUNC}: Filtering latest block for ${key} records with length ${currentRecords.length}`
+      );
       currentRecords = filterLatestBlockByDay(currentRecords);
-      log.info(`${FUNC}: Filtered latest block for ${key} records with revised length ${currentRecords.length}`);
+      log.info(
+        `${FUNC}: Filtered latest block for ${key} records with revised length ${currentRecords.length}`
+      );
     }
 
     combinedRecords.push(...currentRecords);
@@ -181,7 +225,7 @@ export const getBlockByChain = (records: TokenRecord[], chain: string): number |
   const chainRecords = records.filter((record) => record.blockchain === chain);
 
   return chainRecords.length > 0 ? +chainRecords[0].block : null;
-}
+};
 
 /**
  * Determines whether the data across chains is complete.
@@ -196,7 +240,10 @@ export const getBlockByChain = (records: TokenRecord[], chain: string): number |
  * @param ethereumRecords
  * @returns
  */
-export const isCrossChainRecordDataComplete = (arbitrumRecords: TokenRecord[], ethereumRecords: TokenRecord[]): boolean => {
+export const isCrossChainRecordDataComplete = (
+  arbitrumRecords: TokenRecord[],
+  ethereumRecords: TokenRecord[]
+): boolean => {
   if (!arbitrumRecords.length || !ethereumRecords.length) {
     return false;
   }
@@ -205,4 +252,4 @@ export const isCrossChainRecordDataComplete = (arbitrumRecords: TokenRecord[], e
   const ethereumDate = ethereumRecords[0].date;
 
   return arbitrumDate === ethereumDate;
-}
+};

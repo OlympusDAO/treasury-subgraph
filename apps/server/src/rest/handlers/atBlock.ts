@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import { resolvers } from '../../graphql/resolvers';
-import { parseWgVariables, wundergraphResponse } from '../middleware';
+import type { Request, Response } from "express";
+import { resolvers } from "../../graphql/resolvers";
+import { parseWgVariables, wundergraphResponse } from "../middleware";
 
 /**
  * GET /operations/atBlock/metrics
@@ -85,7 +85,10 @@ export async function atBlockTokenSuppliesHandler(req: Request, res: Response): 
  *   berachainBlock: number
  * }
  */
-export async function atBlockInternalProtocolMetricsHandler(req: Request, res: Response): Promise<void> {
+export async function atBlockInternalProtocolMetricsHandler(
+  req: Request,
+  res: Response
+): Promise<void> {
   const params = parseWgVariables(req) as {
     arbitrumBlock: number;
     ethereumBlock: number;

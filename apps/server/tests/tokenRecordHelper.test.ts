@@ -1,8 +1,7 @@
-import { Logger, TokenRecordsResponse } from "../src/core/types";
+import { mock } from "jest-mock-extended";
 import type { TokenRecord } from "../src/core/tokenRecordHelper";
 import { filterCompleteRecords, filterLatestBlockByDay } from "../src/core/tokenRecordHelper";
-
-import { mock } from "jest-mock-extended";
+import type { Logger, TokenRecordsResponse } from "../src/core/types";
 
 const getSampleRecord = (id: string, date: string, block: number): TokenRecord => {
   return {
@@ -23,8 +22,8 @@ const getSampleRecord = (id: string, date: string, block: number): TokenRecord =
     sourceAddress: "",
     token: "",
     tokenAddress: "",
-  }
-}
+  };
+};
 
 describe("filterLatestBlockByDay", () => {
   it("should return the latest block for each day", () => {
@@ -69,7 +68,7 @@ describe("filterCompleteRecords", () => {
       ],
       treasuryFantom_tokenRecords: [],
       treasuryPolygon_tokenRecords: [],
-      treasuryBerachain_tokenRecords: []
+      treasuryBerachain_tokenRecords: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -99,7 +98,7 @@ describe("filterCompleteRecords", () => {
       ],
       treasuryFantom_tokenRecords: [],
       treasuryPolygon_tokenRecords: [],
-      treasuryBerachain_tokenRecords: []
+      treasuryBerachain_tokenRecords: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -126,7 +125,7 @@ describe("filterCompleteRecords", () => {
       treasuryEthereum_tokenRecords: [],
       treasuryFantom_tokenRecords: [],
       treasuryPolygon_tokenRecords: [],
-      treasuryBerachain_tokenRecords: []
+      treasuryBerachain_tokenRecords: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -146,7 +145,7 @@ describe("filterCompleteRecords", () => {
       treasuryBase_tokenRecords: [],
       treasuryFantom_tokenRecords: [],
       treasuryPolygon_tokenRecords: [],
-      treasuryBerachain_tokenRecords: []
+      treasuryBerachain_tokenRecords: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);

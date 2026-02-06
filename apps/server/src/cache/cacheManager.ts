@@ -1,5 +1,5 @@
-import { LRUCache } from 'lru-cache';
-import { Logger } from '../core/types';
+import { LRUCache } from "lru-cache";
+import { Logger } from "../core/types";
 
 interface CacheEntry<T> {
   data: T;
@@ -42,7 +42,7 @@ export class CacheManager<T = any> {
     const sortedParams = Object.keys(params)
       .sort()
       .map((key) => `${key}:${JSON.stringify(params[key as keyof typeof params])}`)
-      .join('|');
+      .join("|");
     return `${operation}?${sortedParams}`;
   }
 
@@ -112,11 +112,7 @@ export class CacheManager<T = any> {
   /**
    * Get or set pattern - useful for memoization
    */
-  async getOrSet(
-    key: string,
-    factory: () => Promise<T>,
-    ttl?: number
-  ): Promise<T> {
+  async getOrSet(key: string, factory: () => Promise<T>, ttl?: number): Promise<T> {
     const entry = this.cache.get(key);
 
     // Check if entry exists (even if data is null)

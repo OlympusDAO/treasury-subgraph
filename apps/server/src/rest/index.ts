@@ -1,6 +1,6 @@
-import { Router, Request, Response } from 'express';
-import { errorHandler } from './middleware';
-import { registerRoutes } from './routes';
+import { Request, Response, Router } from "express";
+import { errorHandler } from "./middleware";
+import { registerRoutes } from "./routes";
 
 /**
  * Create and configure the REST API router

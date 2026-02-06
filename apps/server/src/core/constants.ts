@@ -12,7 +12,7 @@ export enum Chains {
   POLYGON = CHAIN_POLYGON,
   BASE = CHAIN_BASE,
   BERACHAIN = CHAIN_BERACHAIN,
-};
+}
 
 export const TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS = "OHM Bonds (Burnable Deposits)";
 export const TOKEN_SUPPLY_TYPE_BONDS_PREMINTED = "OHM Bonds (Pre-minted)";
@@ -39,7 +39,7 @@ export enum TokenSupplyCategories {
   MIGRATION_OFFSET = "MigrationOffset",
   TOTAL_SUPPLY = "TotalSupply",
   TREASURY = "Treasury",
-};
+}
 
 export const CATEGORY_STABLE = "Stable";
 export const CATEGORY_VOLATILE = "Volatile";

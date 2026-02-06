@@ -1,9 +1,31 @@
-import { Logger } from "./types";
-import { CATEGORY_POL, CATEGORY_STABLE, CATEGORY_VOLATILE, CHAIN_ARBITRUM, CHAIN_BASE, CHAIN_BERACHAIN, CHAIN_ETHEREUM, CHAIN_FANTOM, CHAIN_POLYGON, Chains, TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_PREMINTED, TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS, TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS, TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT, TOKEN_SUPPLY_TYPE_LENDING, TOKEN_SUPPLY_TYPE_LIQUIDITY, TOKEN_SUPPLY_TYPE_OFFSET, TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY, TOKEN_SUPPLY_TYPE_TREASURY, TokenSupplyCategories } from "./constants";
-import { ProtocolMetric } from "./protocolMetricHelper";
-import { TokenRecord } from "./tokenRecordHelper";
-import { TokenSupply } from "./tokenSupplyHelper";
+import {
+  CATEGORY_POL,
+  CATEGORY_STABLE,
+  CATEGORY_VOLATILE,
+  CHAIN_ARBITRUM,
+  CHAIN_BASE,
+  CHAIN_BERACHAIN,
+  CHAIN_ETHEREUM,
+  CHAIN_FANTOM,
+  CHAIN_POLYGON,
+  Chains,
+  TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS,
+  TOKEN_SUPPLY_TYPE_BONDS_PREMINTED,
+  TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS,
+  TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS,
+  TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT,
+  TOKEN_SUPPLY_TYPE_LENDING,
+  TOKEN_SUPPLY_TYPE_LIQUIDITY,
+  TOKEN_SUPPLY_TYPE_OFFSET,
+  TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY,
+  TOKEN_SUPPLY_TYPE_TREASURY,
+  TokenSupplyCategories,
+} from "./constants";
 import { parseNumber } from "./numberHelper";
+import type { ProtocolMetric } from "./protocolMetricHelper";
+import type { TokenRecord } from "./tokenRecordHelper";
+import type { TokenSupply } from "./tokenSupplyHelper";
+import type { Logger } from "./types";
 
 //
 // Customised for the treasury-subgraph repo
@@ -62,7 +84,7 @@ type AssetValue = {
   liquidBackingRecords: TokenRecord[];
   liquidBackingChainValues: ChainValues;
   liquidBackingChainRecords: ChainRecords;
-}
+};
 
 export type Metric = {
   date: string;
@@ -149,10 +171,7 @@ const getBalanceMultiplier = (record: TokenSupply, ohmIndex: number): number => 
   throw new Error(`Unsupported token address: ${record.tokenAddress}`);
 };
 
-const getBalancesForTypes = (
-  records: TokenSupply[],
-  ohmIndex: number,
-): [number, number] => {
+const getBalancesForTypes = (records: TokenSupply[], ohmIndex: number): [number, number] => {
   const [balance, supplyBalance] = records.reduce(
     ([previousBalance, previousSupplyBalance], record) => {
       const balanceMultiplier = getBalanceMultiplier(record, ohmIndex);
@@ -162,11 +181,11 @@ const getBalancesForTypes = (
         previousSupplyBalance + +record.supplyBalance * balanceMultiplier,
       ];
     },
-    [0, 0],
+    [0, 0]
   );
 
   return [balance, supplyBalance];
-}
+};
 
 /**
  * Returns the sums and records for different supply types.
@@ -181,14 +200,16 @@ const getBalancesForTypes = (
 const getTokenSupplyRecordsForTypes = (
   records: TokenSupply[],
   includedTypes: string[],
-  ohmIndex: number,
+  ohmIndex: number
 ): [number, number, TokenSupply[]] => {
-  const includedRecords = records.filter(record => includedTypes.includes(record.type) && isSupportedToken(record));
+  const includedRecords = records.filter(
+    (record) => includedTypes.includes(record.type) && isSupportedToken(record)
+  );
 
   const [balance, supplyBalance] = getBalancesForTypes(includedRecords, ohmIndex);
 
   return [balance, supplyBalance, includedRecords];
-}
+};
 
 /**
  * Returns the sums and records for different supply types.
@@ -207,35 +228,59 @@ const getTokenSupplyRecordsForTypes = (
 const getRecordsForTypes = (
   records: SupplyCategoryRecords,
   includedTypes: TokenSupplyCategories[],
-  ohmIndex: number,
+  ohmIndex: number
 ): SupplyValue => {
   // For each value in includedTypes, get the corresponding array of records and combine into a single array
-  const [includedRecords, chainSupplies] = includedTypes.reduce((previousRecords, currentType) => {
-    const currentTypeRecords: TokenSupply[] = records[currentType];
-    const previousChainRecords: ChainSupplies = previousRecords[1];
+  const [includedRecords, chainSupplies] = includedTypes.reduce(
+    (previousRecords, currentType) => {
+      const currentTypeRecords: TokenSupply[] = records[currentType];
+      const previousChainRecords: ChainSupplies = previousRecords[1];
 
-    // Add the records for the current type to the existing array
-    const newRecords = [...previousRecords[0], ...currentTypeRecords];
+      // Add the records for the current type to the existing array
+      const newRecords = [...previousRecords[0], ...currentTypeRecords];
 
-    // Add the records for the current type to the existing array for each chain
-    const newChainRecords: ChainSupplies = {
-      [Chains.ARBITRUM]: [...previousChainRecords[Chains.ARBITRUM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_ARBITRUM)],
-      [Chains.ETHEREUM]: [...previousChainRecords[Chains.ETHEREUM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_ETHEREUM)],
-      [Chains.FANTOM]: [...previousChainRecords[Chains.FANTOM], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_FANTOM)],
-      [Chains.POLYGON]: [...previousChainRecords[Chains.POLYGON], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_POLYGON)],
-      [Chains.BASE]: [...previousChainRecords[Chains.BASE], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_BASE)],
-      [Chains.BERACHAIN]: [...previousChainRecords[Chains.BERACHAIN], ...currentTypeRecords.filter(record => record.blockchain === CHAIN_BERACHAIN)],
-    };
+      // Add the records for the current type to the existing array for each chain
+      const newChainRecords: ChainSupplies = {
+        [Chains.ARBITRUM]: [
+          ...previousChainRecords[Chains.ARBITRUM],
+          ...currentTypeRecords.filter((record) => record.blockchain === CHAIN_ARBITRUM),
+        ],
+        [Chains.ETHEREUM]: [
+          ...previousChainRecords[Chains.ETHEREUM],
+          ...currentTypeRecords.filter((record) => record.blockchain === CHAIN_ETHEREUM),
+        ],
+        [Chains.FANTOM]: [
+          ...previousChainRecords[Chains.FANTOM],
+          ...currentTypeRecords.filter((record) => record.blockchain === CHAIN_FANTOM),
+        ],
+        [Chains.POLYGON]: [
+          ...previousChainRecords[Chains.POLYGON],
+          ...currentTypeRecords.filter((record) => record.blockchain === CHAIN_POLYGON),
+        ],
+        [Chains.BASE]: [
+          ...previousChainRecords[Chains.BASE],
+          ...currentTypeRecords.filter((record) => record.blockchain === CHAIN_BASE),
+        ],
+        [Chains.BERACHAIN]: [
+          ...previousChainRecords[Chains.BERACHAIN],
+          ...currentTypeRecords.filter((record) => record.blockchain === CHAIN_BERACHAIN),
+        ],
+      };
 
-    return [newRecords, newChainRecords];
-  }, [[] as TokenSupply[], {
-    [Chains.ARBITRUM]: [] as TokenSupply[],
-    [Chains.ETHEREUM]: [] as TokenSupply[],
-    [Chains.FANTOM]: [] as TokenSupply[],
-    [Chains.POLYGON]: [] as TokenSupply[],
-    [Chains.BASE]: [] as TokenSupply[],
-    [Chains.BERACHAIN]: [] as TokenSupply[],
-  } as ChainSupplies]);
+      return [newRecords, newChainRecords];
+    },
+    [
+      [] as TokenSupply[],
+      {
+        [Chains.ARBITRUM]: [] as TokenSupply[],
+        [Chains.ETHEREUM]: [] as TokenSupply[],
+        [Chains.FANTOM]: [] as TokenSupply[],
+        [Chains.POLYGON]: [] as TokenSupply[],
+        [Chains.BASE]: [] as TokenSupply[],
+        [Chains.BERACHAIN]: [] as TokenSupply[],
+      } as ChainSupplies,
+    ]
+  );
 
   // Sum to get the balance and supply balance
   const [balance, supplyBalance] = getBalancesForTypes(includedRecords, ohmIndex);
@@ -248,7 +293,7 @@ const getRecordsForTypes = (
     [Chains.POLYGON]: getBalancesForTypes(chainSupplies[Chains.POLYGON], ohmIndex)[1],
     [Chains.BASE]: getBalancesForTypes(chainSupplies[Chains.BASE], ohmIndex)[1],
     [Chains.BERACHAIN]: getBalancesForTypes(chainSupplies[Chains.BERACHAIN], ohmIndex)[1],
-  }
+  };
 
   return {
     balance,
@@ -272,7 +317,7 @@ const isBLVIncluded = (ethereumBlock: number): boolean => {
   }
 
   return false;
-}
+};
 
 /**
  * For a given array of TokenSupply records (assumed to be at the same point in time),
@@ -290,7 +335,11 @@ const isBLVIncluded = (ethereumBlock: number): boolean => {
  * @param ohmIndex The index of OHM for the given day
  * @returns
  */
-export const getOhmCirculatingSupply = (records: SupplyCategoryRecords, ethereumBlock: number, ohmIndex: number): SupplyValue => {
+export const getOhmCirculatingSupply = (
+  records: SupplyCategoryRecords,
+  ethereumBlock: number,
+  ohmIndex: number
+): SupplyValue => {
   const includedTypes: TokenSupplyCategories[] = [
     TokenSupplyCategories.TOTAL_SUPPLY,
     TokenSupplyCategories.TREASURY,
@@ -324,7 +373,11 @@ export const getOhmCirculatingSupply = (records: SupplyCategoryRecords, ethereum
  * @param ohmIndex The index of OHM for the given day
  * @returns
  */
-export const getOhmFloatingSupply = (records: SupplyCategoryRecords, ethereumBlock: number, ohmIndex: number): SupplyValue => {
+export const getOhmFloatingSupply = (
+  records: SupplyCategoryRecords,
+  ethereumBlock: number,
+  ohmIndex: number
+): SupplyValue => {
   const includedTypes: TokenSupplyCategories[] = [
     TokenSupplyCategories.TOTAL_SUPPLY,
     TokenSupplyCategories.TREASURY,
@@ -361,7 +414,10 @@ export const getOhmFloatingSupply = (records: SupplyCategoryRecords, ethereumBlo
  * @param records TokenSupply records for the given day
  * @param ohmIndex The index of OHM for the given day
  */
-export const getOhmBackedSupply = (records: SupplyCategoryRecords, ohmIndex: number): SupplyValue => {
+export const getOhmBackedSupply = (
+  records: SupplyCategoryRecords,
+  ohmIndex: number
+): SupplyValue => {
   const includedTypes: TokenSupplyCategories[] = [
     TokenSupplyCategories.TOTAL_SUPPLY,
     TokenSupplyCategories.TREASURY,
@@ -385,13 +441,16 @@ export const getOhmBackedSupply = (records: SupplyCategoryRecords, ohmIndex: num
  * @param ohmIndex The index of OHM for the given day
  * @returns
  */
-export const getOhmTotalSupply = (records: SupplyCategoryRecords, ohmIndex: number): SupplyValue => {
+export const getOhmTotalSupply = (
+  records: SupplyCategoryRecords,
+  ohmIndex: number
+): SupplyValue => {
   return getRecordsForTypes(records, [TokenSupplyCategories.TOTAL_SUPPLY], ohmIndex);
-}
+};
 
 export const getGOhmBackedSupply = (backedSupply: number, ohmIndex: number): number => {
   return backedSupply / ohmIndex;
-}
+};
 
 /**
  * This function splits the TokenSupply records into categories, which makes calculating metrics
@@ -401,15 +460,42 @@ export const getGOhmBackedSupply = (backedSupply: number, ohmIndex: number): num
  * @param ohmIndex
  * @returns
  */
-const getSupplyCategories = (records: TokenSupply[], ohmIndex: number): [SupplyCategoryValues, SupplyCategoryRecords] => {
-  const bondDeposits = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS], ohmIndex);
-  const bondPreminted = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BONDS_PREMINTED], ohmIndex);
-  const bondVestingDeposits = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS], ohmIndex);
-  const bondVestingTokens = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS], ohmIndex);
+const getSupplyCategories = (
+  records: TokenSupply[],
+  ohmIndex: number
+): [SupplyCategoryValues, SupplyCategoryRecords] => {
+  const bondDeposits = getTokenSupplyRecordsForTypes(
+    records,
+    [TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS],
+    ohmIndex
+  );
+  const bondPreminted = getTokenSupplyRecordsForTypes(
+    records,
+    [TOKEN_SUPPLY_TYPE_BONDS_PREMINTED],
+    ohmIndex
+  );
+  const bondVestingDeposits = getTokenSupplyRecordsForTypes(
+    records,
+    [TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS],
+    ohmIndex
+  );
+  const bondVestingTokens = getTokenSupplyRecordsForTypes(
+    records,
+    [TOKEN_SUPPLY_TYPE_BONDS_VESTING_TOKENS],
+    ohmIndex
+  );
   const liquidity = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_LIQUIDITY], ohmIndex);
-  const boostedLiquidityVault = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT], ohmIndex);
+  const boostedLiquidityVault = getTokenSupplyRecordsForTypes(
+    records,
+    [TOKEN_SUPPLY_TYPE_BOOSTED_LIQUIDITY_VAULT],
+    ohmIndex
+  );
   const offset = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_OFFSET], ohmIndex);
-  const totalSupply = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY], ohmIndex);
+  const totalSupply = getTokenSupplyRecordsForTypes(
+    records,
+    [TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY],
+    ohmIndex
+  );
   const treasury = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_TREASURY], ohmIndex);
   const lending = getTokenSupplyRecordsForTypes(records, [TOKEN_SUPPLY_TYPE_LENDING], ohmIndex);
 
@@ -453,8 +539,11 @@ const getSupplyCategories = (records: TokenSupply[], ohmIndex: number): [SupplyC
  * @returns
  */
 const isOHM = (record: TokenRecord): boolean => {
-  return getOhmAddresses().includes(record.token.toLowerCase()) || getOhmAddresses().includes(record.tokenAddress.toLowerCase());
-}
+  return (
+    getOhmAddresses().includes(record.token.toLowerCase()) ||
+    getOhmAddresses().includes(record.tokenAddress.toLowerCase())
+  );
+};
 
 /**
  * Determines if the given record is sourced from a buyback address.
@@ -472,8 +561,10 @@ const isBuybackAddress = (record: TokenRecord): boolean => {
     return false;
   }
 
-  return record.sourceAddress.toLowerCase() == "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase();
-}
+  return (
+    record.sourceAddress.toLowerCase() == "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase()
+  );
+};
 
 /**
  * Calculates the market value or liquid backing for the given records.
@@ -486,71 +577,110 @@ const isBuybackAddress = (record: TokenRecord): boolean => {
 const getTreasuryAssetValue = (
   records: TokenRecord[],
   liquidBacking: boolean,
-  categories = [CATEGORY_STABLE, CATEGORY_VOLATILE, CATEGORY_POL],
+  categories = [CATEGORY_STABLE, CATEGORY_VOLATILE, CATEGORY_POL]
 ): [number, TokenRecord[], ChainValues, ChainRecords] => {
-  const [totalValue, allRecords, chainValues, chainRecords] = records.reduce(([previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords], currentRecord) => {
-    // Category matches
-    if (!categories.includes(currentRecord.category)) {
-      return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
-    }
+  const [totalValue, allRecords, chainValues, chainRecords] = records.reduce(
+    (
+      [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords],
+      currentRecord
+    ) => {
+      // Category matches
+      if (!categories.includes(currentRecord.category)) {
+        return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
+      }
 
-    // If liquidBacking is specified, check if the record is liquid
-    if (liquidBacking && !currentRecord.isLiquid) {
-      return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
-    }
+      // If liquidBacking is specified, check if the record is liquid
+      if (liquidBacking && !currentRecord.isLiquid) {
+        return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
+      }
 
-    // If it is OHM and liquidBacking is specified, ignore
-    const isTokenOhm = isOHM(currentRecord);
-    if (liquidBacking && isTokenOhm) {
-      return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
-    }
+      // If it is OHM and liquidBacking is specified, ignore
+      const isTokenOhm = isOHM(currentRecord);
+      if (liquidBacking && isTokenOhm) {
+        return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
+      }
 
-    // If it is OHM and not in the buyback addresses, ignore
-    if (isTokenOhm && !isBuybackAddress(currentRecord)) {
-      return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
-    }
+      // If it is OHM and not in the buyback addresses, ignore
+      if (isTokenOhm && !isBuybackAddress(currentRecord)) {
+        return [previousTotalValue, previousAllRecords, previousChainValues, previousChainRecords];
+      }
 
-    const currentValue: number = liquidBacking ? +currentRecord.valueExcludingOhm : +currentRecord.value;
+      const currentValue: number = liquidBacking
+        ? +currentRecord.valueExcludingOhm
+        : +currentRecord.value;
 
-    const newTotalValue: number = previousTotalValue + currentValue;
-    const newRecords = [...previousAllRecords, currentRecord];
-    const newChainValues: ChainValues = {
-      [Chains.ARBITRUM]: previousChainValues[Chains.ARBITRUM] + (currentRecord.blockchain === CHAIN_ARBITRUM ? currentValue : 0),
-      [Chains.ETHEREUM]: previousChainValues[Chains.ETHEREUM] + (currentRecord.blockchain === CHAIN_ETHEREUM ? currentValue : 0),
-      [Chains.FANTOM]: previousChainValues[Chains.FANTOM] + (currentRecord.blockchain === CHAIN_FANTOM ? currentValue : 0),
-      [Chains.POLYGON]: previousChainValues[Chains.POLYGON] + (currentRecord.blockchain === CHAIN_POLYGON ? currentValue : 0),
-      [Chains.BASE]: previousChainValues[Chains.BASE] + (currentRecord.blockchain === CHAIN_BASE ? currentValue : 0),
-      [Chains.BERACHAIN]: previousChainValues[Chains.BERACHAIN] + (currentRecord.blockchain === CHAIN_BERACHAIN ? currentValue : 0),
-    };
-    const newChainRecords: ChainRecords = {
-      [Chains.ARBITRUM]: [...previousChainRecords[Chains.ARBITRUM], ...(currentRecord.blockchain === CHAIN_ARBITRUM ? [currentRecord] : [])],
-      [Chains.ETHEREUM]: [...previousChainRecords[Chains.ETHEREUM], ...(currentRecord.blockchain === CHAIN_ETHEREUM ? [currentRecord] : [])],
-      [Chains.FANTOM]: [...previousChainRecords[Chains.FANTOM], ...(currentRecord.blockchain === CHAIN_FANTOM ? [currentRecord] : [])],
-      [Chains.POLYGON]: [...previousChainRecords[Chains.POLYGON], ...(currentRecord.blockchain === CHAIN_POLYGON ? [currentRecord] : [])],
-      [Chains.BASE]: [...previousChainRecords[Chains.BASE], ...(currentRecord.blockchain === CHAIN_BASE ? [currentRecord] : [])],
-      [Chains.BERACHAIN]: [...previousChainRecords[Chains.BERACHAIN], ...(currentRecord.blockchain === CHAIN_BERACHAIN ? [currentRecord] : [])],
-    };
+      const newTotalValue: number = previousTotalValue + currentValue;
+      const newRecords = [...previousAllRecords, currentRecord];
+      const newChainValues: ChainValues = {
+        [Chains.ARBITRUM]:
+          previousChainValues[Chains.ARBITRUM] +
+          (currentRecord.blockchain === CHAIN_ARBITRUM ? currentValue : 0),
+        [Chains.ETHEREUM]:
+          previousChainValues[Chains.ETHEREUM] +
+          (currentRecord.blockchain === CHAIN_ETHEREUM ? currentValue : 0),
+        [Chains.FANTOM]:
+          previousChainValues[Chains.FANTOM] +
+          (currentRecord.blockchain === CHAIN_FANTOM ? currentValue : 0),
+        [Chains.POLYGON]:
+          previousChainValues[Chains.POLYGON] +
+          (currentRecord.blockchain === CHAIN_POLYGON ? currentValue : 0),
+        [Chains.BASE]:
+          previousChainValues[Chains.BASE] +
+          (currentRecord.blockchain === CHAIN_BASE ? currentValue : 0),
+        [Chains.BERACHAIN]:
+          previousChainValues[Chains.BERACHAIN] +
+          (currentRecord.blockchain === CHAIN_BERACHAIN ? currentValue : 0),
+      };
+      const newChainRecords: ChainRecords = {
+        [Chains.ARBITRUM]: [
+          ...previousChainRecords[Chains.ARBITRUM],
+          ...(currentRecord.blockchain === CHAIN_ARBITRUM ? [currentRecord] : []),
+        ],
+        [Chains.ETHEREUM]: [
+          ...previousChainRecords[Chains.ETHEREUM],
+          ...(currentRecord.blockchain === CHAIN_ETHEREUM ? [currentRecord] : []),
+        ],
+        [Chains.FANTOM]: [
+          ...previousChainRecords[Chains.FANTOM],
+          ...(currentRecord.blockchain === CHAIN_FANTOM ? [currentRecord] : []),
+        ],
+        [Chains.POLYGON]: [
+          ...previousChainRecords[Chains.POLYGON],
+          ...(currentRecord.blockchain === CHAIN_POLYGON ? [currentRecord] : []),
+        ],
+        [Chains.BASE]: [
+          ...previousChainRecords[Chains.BASE],
+          ...(currentRecord.blockchain === CHAIN_BASE ? [currentRecord] : []),
+        ],
+        [Chains.BERACHAIN]: [
+          ...previousChainRecords[Chains.BERACHAIN],
+          ...(currentRecord.blockchain === CHAIN_BERACHAIN ? [currentRecord] : []),
+        ],
+      };
 
-    return [newTotalValue, newRecords, newChainValues, newChainRecords];
-  }, [
-    0,
-    [] as TokenRecord[],
-    {
-      [Chains.ARBITRUM]: 0,
-      [Chains.ETHEREUM]: 0,
-      [Chains.FANTOM]: 0,
-      [Chains.POLYGON]: 0,
-      [Chains.BASE]: 0,
-      [Chains.BERACHAIN]: 0,
-    } as ChainValues,
-    {
-      [Chains.ARBITRUM]: [] as TokenRecord[],
-      [Chains.ETHEREUM]: [] as TokenRecord[],
-      [Chains.FANTOM]: [] as TokenRecord[],
-      [Chains.POLYGON]: [] as TokenRecord[],
-      [Chains.BASE]: [] as TokenRecord[],
-      [Chains.BERACHAIN]: [] as TokenRecord[],
-    } as ChainRecords]);
+      return [newTotalValue, newRecords, newChainValues, newChainRecords];
+    },
+    [
+      0,
+      [] as TokenRecord[],
+      {
+        [Chains.ARBITRUM]: 0,
+        [Chains.ETHEREUM]: 0,
+        [Chains.FANTOM]: 0,
+        [Chains.POLYGON]: 0,
+        [Chains.BASE]: 0,
+        [Chains.BERACHAIN]: 0,
+      } as ChainValues,
+      {
+        [Chains.ARBITRUM]: [] as TokenRecord[],
+        [Chains.ETHEREUM]: [] as TokenRecord[],
+        [Chains.FANTOM]: [] as TokenRecord[],
+        [Chains.POLYGON]: [] as TokenRecord[],
+        [Chains.BASE]: [] as TokenRecord[],
+        [Chains.BERACHAIN]: [] as TokenRecord[],
+      } as ChainRecords,
+    ]
+  );
 
   return [totalValue, allRecords, chainValues, chainRecords];
 };
@@ -561,11 +691,11 @@ const getTreasuryAssetValue = (
  * @param records
  * @returns
  */
-const getAssetValues = (
-  records: TokenRecord[],
-): AssetValue => {
-  const [marketValue, marketValueRecords, marketValueChainValues, marketValueChainRecords] = getTreasuryAssetValue(records, false);
-  const [liquidBacking, liquidBackingRecords, liquidBackingChainValues, liquidBackingChainRecords] = getTreasuryAssetValue(records, true);
+const getAssetValues = (records: TokenRecord[]): AssetValue => {
+  const [marketValue, marketValueRecords, marketValueChainValues, marketValueChainRecords] =
+    getTreasuryAssetValue(records, false);
+  const [liquidBacking, liquidBackingRecords, liquidBackingChainValues, liquidBackingChainRecords] =
+    getTreasuryAssetValue(records, true);
 
   return {
     marketValue,
@@ -577,7 +707,7 @@ const getAssetValues = (
     liquidBackingChainValues,
     liquidBackingChainRecords,
   };
-}
+};
 
 export const getLiquidBackingPerOhmBacked = (liquidBacking: number, backedSupply: number) =>
   liquidBacking / backedSupply;
@@ -585,9 +715,13 @@ export const getLiquidBackingPerOhmBacked = (liquidBacking: number, backedSupply
 export const getLiquidBackingPerOhmFloating = (liquidBacking: number, floatingSupply: number) =>
   liquidBacking / floatingSupply;
 
-export const getLiquidBackingPerGOhmBacked = (liquidBacking: number, backedSupply: number, ohmIndex: number) => {
+export const getLiquidBackingPerGOhmBacked = (
+  liquidBacking: number,
+  backedSupply: number,
+  ohmIndex: number
+) => {
   return liquidBacking / getGOhmBackedSupply(backedSupply, ohmIndex);
-}
+};
 
 const getBlock = (tokenRecords: TokenRecord[]): number => {
   if (!tokenRecords.length) {
@@ -595,7 +729,7 @@ const getBlock = (tokenRecords: TokenRecord[]): number => {
   }
 
   return +tokenRecords[0].block;
-}
+};
 
 const getTimestamp = (tokenRecords: TokenRecord[]): number => {
   if (!tokenRecords.length) {
@@ -603,9 +737,15 @@ const getTimestamp = (tokenRecords: TokenRecord[]): number => {
   }
 
   return +tokenRecords[0].timestamp;
-}
+};
 
-export const getMetricObject = (log: Logger, tokenRecords: TokenRecord[], tokenSupplies: TokenSupply[], protocolMetrics: ProtocolMetric[], options?: { includeRecords?: boolean, dateFallback?: string }): Metric => {
+export const getMetricObject = (
+  log: Logger,
+  tokenRecords: TokenRecord[],
+  tokenSupplies: TokenSupply[],
+  protocolMetrics: ProtocolMetric[],
+  options?: { includeRecords?: boolean; dateFallback?: string }
+): Metric => {
   const FUNC = `getMetricObject`;
   const includeRecords = options && options.includeRecords ? options.includeRecords : false;
 
@@ -613,11 +753,16 @@ export const getMetricObject = (log: Logger, tokenRecords: TokenRecord[], tokenS
    * If there is data missing, provide a "blank" object, so that the number of returned records is consistent.
    */
   if (!tokenRecords.length || !tokenSupplies.length || !protocolMetrics.length) {
-    log.warn(`${FUNC}: Not all parameters have non-zero length: tokenRecords: ${tokenRecords.length}, tokenSupplies: ${tokenSupplies.length}, protocolMetrics: ${protocolMetrics.length}`);
-    log.warn(`${FUNC}: Fallback date: ${options && options.dateFallback ? options.dateFallback : "None"}`);
+    log.warn(
+      `${FUNC}: Not all parameters have non-zero length: tokenRecords: ${tokenRecords.length}, tokenSupplies: ${tokenSupplies.length}, protocolMetrics: ${protocolMetrics.length}`
+    );
+    log.warn(
+      `${FUNC}: Fallback date: ${options && options.dateFallback ? options.dateFallback : "None"}`
+    );
 
     const date = options && options.dateFallback ? options.dateFallback : "";
-    const timestamp = options && options.dateFallback ? new Date(options.dateFallback).getTime() / 1000 : 0;
+    const timestamp =
+      options && options.dateFallback ? new Date(options.dateFallback).getTime() / 1000 : 0;
 
     const emptyChainRecords = {
       [Chains.ARBITRUM]: [] as TokenSupply[],
@@ -733,15 +878,17 @@ export const getMetricObject = (log: Logger, tokenRecords: TokenRecord[], tokenS
       treasuryLiquidBackingPerOhmBacked: 0,
       treasuryLiquidBackingPerGOhmBacked: 0,
       // Optional properties - included when includeRecords is true
-      ...includeRecords ? {
-        ohmTotalSupplyRecords: emptyChainRecords,
-        ohmCirculatingSupplyRecords: emptyChainRecords,
-        ohmFloatingSupplyRecords: emptyChainRecords,
-        ohmBackedSupplyRecords: emptyChainRecords,
-        treasuryMarketValueRecords: emptyChainTokenRecords,
-        treasuryLiquidBackingRecords: emptyChainTokenRecords,
-      } : {},
-    }
+      ...(includeRecords
+        ? {
+            ohmTotalSupplyRecords: emptyChainRecords,
+            ohmCirculatingSupplyRecords: emptyChainRecords,
+            ohmFloatingSupplyRecords: emptyChainRecords,
+            ohmBackedSupplyRecords: emptyChainRecords,
+            treasuryMarketValueRecords: emptyChainTokenRecords,
+            treasuryLiquidBackingRecords: emptyChainTokenRecords,
+          }
+        : {}),
+    };
   }
 
   const protocolMetricsOne: ProtocolMetric = protocolMetrics[0];
@@ -845,61 +992,73 @@ export const getMetricObject = (log: Logger, tokenRecords: TokenRecord[], tokenS
       [Chains.BASE]: assetValues.liquidBackingChainValues.Base,
       [Chains.BERACHAIN]: assetValues.liquidBackingChainValues.Berachain,
     },
-    treasuryLiquidBackingPerOhmFloating: getLiquidBackingPerOhmFloating(assetValues.liquidBacking, ohmFloatingSupply.supplyBalance),
-    treasuryLiquidBackingPerOhmBacked: getLiquidBackingPerOhmBacked(assetValues.liquidBacking, ohmBackedSupply.supplyBalance),
-    treasuryLiquidBackingPerGOhmBacked: getLiquidBackingPerGOhmBacked(assetValues.liquidBacking, ohmBackedSupply.supplyBalance, ohmIndex),
+    treasuryLiquidBackingPerOhmFloating: getLiquidBackingPerOhmFloating(
+      assetValues.liquidBacking,
+      ohmFloatingSupply.supplyBalance
+    ),
+    treasuryLiquidBackingPerOhmBacked: getLiquidBackingPerOhmBacked(
+      assetValues.liquidBacking,
+      ohmBackedSupply.supplyBalance
+    ),
+    treasuryLiquidBackingPerGOhmBacked: getLiquidBackingPerGOhmBacked(
+      assetValues.liquidBacking,
+      ohmBackedSupply.supplyBalance,
+      ohmIndex
+    ),
     // Optional properties
-    ...includeRecords ? {
-      ohmTotalSupplyRecords: {
-        [Chains.ARBITRUM]: ohmTotalSupply.chainRecords.Arbitrum,
-        [Chains.ETHEREUM]: ohmTotalSupply.chainRecords.Ethereum,
-        [Chains.FANTOM]: ohmTotalSupply.chainRecords.Fantom,
-        [Chains.POLYGON]: ohmTotalSupply.chainRecords.Polygon,
-        [Chains.BASE]: ohmTotalSupply.chainRecords.Base,
-        [Chains.BERACHAIN]: ohmTotalSupply.chainRecords.Berachain,
-      },
-      ohmCirculatingSupplyRecords: {
-        [Chains.ARBITRUM]: ohmCirculatingSupply.chainRecords.Arbitrum,
-        [Chains.ETHEREUM]: ohmCirculatingSupply.chainRecords.Ethereum,
-        [Chains.FANTOM]: ohmCirculatingSupply.chainRecords.Fantom,
-        [Chains.POLYGON]: ohmCirculatingSupply.chainRecords.Polygon,
-        [Chains.BASE]: ohmCirculatingSupply.chainRecords.Base,
-        [Chains.BERACHAIN]: ohmCirculatingSupply.chainRecords.Berachain,
-      },
-      ohmFloatingSupplyRecords: {
-        [Chains.ARBITRUM]: ohmFloatingSupply.chainRecords.Arbitrum,
-        [Chains.ETHEREUM]: ohmFloatingSupply.chainRecords.Ethereum,
-        [Chains.FANTOM]: ohmFloatingSupply.chainRecords.Fantom,
-        [Chains.POLYGON]: ohmFloatingSupply.chainRecords.Polygon,
-        [Chains.BASE]: ohmFloatingSupply.chainRecords.Base,
-        [Chains.BERACHAIN]: ohmFloatingSupply.chainRecords.Berachain,
-      },
-      ohmBackedSupplyRecords: {
-        [Chains.ARBITRUM]: ohmBackedSupply.chainRecords.Arbitrum,
-        [Chains.ETHEREUM]: ohmBackedSupply.chainRecords.Ethereum,
-        [Chains.FANTOM]: ohmBackedSupply.chainRecords.Fantom,
-        [Chains.POLYGON]: ohmBackedSupply.chainRecords.Polygon,
-        [Chains.BASE]: ohmBackedSupply.chainRecords.Base,
-        [Chains.BERACHAIN]: ohmBackedSupply.chainRecords.Berachain,
-      },
-      treasuryMarketValueRecords: {
-        [Chains.ARBITRUM]: assetValues.marketValueChainRecords.Arbitrum,
-        [Chains.ETHEREUM]: assetValues.marketValueChainRecords.Ethereum,
-        [Chains.FANTOM]: assetValues.marketValueChainRecords.Fantom,
-        [Chains.POLYGON]: assetValues.marketValueChainRecords.Polygon,
-        [Chains.BASE]: assetValues.marketValueChainRecords.Base,
-        [Chains.BERACHAIN]: assetValues.marketValueChainRecords.Berachain,
-      },
-      treasuryLiquidBackingRecords: {
-        [Chains.ARBITRUM]: assetValues.liquidBackingChainRecords.Arbitrum,
-        [Chains.ETHEREUM]: assetValues.liquidBackingChainRecords.Ethereum,
-        [Chains.FANTOM]: assetValues.liquidBackingChainRecords.Fantom,
-        [Chains.POLYGON]: assetValues.liquidBackingChainRecords.Polygon,
-        [Chains.BASE]: assetValues.liquidBackingChainRecords.Base,
-        [Chains.BERACHAIN]: assetValues.liquidBackingChainRecords.Berachain,
-      },
-    } : {},
-  }
+    ...(includeRecords
+      ? {
+          ohmTotalSupplyRecords: {
+            [Chains.ARBITRUM]: ohmTotalSupply.chainRecords.Arbitrum,
+            [Chains.ETHEREUM]: ohmTotalSupply.chainRecords.Ethereum,
+            [Chains.FANTOM]: ohmTotalSupply.chainRecords.Fantom,
+            [Chains.POLYGON]: ohmTotalSupply.chainRecords.Polygon,
+            [Chains.BASE]: ohmTotalSupply.chainRecords.Base,
+            [Chains.BERACHAIN]: ohmTotalSupply.chainRecords.Berachain,
+          },
+          ohmCirculatingSupplyRecords: {
+            [Chains.ARBITRUM]: ohmCirculatingSupply.chainRecords.Arbitrum,
+            [Chains.ETHEREUM]: ohmCirculatingSupply.chainRecords.Ethereum,
+            [Chains.FANTOM]: ohmCirculatingSupply.chainRecords.Fantom,
+            [Chains.POLYGON]: ohmCirculatingSupply.chainRecords.Polygon,
+            [Chains.BASE]: ohmCirculatingSupply.chainRecords.Base,
+            [Chains.BERACHAIN]: ohmCirculatingSupply.chainRecords.Berachain,
+          },
+          ohmFloatingSupplyRecords: {
+            [Chains.ARBITRUM]: ohmFloatingSupply.chainRecords.Arbitrum,
+            [Chains.ETHEREUM]: ohmFloatingSupply.chainRecords.Ethereum,
+            [Chains.FANTOM]: ohmFloatingSupply.chainRecords.Fantom,
+            [Chains.POLYGON]: ohmFloatingSupply.chainRecords.Polygon,
+            [Chains.BASE]: ohmFloatingSupply.chainRecords.Base,
+            [Chains.BERACHAIN]: ohmFloatingSupply.chainRecords.Berachain,
+          },
+          ohmBackedSupplyRecords: {
+            [Chains.ARBITRUM]: ohmBackedSupply.chainRecords.Arbitrum,
+            [Chains.ETHEREUM]: ohmBackedSupply.chainRecords.Ethereum,
+            [Chains.FANTOM]: ohmBackedSupply.chainRecords.Fantom,
+            [Chains.POLYGON]: ohmBackedSupply.chainRecords.Polygon,
+            [Chains.BASE]: ohmBackedSupply.chainRecords.Base,
+            [Chains.BERACHAIN]: ohmBackedSupply.chainRecords.Berachain,
+          },
+          treasuryMarketValueRecords: {
+            [Chains.ARBITRUM]: assetValues.marketValueChainRecords.Arbitrum,
+            [Chains.ETHEREUM]: assetValues.marketValueChainRecords.Ethereum,
+            [Chains.FANTOM]: assetValues.marketValueChainRecords.Fantom,
+            [Chains.POLYGON]: assetValues.marketValueChainRecords.Polygon,
+            [Chains.BASE]: assetValues.marketValueChainRecords.Base,
+            [Chains.BERACHAIN]: assetValues.marketValueChainRecords.Berachain,
+          },
+          treasuryLiquidBackingRecords: {
+            [Chains.ARBITRUM]: assetValues.liquidBackingChainRecords.Arbitrum,
+            [Chains.ETHEREUM]: assetValues.liquidBackingChainRecords.Ethereum,
+            [Chains.FANTOM]: assetValues.liquidBackingChainRecords.Fantom,
+            [Chains.POLYGON]: assetValues.liquidBackingChainRecords.Polygon,
+            [Chains.BASE]: assetValues.liquidBackingChainRecords.Base,
+            [Chains.BERACHAIN]: assetValues.liquidBackingChainRecords.Berachain,
+          },
+        }
+      : {}),
+  };
 };
 
 export const sortRecordsDescending = (records: Metric[]): Metric[] => {

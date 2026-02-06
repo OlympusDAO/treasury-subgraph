@@ -1,6 +1,5 @@
 import { addDays } from "date-fns";
-import { startTestServer, stopTestServer } from "./setup/testServer";
-import { getISO8601DateString } from "./dateHelper";
+import request from "supertest";
 import {
   CHAIN_ARBITRUM,
   CHAIN_BASE,
@@ -17,14 +16,18 @@ import {
   TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY,
   TOKEN_SUPPLY_TYPE_TREASURY,
 } from "../src/core/constants";
+import { getISO8601DateString } from "./dateHelper";
 import { getSupplyBalanceForTypes } from "./metricsHelper";
+import { parseNumber } from "./numberHelper";
+import type { ProtocolMetric } from "./protocolMetricHelper";
+import { startTestServer, stopTestServer } from "./setup/testServer";
 import type { TokenRecord } from "./tokenRecordHelper";
-import { filter as filterTokenRecords, getFirstRecord as getFirstTokenRecord } from "./tokenRecordHelper";
+import {
+  filter as filterTokenRecords,
+  getFirstRecord as getFirstTokenRecord,
+} from "./tokenRecordHelper";
 import type { TokenSupply } from "./tokenSupplyHelper";
 import { filter as filterTokenSupplies } from "./tokenSupplyHelper";
-import type { ProtocolMetric } from "./protocolMetricHelper";
-import { parseNumber } from "./numberHelper";
-import request from 'supertest';
 
 const BUYBACK_MS = "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase();
 const DAO_WALLET = "0x245cc372c84b3645bf0ffe6538620b04a217988b".toLowerCase();
@@ -46,16 +49,16 @@ beforeEach(async () => {
 
 const getStartDate = (days: number = -5): string => {
   return getISO8601DateString(addDays(new Date(), days));
-}
+};
 
 jest.setTimeout(10 * 1000);
 
 describe("paginated", () => {
   test("recent results", async () => {
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: getStartDate(-1) })
+        wg_variables: JSON.stringify({ startDate: getStartDate(-1) }),
       });
 
     const records = response.body.data;
@@ -65,9 +68,9 @@ describe("paginated", () => {
 
   test("returns results", async () => {
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: getStartDate(-5) })
+        wg_variables: JSON.stringify({ startDate: getStartDate(-5) }),
       });
 
     const records = response.body.data;
@@ -75,67 +78,79 @@ describe("paginated", () => {
     expect(recordLength).toBeGreaterThan(0);
   });
 
-  test("returns recent results beyond first page", async () => {
-    const startDateString = getStartDate(-20);
-    const response = await request(app)
-      .get('/operations/paginated/metrics')
-      .query({
-        wg_variables: JSON.stringify({ startDate: startDateString })
-      });
+  test(
+    "returns recent results beyond first page",
+    async () => {
+      const startDateString = getStartDate(-20);
+      const response = await request(app)
+        .get("/operations/paginated/metrics")
+        .query({
+          wg_variables: JSON.stringify({ startDate: startDateString }),
+        });
 
-    const records = response.body.data;
-    const recordsNotNull = records ? records : [];
-    // Most recent date
-    expect(recordsNotNull[0].date).toEqual(getISO8601DateString(new Date()));
-    // Last date
-    expect(recordsNotNull[recordsNotNull.length - 1].date).toEqual(startDateString);
-  }, 60 * 1000);
+      const records = response.body.data;
+      const recordsNotNull = records ? records : [];
+      // Most recent date
+      expect(recordsNotNull[0].date).toEqual(getISO8601DateString(new Date()));
+      // Last date
+      expect(recordsNotNull[recordsNotNull.length - 1].date).toEqual(startDateString);
+    },
+    60 * 1000
+  );
 
-  test("subsequent results are equal", async () => {
-    const response = await request(app)
-      .get('/operations/paginated/metrics')
-      .query({
-        wg_variables: JSON.stringify({ startDate: getStartDate(-1) })
-      });
+  test(
+    "subsequent results are equal",
+    async () => {
+      const response = await request(app)
+        .get("/operations/paginated/metrics")
+        .query({
+          wg_variables: JSON.stringify({ startDate: getStartDate(-1) }),
+        });
 
-    const records = response.body.data;
+      const records = response.body.data;
 
-    const responseTwo = await request(app)
-      .get('/operations/paginated/metrics')
-      .query({
-        wg_variables: JSON.stringify({ startDate: getStartDate(-1) })
-      });
+      const responseTwo = await request(app)
+        .get("/operations/paginated/metrics")
+        .query({
+          wg_variables: JSON.stringify({ startDate: getStartDate(-1) }),
+        });
 
-    expect(responseTwo.body.data).toEqual(records);
-  }, 20 * 1000);
+      expect(responseTwo.body.data).toEqual(records);
+    },
+    20 * 1000
+  );
 
-  test("subsequent results are equal, long timeframe", async () => {
-    // This tests both setting and getting a large amount of data, which can error out
-    const response = await request(app)
-      .get('/operations/paginated/metrics')
-      .query({
-        wg_variables: JSON.stringify({ startDate: getStartDate(-60) })
-      });
+  test(
+    "subsequent results are equal, long timeframe",
+    async () => {
+      // This tests both setting and getting a large amount of data, which can error out
+      const response = await request(app)
+        .get("/operations/paginated/metrics")
+        .query({
+          wg_variables: JSON.stringify({ startDate: getStartDate(-60) }),
+        });
 
-    const records = response.body.data;
+      const records = response.body.data;
 
-    const responseTwo = await request(app)
-      .get('/operations/paginated/metrics')
-      .query({
-        wg_variables: JSON.stringify({ startDate: getStartDate(-60) })
-      });
+      const responseTwo = await request(app)
+        .get("/operations/paginated/metrics")
+        .query({
+          wg_variables: JSON.stringify({ startDate: getStartDate(-60) }),
+        });
 
-    expect(responseTwo.body.data).toEqual(records);
-  }, 90 * 1000);
+      expect(responseTwo.body.data).toEqual(records);
+    },
+    90 * 1000
+  );
 
   test("crossChainDataComplete true", async () => {
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
         wg_variables: JSON.stringify({
           startDate: getStartDate(-5),
-          crossChainDataComplete: true
-        })
+          crossChainDataComplete: true,
+        }),
       });
 
     const records = response.body.data;
@@ -143,72 +158,77 @@ describe("paginated", () => {
     expect(recordLength).toBeGreaterThan(0);
   });
 
-  test("includeRecords true", async () => {
-    const response = await request(app)
-      .get('/operations/paginated/metrics')
-      .query({
-        wg_variables: JSON.stringify({
-          startDate: getStartDate(-5),
-          includeRecords: true
-        })
-      });
+  test(
+    "includeRecords true",
+    async () => {
+      const response = await request(app)
+        .get("/operations/paginated/metrics")
+        .query({
+          wg_variables: JSON.stringify({
+            startDate: getStartDate(-5),
+            includeRecords: true,
+          }),
+        });
 
-    const records = response.body.data;
-    // Find a record that has data for required chains (Ethereum and Arbitrum)
-    const recordWithRequiredData = records!.find((r: any) =>
-      r.ohmTotalSupplyRecords?.Arbitrum?.length > 0 &&
-      r.ohmTotalSupplyRecords?.Ethereum?.length > 0
-    );
+      const records = response.body.data;
+      // Find a record that has data for required chains (Ethereum and Arbitrum)
+      const recordWithRequiredData = records!.find(
+        (r: any) =>
+          r.ohmTotalSupplyRecords?.Arbitrum?.length > 0 &&
+          r.ohmTotalSupplyRecords?.Ethereum?.length > 0
+      );
 
-    expect(recordWithRequiredData).toBeDefined();
+      expect(recordWithRequiredData).toBeDefined();
 
-    const firstRecord = recordWithRequiredData!;
-    const totalSupplyRecords = firstRecord.ohmTotalSupplyRecords;
-    const circulatingSupplyRecords = firstRecord.ohmCirculatingSupplyRecords;
-    const floatingSupplyRecords = firstRecord.ohmFloatingSupplyRecords;
-    const backedSupplyRecords = firstRecord.ohmBackedSupplyRecords;
-    const treasuryMarketValueRecords = firstRecord.treasuryMarketValueRecords;
-    const treasuryLiquidBackingRecords = firstRecord.treasuryLiquidBackingRecords;
+      const firstRecord = recordWithRequiredData!;
+      const totalSupplyRecords = firstRecord.ohmTotalSupplyRecords;
+      const circulatingSupplyRecords = firstRecord.ohmCirculatingSupplyRecords;
+      const floatingSupplyRecords = firstRecord.ohmFloatingSupplyRecords;
+      const backedSupplyRecords = firstRecord.ohmBackedSupplyRecords;
+      const treasuryMarketValueRecords = firstRecord.treasuryMarketValueRecords;
+      const treasuryLiquidBackingRecords = firstRecord.treasuryLiquidBackingRecords;
 
-    // Required chains - must have data
-    expect(totalSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
-    expect(totalSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
+      // Required chains - must have data
+      expect(totalSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
+      expect(totalSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
 
-    expect(circulatingSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
-    expect(circulatingSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
+      expect(circulatingSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
+      expect(circulatingSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
 
-    expect(floatingSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
-    expect(floatingSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
+      expect(floatingSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
+      expect(floatingSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
 
-    expect(backedSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
-    expect(backedSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
+      expect(backedSupplyRecords?.Arbitrum.length).toBeGreaterThan(0);
+      expect(backedSupplyRecords?.Ethereum.length).toBeGreaterThan(0);
 
-    expect(treasuryMarketValueRecords?.Arbitrum.length).toBeGreaterThan(0);
-    expect(treasuryMarketValueRecords?.Ethereum.length).toBeGreaterThan(0);
+      expect(treasuryMarketValueRecords?.Arbitrum.length).toBeGreaterThan(0);
+      expect(treasuryMarketValueRecords?.Ethereum.length).toBeGreaterThan(0);
 
-    expect(treasuryLiquidBackingRecords?.Arbitrum.length).toBeGreaterThan(0);
-    expect(treasuryLiquidBackingRecords?.Ethereum.length).toBeGreaterThan(0);
+      expect(treasuryLiquidBackingRecords?.Arbitrum.length).toBeGreaterThan(0);
+      expect(treasuryLiquidBackingRecords?.Ethereum.length).toBeGreaterThan(0);
 
-    // Optional chains - just check they exist as arrays (may be empty)
-    const optionalChains = ['Base', 'Berachain', 'Fantom', 'Polygon'] as const;
-    for (const chain of optionalChains) {
-      expect(Array.isArray(totalSupplyRecords?.[chain])).toBe(true);
-      expect(Array.isArray(circulatingSupplyRecords?.[chain])).toBe(true);
-      expect(Array.isArray(floatingSupplyRecords?.[chain])).toBe(true);
-      expect(Array.isArray(backedSupplyRecords?.[chain])).toBe(true);
-      expect(Array.isArray(treasuryMarketValueRecords?.[chain])).toBe(true);
-      expect(Array.isArray(treasuryLiquidBackingRecords?.[chain])).toBe(true);
-    }
-  }, 60 * 1000);
+      // Optional chains - just check they exist as arrays (may be empty)
+      const optionalChains = ["Base", "Berachain", "Fantom", "Polygon"] as const;
+      for (const chain of optionalChains) {
+        expect(Array.isArray(totalSupplyRecords?.[chain])).toBe(true);
+        expect(Array.isArray(circulatingSupplyRecords?.[chain])).toBe(true);
+        expect(Array.isArray(floatingSupplyRecords?.[chain])).toBe(true);
+        expect(Array.isArray(backedSupplyRecords?.[chain])).toBe(true);
+        expect(Array.isArray(treasuryMarketValueRecords?.[chain])).toBe(true);
+        expect(Array.isArray(treasuryLiquidBackingRecords?.[chain])).toBe(true);
+      }
+    },
+    60 * 1000
+  );
 
   test("includeRecords false", async () => {
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
         wg_variables: JSON.stringify({
           startDate: getStartDate(-5),
-          includeRecords: false
-        })
+          includeRecords: false,
+        }),
       });
 
     const records = response.body.data;
@@ -235,8 +255,7 @@ describe("paginated", () => {
 describe("latest", () => {
   test("returns the latest results for each chain", async () => {
     // Grab the results from the raw operation
-    const rawResponse = await request(app)
-      .get('/operations/tokenRecordsLatest');
+    const rawResponse = await request(app).get("/operations/tokenRecordsLatest");
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResponse.body.data?.treasuryArbitrum_tokenRecords[0];
@@ -259,8 +278,7 @@ describe("latest", () => {
     const berachainRawTimestamp: number = parseNumber(berachainRawResult?.timestamp) || 0;
 
     // Grab the results from the latest operation
-    const response = await request(app)
-      .get('/operations/latest/metrics');
+    const response = await request(app).get("/operations/latest/metrics");
 
     // Single record
     const record = response.body.data;
@@ -284,24 +302,25 @@ describe("latest", () => {
     expect(record?.timestamps.Berachain).toEqual(berachainRawTimestamp);
   });
 
-  test("subsequent results are equal", async () => {
-    const response = await request(app)
-      .get('/operations/latest/metrics');
+  test(
+    "subsequent results are equal",
+    async () => {
+      const response = await request(app).get("/operations/latest/metrics");
 
-    const records = response.body.data;
+      const records = response.body.data;
 
-    const responseTwo = await request(app)
-      .get('/operations/latest/metrics');
+      const responseTwo = await request(app).get("/operations/latest/metrics");
 
-    expect(responseTwo.body.data).toEqual(records);
-  }, 20 * 1000);
+      expect(responseTwo.body.data).toEqual(records);
+    },
+    20 * 1000
+  );
 });
 
 describe("earliest", () => {
   test("returns the earliest results for each chain", async () => {
     // Grab the results from the raw operation
-    const rawResponse = await request(app)
-      .get('/operations/tokenRecordsEarliest');
+    const rawResponse = await request(app).get("/operations/tokenRecordsEarliest");
 
     // Raw data has an array property for each chain
     const arbitrumRawResult = rawResponse.body.data?.treasuryArbitrum_tokenRecords[0];
@@ -324,8 +343,7 @@ describe("earliest", () => {
     const berachainRawTimestamp: number = parseNumber(berachainRawResult?.timestamp) || 0;
 
     // Grab the results from the earliest operation
-    const response = await request(app)
-      .get('/operations/earliest/metrics');
+    const response = await request(app).get("/operations/earliest/metrics");
 
     // Single record
     const record = response.body.data;
@@ -349,17 +367,19 @@ describe("earliest", () => {
     expect(record?.timestamps.Berachain).toEqual(berachainRawTimestamp);
   });
 
-  test("subsequent results are equal", async () => {
-    const response = await request(app)
-      .get('/operations/earliest/metrics');
+  test(
+    "subsequent results are equal",
+    async () => {
+      const response = await request(app).get("/operations/earliest/metrics");
 
-    const records = response.body.data;
+      const records = response.body.data;
 
-    const responseTwo = await request(app)
-      .get('/operations/earliest/metrics');
+      const responseTwo = await request(app).get("/operations/earliest/metrics");
 
-    expect(responseTwo.body.data).toEqual(records);
-  }, 20 * 1000);
+      expect(responseTwo.body.data).toEqual(records);
+    },
+    20 * 1000
+  );
 });
 
 describe("atBlock", () => {
@@ -368,9 +388,9 @@ describe("atBlock", () => {
 
     // Grab the results for the previous day (hence not the result of the latest query)
     const rawResponse = await request(app)
-      .get('/operations/paginated/tokenRecords')
+      .get("/operations/paginated/tokenRecords")
       .query({
-        wg_variables: JSON.stringify({ startDate: startDate })
+        wg_variables: JSON.stringify({ startDate: startDate }),
       });
 
     // Raw data has an array property for each chain
@@ -392,7 +412,7 @@ describe("atBlock", () => {
 
     // Grab the results from the earliest operation
     const response = await request(app)
-      .get('/operations/atBlock/metrics')
+      .get("/operations/atBlock/metrics")
       .query({
         wg_variables: JSON.stringify({
           arbitrumBlock: arbitrumRawBlock,
@@ -400,7 +420,7 @@ describe("atBlock", () => {
           ethereumBlock: ethereumRawBlock,
           fantomBlock: fantomRawBlock,
           polygonBlock: polygonRawBlock,
-        })
+        }),
       });
 
     // Single record
@@ -427,28 +447,38 @@ describe("atBlock", () => {
 describe("metrics", () => {
   const START_DATE = getStartDate(-1);
 
-  const getRecords = async (startDate: string): Promise<[TokenRecord[], TokenSupply[], ProtocolMetric[]]> => {
+  const getRecords = async (
+    startDate: string
+  ): Promise<[TokenRecord[], TokenSupply[], ProtocolMetric[]]> => {
     // Grab the TokenRecord results
     const rawTokenRecordsResponse = await request(app)
-      .get('/operations/paginated/tokenRecords')
+      .get("/operations/paginated/tokenRecords")
       .query({
-        wg_variables: JSON.stringify({ startDate: startDate })
+        wg_variables: JSON.stringify({ startDate: startDate }),
       });
-    const combinedTokenRecords = filterTokenRecords(rawTokenRecordsResponse.body.data, undefined, START_DATE);
+    const combinedTokenRecords = filterTokenRecords(
+      rawTokenRecordsResponse.body.data,
+      undefined,
+      START_DATE
+    );
 
     // Grab the results from the raw TokenSupply operation
     const rawTokenSuppliesResponse = await request(app)
-      .get('/operations/paginated/tokenSupplies')
+      .get("/operations/paginated/tokenSupplies")
       .query({
-        wg_variables: JSON.stringify({ startDate: startDate })
+        wg_variables: JSON.stringify({ startDate: startDate }),
       });
-    const combinedTokenSupplies = filterTokenSupplies(rawTokenSuppliesResponse.body.data, undefined, START_DATE);
+    const combinedTokenSupplies = filterTokenSupplies(
+      rawTokenSuppliesResponse.body.data,
+      undefined,
+      START_DATE
+    );
 
     // Grab the results from the raw TokenSupply operation
     const rawProtocolMetricsResponse = await request(app)
-      .get('/operations/paginated/protocolMetrics')
+      .get("/operations/paginated/protocolMetrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: START_DATE })
+        wg_variables: JSON.stringify({ startDate: START_DATE }),
       });
     const combinedProtocolMetrics = rawProtocolMetricsResponse.body.data || [];
 
@@ -456,7 +486,8 @@ describe("metrics", () => {
   };
 
   test("total supply is accurate", async () => {
-    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+      await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
@@ -473,23 +504,49 @@ describe("metrics", () => {
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
-    const ethereumProtocolMetrics = combinedProtocolMetrics.filter((record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block);
+    const ethereumProtocolMetrics = combinedProtocolMetrics.filter(
+      (record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block
+    );
     const ohmIndex = +ethereumProtocolMetrics[0].currentIndex;
 
     // Calculate expected results
     const includedTypes = [TOKEN_SUPPLY_TYPE_TOTAL_SUPPLY];
-    const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedArbitrumSupply = getSupplyBalanceForTypes(arbitrumTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedBaseSupply = getSupplyBalanceForTypes(baseTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedEthereumSupply = getSupplyBalanceForTypes(ethereumTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedFantomSupply = getSupplyBalanceForTypes(fantomTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
+    const expectedSupply = getSupplyBalanceForTypes(
+      combinedTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedArbitrumSupply = getSupplyBalanceForTypes(
+      arbitrumTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedBaseSupply = getSupplyBalanceForTypes(
+      baseTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedEthereumSupply = getSupplyBalanceForTypes(
+      ethereumTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedFantomSupply = getSupplyBalanceForTypes(
+      fantomTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedPolygonSupply = getSupplyBalanceForTypes(
+      polygonTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
 
     // Grab the results from the latest operation
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: START_DATE })
+        wg_variables: JSON.stringify({ startDate: START_DATE }),
       });
 
     // Fetch the Metric record for the same date
@@ -506,7 +563,8 @@ describe("metrics", () => {
   }, 10000);
 
   test("circulating supply is accurate", async () => {
-    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+      await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
@@ -523,7 +581,9 @@ describe("metrics", () => {
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
-    const ethereumProtocolMetrics = combinedProtocolMetrics.filter((record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block);
+    const ethereumProtocolMetrics = combinedProtocolMetrics.filter(
+      (record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block
+    );
 
     const ohmIndex = +ethereumProtocolMetrics[0].currentIndex;
 
@@ -536,18 +596,42 @@ describe("metrics", () => {
       TOKEN_SUPPLY_TYPE_BONDS_VESTING_DEPOSITS,
       TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS,
     ];
-    const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedArbitrumSupply = getSupplyBalanceForTypes(arbitrumTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedBaseSupply = getSupplyBalanceForTypes(baseTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedEthereumSupply = getSupplyBalanceForTypes(ethereumTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedFantomSupply = getSupplyBalanceForTypes(fantomTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
+    const expectedSupply = getSupplyBalanceForTypes(
+      combinedTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedArbitrumSupply = getSupplyBalanceForTypes(
+      arbitrumTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedBaseSupply = getSupplyBalanceForTypes(
+      baseTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedEthereumSupply = getSupplyBalanceForTypes(
+      ethereumTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedFantomSupply = getSupplyBalanceForTypes(
+      fantomTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedPolygonSupply = getSupplyBalanceForTypes(
+      polygonTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
 
     // Grab the results from the latest operation
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: START_DATE })
+        wg_variables: JSON.stringify({ startDate: START_DATE }),
       });
 
     // Fetch the Metric record for the same date
@@ -564,7 +648,8 @@ describe("metrics", () => {
   }, 10000);
 
   test("floating supply is accurate", async () => {
-    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+      await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
@@ -581,7 +666,9 @@ describe("metrics", () => {
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
-    const ethereumProtocolMetrics = combinedProtocolMetrics.filter((record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block);
+    const ethereumProtocolMetrics = combinedProtocolMetrics.filter(
+      (record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block
+    );
 
     const ohmIndex = +ethereumProtocolMetrics[0].currentIndex;
 
@@ -595,18 +682,42 @@ describe("metrics", () => {
       TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS,
       TOKEN_SUPPLY_TYPE_LIQUIDITY,
     ];
-    const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedArbitrumSupply = getSupplyBalanceForTypes(arbitrumTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedBaseSupply = getSupplyBalanceForTypes(baseTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedEthereumSupply = getSupplyBalanceForTypes(ethereumTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedFantomSupply = getSupplyBalanceForTypes(fantomTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
+    const expectedSupply = getSupplyBalanceForTypes(
+      combinedTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedArbitrumSupply = getSupplyBalanceForTypes(
+      arbitrumTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedBaseSupply = getSupplyBalanceForTypes(
+      baseTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedEthereumSupply = getSupplyBalanceForTypes(
+      ethereumTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedFantomSupply = getSupplyBalanceForTypes(
+      fantomTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedPolygonSupply = getSupplyBalanceForTypes(
+      polygonTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
 
     // Grab the results from the latest operation
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: START_DATE })
+        wg_variables: JSON.stringify({ startDate: START_DATE }),
       });
 
     // Fetch the Metric record for the same date
@@ -623,7 +734,8 @@ describe("metrics", () => {
   }, 10000);
 
   test("backed supply is accurate", async () => {
-    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+      await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
@@ -640,7 +752,9 @@ describe("metrics", () => {
     const polygonTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
-    const ethereumProtocolMetrics = combinedProtocolMetrics.filter((record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block);
+    const ethereumProtocolMetrics = combinedProtocolMetrics.filter(
+      (record: ProtocolMetric) => record.block === ethereumTokenRecords[0].block
+    );
 
     const ohmIndex = +ethereumProtocolMetrics[0].currentIndex;
 
@@ -656,18 +770,42 @@ describe("metrics", () => {
       TOKEN_SUPPLY_TYPE_LIQUIDITY,
       TOKEN_SUPPLY_TYPE_LENDING,
     ];
-    const expectedSupply = getSupplyBalanceForTypes(combinedTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedArbitrumSupply = getSupplyBalanceForTypes(arbitrumTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedBaseSupply = getSupplyBalanceForTypes(baseTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedEthereumSupply = getSupplyBalanceForTypes(ethereumTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedFantomSupply = getSupplyBalanceForTypes(fantomTokenSupplies, includedTypes, ohmIndex)[0];
-    const expectedPolygonSupply = getSupplyBalanceForTypes(polygonTokenSupplies, includedTypes, ohmIndex)[0];
+    const expectedSupply = getSupplyBalanceForTypes(
+      combinedTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedArbitrumSupply = getSupplyBalanceForTypes(
+      arbitrumTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedBaseSupply = getSupplyBalanceForTypes(
+      baseTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedEthereumSupply = getSupplyBalanceForTypes(
+      ethereumTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedFantomSupply = getSupplyBalanceForTypes(
+      fantomTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
+    const expectedPolygonSupply = getSupplyBalanceForTypes(
+      polygonTokenSupplies,
+      includedTypes,
+      ohmIndex
+    )[0];
 
     // Grab the results from the latest operation
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: START_DATE })
+        wg_variables: JSON.stringify({ startDate: START_DATE }),
       });
 
     // Fetch the Metric record for the same date
@@ -686,9 +824,9 @@ describe("metrics", () => {
   test("gOHM backed supply is accurate", async () => {
     // Grab the results from the latest operation
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: START_DATE })
+        wg_variables: JSON.stringify({ startDate: START_DATE }),
       });
 
     // Fetch the Metric record for the same date
@@ -700,82 +838,99 @@ describe("metrics", () => {
     expect(record?.gOhmBackedSupply).toBeCloseTo(record?.ohmBackedSupply! / record?.ohmIndex!);
   });
 
-  test("treasury market value is accurate", async () => {
-    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+  test(
+    "treasury market value is accurate",
+    async () => {
+      const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+        await getRecords(START_DATE);
 
-    // Raw data has an array property for each chain
-    const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
-    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
-    const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
-    const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
-    const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
+      // Raw data has an array property for each chain
+      const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+      const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
+      const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
+      const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
+      const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
-    const marketValue = filterReduce(combinedTokenRecords, () => true);
-    const marketValueArbitrum = filterReduce(arbitrumTokenRecords, () => true);
-    const marketValueBase = filterReduce(baseTokenRecords, () => true);
-    const marketValueEthereum = filterReduce(ethereumTokenRecords, () => true);
-    const marketValueFantom = filterReduce(fantomTokenRecords, () => true);
-    const marketValuePolygon = filterReduce(polygonTokenRecords, () => true);
+      const marketValue = filterReduce(combinedTokenRecords, () => true);
+      const marketValueArbitrum = filterReduce(arbitrumTokenRecords, () => true);
+      const marketValueBase = filterReduce(baseTokenRecords, () => true);
+      const marketValueEthereum = filterReduce(ethereumTokenRecords, () => true);
+      const marketValueFantom = filterReduce(fantomTokenRecords, () => true);
+      const marketValuePolygon = filterReduce(polygonTokenRecords, () => true);
 
-    // Grab the results from the latest operation
-    const response = await request(app)
-      .get('/operations/paginated/metrics')
-      .query({
-        wg_variables: JSON.stringify({
-          startDate: START_DATE,
-          includeRecords: true
-        })
-      });
+      // Grab the results from the latest operation
+      const response = await request(app)
+        .get("/operations/paginated/metrics")
+        .query({
+          wg_variables: JSON.stringify({
+            startDate: START_DATE,
+            includeRecords: true,
+          }),
+        });
 
-    // Fetch the Metric record for the same date
-    const records = response.body.data;
-    const record = records?.filter((record: any) => record.date === START_DATE)[0];
+      // Fetch the Metric record for the same date
+      const records = response.body.data;
+      const record = records?.filter((record: any) => record.date === START_DATE)[0];
 
-    expect(record).not.toBeNull();
-    expect(record?.treasuryMarketValue).toBeCloseTo(marketValue);
-    expect(record?.treasuryMarketValueComponents.Arbitrum).toBeCloseTo(marketValueArbitrum);
-    expect(record?.treasuryMarketValueComponents.Base).toBeCloseTo(marketValueBase);
-    expect(record?.treasuryMarketValueComponents.Ethereum).toBeCloseTo(marketValueEthereum);
-    expect(record?.treasuryMarketValueComponents.Fantom).toBeCloseTo(marketValueFantom);
-    expect(record?.treasuryMarketValueComponents.Polygon).toBeCloseTo(marketValuePolygon);
+      expect(record).not.toBeNull();
+      expect(record?.treasuryMarketValue).toBeCloseTo(marketValue);
+      expect(record?.treasuryMarketValueComponents.Arbitrum).toBeCloseTo(marketValueArbitrum);
+      expect(record?.treasuryMarketValueComponents.Base).toBeCloseTo(marketValueBase);
+      expect(record?.treasuryMarketValueComponents.Ethereum).toBeCloseTo(marketValueEthereum);
+      expect(record?.treasuryMarketValueComponents.Fantom).toBeCloseTo(marketValueFantom);
+      expect(record?.treasuryMarketValueComponents.Polygon).toBeCloseTo(marketValuePolygon);
 
-    // Ensure that it excludes OHM in treasury addresses
-    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
-      (record: TokenRecord) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
-    ).length).toEqual(0);
+      // Ensure that it excludes OHM in treasury addresses
+      expect(
+        record?.treasuryMarketValueRecords?.Ethereum.filter(
+          (record: TokenRecord) =>
+            record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+        ).length
+      ).toEqual(0);
 
-    const isOHM = (value: TokenRecord): boolean => {
-      if (value.token == "OHM V1") {
-        return true;
-      }
+      const isOHM = (value: TokenRecord): boolean => {
+        if (value.token == "OHM V1") {
+          return true;
+        }
 
-      if (value.token == "OHM V2") {
-        return true;
-      }
+        if (value.token == "OHM V2") {
+          return true;
+        }
 
-      if (value.token == "gOHM") {
-        return true;
-      }
+        if (value.token == "gOHM") {
+          return true;
+        }
 
-      return false;
-    }
+        return false;
+      };
 
+      // Market value should not include the value of any raw OHM
+      const marketValueExcludeOhm = filterReduce(
+        combinedTokenRecords,
+        (value) => !isOHM(value),
+        false
+      );
+      // Only OHM in the buyback address should be included
+      const buybackOhmValue = filterReduce(
+        combinedTokenRecords,
+        (value) => isOHM(value) && value.sourceAddress.toLowerCase() == BUYBACK_MS,
+        false
+      );
 
-    // Market value should not include the value of any raw OHM
-    const marketValueExcludeOhm = filterReduce(combinedTokenRecords, (value) => !isOHM(value), false);
-    // Only OHM in the buyback address should be included
-    const buybackOhmValue = filterReduce(combinedTokenRecords, (value) => isOHM(value) && value.sourceAddress.toLowerCase() == BUYBACK_MS, false);
+      expect(record?.treasuryMarketValue).toEqual(marketValueExcludeOhm + buybackOhmValue);
 
-    expect(record?.treasuryMarketValue).toEqual(marketValueExcludeOhm + buybackOhmValue);
-
-    const buybackOhmRecords = record?.treasuryMarketValueRecords?.Ethereum.filter(
-      (record: TokenRecord) => isOHM(record) && record.sourceAddress.toLowerCase() == BUYBACK_MS
-    ) || [];
-    expect(buybackOhmRecords.length).toBeGreaterThan(0);
-  }, 30 * 1000);
+      const buybackOhmRecords =
+        record?.treasuryMarketValueRecords?.Ethereum.filter(
+          (record: TokenRecord) => isOHM(record) && record.sourceAddress.toLowerCase() == BUYBACK_MS
+        ) || [];
+      expect(buybackOhmRecords.length).toBeGreaterThan(0);
+    },
+    30 * 1000
+  );
 
   test("treasury liquid backing is accurate", async () => {
-    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+      await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
     const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
@@ -784,21 +939,45 @@ describe("metrics", () => {
     const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
     const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
-    const liquidBackingValue = filterReduce(combinedTokenRecords, (value) => value.isLiquid == true, true);
-    const liquidBackingValueArbitrum = filterReduce(arbitrumTokenRecords, (value) => value.isLiquid == true, true);
-    const liquidBackingValueBase = filterReduce(baseTokenRecords, (value) => value.isLiquid == true, true);
-    const liquidBackingValueEthereum = filterReduce(ethereumTokenRecords, (value) => value.isLiquid == true, true);
-    const liquidBackingValueFantom = filterReduce(fantomTokenRecords, (value) => value.isLiquid == true, true);
-    const liquidBackingValuePolygon = filterReduce(polygonTokenRecords, (value) => value.isLiquid == true, true);
+    const liquidBackingValue = filterReduce(
+      combinedTokenRecords,
+      (value) => value.isLiquid == true,
+      true
+    );
+    const liquidBackingValueArbitrum = filterReduce(
+      arbitrumTokenRecords,
+      (value) => value.isLiquid == true,
+      true
+    );
+    const liquidBackingValueBase = filterReduce(
+      baseTokenRecords,
+      (value) => value.isLiquid == true,
+      true
+    );
+    const liquidBackingValueEthereum = filterReduce(
+      ethereumTokenRecords,
+      (value) => value.isLiquid == true,
+      true
+    );
+    const liquidBackingValueFantom = filterReduce(
+      fantomTokenRecords,
+      (value) => value.isLiquid == true,
+      true
+    );
+    const liquidBackingValuePolygon = filterReduce(
+      polygonTokenRecords,
+      (value) => value.isLiquid == true,
+      true
+    );
 
     // Grab the results from the latest operation
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
         wg_variables: JSON.stringify({
           startDate: START_DATE,
-          includeRecords: true
-        })
+          includeRecords: true,
+        }),
       });
 
     // Fetch the Metric record for the same date
@@ -807,33 +986,46 @@ describe("metrics", () => {
 
     expect(record).not.toBeNull();
     expect(record?.treasuryLiquidBacking).toBeCloseTo(liquidBackingValue);
-    expect(record?.treasuryLiquidBackingComponents.Arbitrum).toBeCloseTo(liquidBackingValueArbitrum);
+    expect(record?.treasuryLiquidBackingComponents.Arbitrum).toBeCloseTo(
+      liquidBackingValueArbitrum
+    );
     expect(record?.treasuryLiquidBackingComponents.Base).toBeCloseTo(liquidBackingValueBase);
-    expect(record?.treasuryLiquidBackingComponents.Ethereum).toBeCloseTo(liquidBackingValueEthereum);
+    expect(record?.treasuryLiquidBackingComponents.Ethereum).toBeCloseTo(
+      liquidBackingValueEthereum
+    );
     expect(record?.treasuryLiquidBackingComponents.Fantom).toBeCloseTo(liquidBackingValueFantom);
     expect(record?.treasuryLiquidBackingComponents.Polygon).toBeCloseTo(liquidBackingValuePolygon);
 
     // Ensure that it excludes OHM in treasury addresses
-    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
-      (record: TokenRecord) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
-    ).length).toEqual(0);
+    expect(
+      record?.treasuryMarketValueRecords?.Ethereum.filter(
+        (record: TokenRecord) =>
+          record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+      ).length
+    ).toEqual(0);
 
     // Ensure that it excludes OHM in the buyback addresses
-    expect(record?.treasuryMarketValueRecords?.Ethereum.filter(
-      (record: TokenRecord) => record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == BUYBACK_MS
-    ).length).toEqual(0);
+    expect(
+      record?.treasuryMarketValueRecords?.Ethereum.filter(
+        (record: TokenRecord) =>
+          record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == BUYBACK_MS
+      ).length
+    ).toEqual(0);
   });
 
   test("OHM index", async () => {
-    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] = await getRecords(START_DATE);
+    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+      await getRecords(START_DATE);
 
-    const ohmIndex = +combinedProtocolMetrics.filter((record: ProtocolMetric) => record.date === START_DATE)[0].currentIndex;
+    const ohmIndex = +combinedProtocolMetrics.filter(
+      (record: ProtocolMetric) => record.date === START_DATE
+    )[0].currentIndex;
 
     // Grab the results from the latest operation
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: START_DATE })
+        wg_variables: JSON.stringify({ startDate: START_DATE }),
       });
 
     // Fetch the Metric record for the same date
@@ -847,9 +1039,9 @@ describe("metrics", () => {
   test("liquid backing metrics", async () => {
     // Grab the results from the latest operation
     const response = await request(app)
-      .get('/operations/paginated/metrics')
+      .get("/operations/paginated/metrics")
       .query({
-        wg_variables: JSON.stringify({ startDate: START_DATE })
+        wg_variables: JSON.stringify({ startDate: START_DATE }),
       });
 
     // Fetch the Metric record for the same date
@@ -858,8 +1050,12 @@ describe("metrics", () => {
 
     expect(record).not.toBeNull();
     // The calculation logic of the liquid backing and backed supply metrics are already tested above, so this just checks that the derived metric is correct
-    expect(record?.treasuryLiquidBackingPerOhmBacked).toBeCloseTo(record?.treasuryLiquidBacking! / record?.ohmBackedSupply!);
-    expect(record?.treasuryLiquidBackingPerGOhmBacked).toBeCloseTo(record?.treasuryLiquidBacking! / record?.gOhmBackedSupply!);
+    expect(record?.treasuryLiquidBackingPerOhmBacked).toBeCloseTo(
+      record?.treasuryLiquidBacking! / record?.ohmBackedSupply!
+    );
+    expect(record?.treasuryLiquidBackingPerGOhmBacked).toBeCloseTo(
+      record?.treasuryLiquidBacking! / record?.gOhmBackedSupply!
+    );
   });
 });
 
@@ -867,9 +1063,11 @@ describe("metrics", () => {
 const filterReduce = (
   records: TokenRecord[],
   filterPredicate: (value: TokenRecord) => unknown,
-  valueExcludingOhm = false,
+  valueExcludingOhm = false
 ): number => {
   return records.filter(filterPredicate).reduce((previousValue, currentRecord) => {
-    return previousValue + (valueExcludingOhm ? +currentRecord.valueExcludingOhm : +currentRecord.value);
+    return (
+      previousValue + (valueExcludingOhm ? +currentRecord.valueExcludingOhm : +currentRecord.value)
+    );
   }, 0);
 };

@@ -202,23 +202,32 @@ export interface WundergraphResponse<T> {
  * Response is wrapped in { data: T } for Wundergraph compatibility
  */
 export interface Operations {
-  'health': { input?: never; response: { data: Health } };
-  'latest/metrics': { input?: IgnoreCacheInput; response: { data: Metric } };
-  'latest/tokenRecords': { input?: IgnoreCacheInput; response: { data: TokenRecord[] } };
-  'latest/tokenSupplies': { input?: IgnoreCacheInput; response: { data: TokenSupply[] } };
-  'latest/protocolMetrics': { input?: IgnoreCacheInput; response: { data: ProtocolMetric[] } };
-  'earliest/metrics': { input?: IgnoreCacheInput; response: { data: Metric } };
-  'earliest/tokenRecords': { input?: IgnoreCacheInput; response: { data: TokenRecord[] } };
-  'earliest/tokenSupplies': { input?: IgnoreCacheInput; response: { data: TokenSupply[] } };
-  'earliest/protocolMetrics': { input?: IgnoreCacheInput; response: { data: ProtocolMetric[] } };
-  'paginated/metrics': { input: PaginatedMetricsInput; response: { data: Metric[] } };
-  'paginated/tokenRecords': { input: PaginatedTokenRecordsInput; response: { data: TokenRecord[] } };
-  'paginated/tokenSupplies': { input: PaginatedTokenSuppliesInput; response: { data: TokenSupply[] } };
-  'paginated/protocolMetrics': { input: PaginatedProtocolMetricsInput; response: { data: ProtocolMetric[] } };
-  'atBlock/metrics': { input: AtBlockInput; response: { data: Metric } };
-  'atBlock/tokenRecords': { input: AtBlockInput; response: { data: TokenRecord[] } };
-  'atBlock/tokenSupplies': { input: AtBlockInput; response: { data: TokenSupply[] } };
-  'atBlock/internal/protocolMetrics': { input: AtBlockInput; response: { data: ProtocolMetric[] } };
+  health: { input?: never; response: { data: Health } };
+  "latest/metrics": { input?: IgnoreCacheInput; response: { data: Metric } };
+  "latest/tokenRecords": { input?: IgnoreCacheInput; response: { data: TokenRecord[] } };
+  "latest/tokenSupplies": { input?: IgnoreCacheInput; response: { data: TokenSupply[] } };
+  "latest/protocolMetrics": { input?: IgnoreCacheInput; response: { data: ProtocolMetric[] } };
+  "earliest/metrics": { input?: IgnoreCacheInput; response: { data: Metric } };
+  "earliest/tokenRecords": { input?: IgnoreCacheInput; response: { data: TokenRecord[] } };
+  "earliest/tokenSupplies": { input?: IgnoreCacheInput; response: { data: TokenSupply[] } };
+  "earliest/protocolMetrics": { input?: IgnoreCacheInput; response: { data: ProtocolMetric[] } };
+  "paginated/metrics": { input: PaginatedMetricsInput; response: { data: Metric[] } };
+  "paginated/tokenRecords": {
+    input: PaginatedTokenRecordsInput;
+    response: { data: TokenRecord[] };
+  };
+  "paginated/tokenSupplies": {
+    input: PaginatedTokenSuppliesInput;
+    response: { data: TokenSupply[] };
+  };
+  "paginated/protocolMetrics": {
+    input: PaginatedProtocolMetricsInput;
+    response: { data: ProtocolMetric[] };
+  };
+  "atBlock/metrics": { input: AtBlockInput; response: { data: Metric } };
+  "atBlock/tokenRecords": { input: AtBlockInput; response: { data: TokenRecord[] } };
+  "atBlock/tokenSupplies": { input: AtBlockInput; response: { data: TokenSupply[] } };
+  "atBlock/internal/protocolMetrics": { input: AtBlockInput; response: { data: ProtocolMetric[] } };
 }
 
 /**
@@ -231,5 +240,5 @@ export interface Operations {
  * type RecordsResponse = Queries['latest/tokenRecords']; // { data: TokenRecord[] }
  */
 export type Queries = {
-  [K in keyof Operations]: Operations[K]['response'];
+  [K in keyof Operations]: Operations[K]["response"];
 };
