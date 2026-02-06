@@ -93,7 +93,7 @@ export class TreasurySubgraphClient {
       // Return as-is for Wundergraph compatibility
       try {
         return (await response.json()) as T;
-      } catch (jsonError) {
+      } catch (_jsonError) {
         throw new Error(`Failed to parse JSON response from ${url.toString()}`);
       }
     } catch (error) {

@@ -1,5 +1,4 @@
 import { LRUCache } from "lru-cache";
-import { Logger } from "../core/types";
 
 interface CacheEntry<T> {
   data: T;
@@ -20,7 +19,7 @@ export interface CacheGetOptions {
   bypassCache?: boolean;
 }
 
-export class CacheManager<T = any> {
+export class CacheManager<T = unknown> {
   private cache: LRUCache<string, CacheEntry<T>>;
   private defaultTtl: number;
 

@@ -562,7 +562,8 @@ const isBuybackAddress = (record: TokenRecord): boolean => {
   }
 
   return (
-    record.sourceAddress.toLowerCase() == "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase()
+    record.sourceAddress.toLowerCase() ===
+    "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase()
   );
 };
 
@@ -747,7 +748,7 @@ export const getMetricObject = (
   options?: { includeRecords?: boolean; dateFallback?: string }
 ): Metric => {
   const FUNC = `getMetricObject`;
-  const includeRecords = options && options.includeRecords ? options.includeRecords : false;
+  const includeRecords = options?.includeRecords ? options.includeRecords : false;
 
   /**
    * If there is data missing, provide a "blank" object, so that the number of returned records is consistent.
@@ -756,13 +757,10 @@ export const getMetricObject = (
     log.warn(
       `${FUNC}: Not all parameters have non-zero length: tokenRecords: ${tokenRecords.length}, tokenSupplies: ${tokenSupplies.length}, protocolMetrics: ${protocolMetrics.length}`
     );
-    log.warn(
-      `${FUNC}: Fallback date: ${options && options.dateFallback ? options.dateFallback : "None"}`
-    );
+    log.warn(`${FUNC}: Fallback date: ${options?.dateFallback ? options.dateFallback : "None"}`);
 
-    const date = options && options.dateFallback ? options.dateFallback : "";
-    const timestamp =
-      options && options.dateFallback ? new Date(options.dateFallback).getTime() / 1000 : 0;
+    const date = options?.dateFallback ? options.dateFallback : "";
+    const timestamp = options?.dateFallback ? new Date(options.dateFallback).getTime() / 1000 : 0;
 
     const emptyChainRecords = {
       [Chains.ARBITRUM]: [] as TokenSupply[],

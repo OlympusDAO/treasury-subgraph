@@ -6,12 +6,12 @@ export const CHAIN_BASE = "Base";
 export const CHAIN_BERACHAIN = "Berachain";
 
 export enum Chains {
-  ARBITRUM = CHAIN_ARBITRUM,
-  ETHEREUM = CHAIN_ETHEREUM,
-  FANTOM = CHAIN_FANTOM,
-  POLYGON = CHAIN_POLYGON,
-  BASE = CHAIN_BASE,
-  BERACHAIN = CHAIN_BERACHAIN,
+  ARBITRUM = "Arbitrum",
+  ETHEREUM = "Ethereum",
+  FANTOM = "Fantom",
+  POLYGON = "Polygon",
+  BASE = "Base",
+  BERACHAIN = "Berachain",
 }
 
 export const TOKEN_SUPPLY_TYPE_BONDS_DEPOSITS = "OHM Bonds (Burnable Deposits)";

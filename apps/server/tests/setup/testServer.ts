@@ -1,6 +1,7 @@
 import { ApolloServer } from "apollo-server-express";
 import cors from "cors";
 import express from "express";
+import type { GraphQLSchema } from "graphql";
 import { resolvers } from "../../src/graphql/resolvers";
 import { typeDefs } from "../../src/graphql/schema";
 import { restRouter } from "../../src/rest";
@@ -16,7 +17,7 @@ export async function startTestServer() {
   const app = express();
 
   // Mirror production middleware
-  app.use((req, res, next) => {
+  app.use((req, _res, next) => {
     const originalUrl = req.url;
     const normalizedUrl = originalUrl.replace(/\/+/g, "/");
     if (originalUrl !== normalizedUrl) {
@@ -34,7 +35,7 @@ export async function startTestServer() {
 
   // Create Apollo Server
   const apollo = new ApolloServer({
-    typeDefs: typeDefs as any,
+    typeDefs: typeDefs as unknown as GraphQLSchema,
     resolvers,
     introspection: true,
   });

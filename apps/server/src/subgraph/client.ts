@@ -54,7 +54,11 @@ function getClient(chain: Chain): GraphQLClient {
       })
     );
   }
-  return clients.get(chain)!;
+  const client = clients.get(chain);
+  if (!client) {
+    throw new Error(`Client not found for chain: ${chain}`);
+  }
+  return client;
 }
 
 // Failure cache to avoid retrying permanently failed subgraphs

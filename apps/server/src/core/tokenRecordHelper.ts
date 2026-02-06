@@ -24,7 +24,7 @@ type TokenRecordByDate = {
  * @returns
  */
 export const filterLatestBlockByDay = (records: TokenRecord[]): TokenRecord[] => {
-  const FUNC = `tokenRecord/filterLatestBlockByDay`;
+  const _FUNC = `tokenRecord/filterLatestBlockByDay`;
   const filteredData = Object.values(
     records.reduce((acc: Record<string, TokenRecordByDate>, curr: TokenRecord) => {
       const { date, block } = curr;

@@ -1,6 +1,7 @@
 import { ApolloServer } from "apollo-server-express";
 import cors from "cors";
 import express from "express";
+import type { GraphQLSchema } from "graphql";
 import { resolvers } from "./graphql/resolvers";
 import { typeDefs } from "./graphql/schema";
 import { restRouter } from "./rest";
@@ -13,7 +14,7 @@ async function startServer() {
   // Normalize URLs by removing duplicate slashes (must be before CORS)
   // This ensures CORS preflight requests with malformed URLs like //operations
   // are normalized before CORS processing
-  app.use((req, res, next) => {
+  app.use((req, _res, next) => {
     const originalUrl = req.url;
     const normalizedUrl = originalUrl.replace(/\/+/g, "/");
     if (originalUrl !== normalizedUrl) {
@@ -35,7 +36,7 @@ async function startServer() {
   app.use("/operations", restRouter);
 
   // Health check endpoint (before GraphQL)
-  app.get("/health", (req, res) => {
+  app.get("/health", (_req, res) => {
     res.json({
       status: "ok",
       timestamp: new Date().toISOString(),
@@ -45,7 +46,7 @@ async function startServer() {
 
   // Create Apollo Server
   const server = new ApolloServer({
-    typeDefs: typeDefs as any, // Cast to bypass graphql version conflict
+    typeDefs: typeDefs as unknown as GraphQLSchema, // Cast to bypass graphql version conflict
     resolvers,
     introspection: process.env.NODE_ENV !== "production",
     context: ({ req }) => {

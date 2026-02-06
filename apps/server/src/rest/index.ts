@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import { Router } from "express";
 import { errorHandler } from "./middleware";
 import { registerRoutes } from "./routes";
 

@@ -1,4 +1,5 @@
 import { addDays } from "date-fns";
+import type { Express } from "express";
 import request from "supertest";
 import {
   CHAIN_ARBITRUM,
@@ -13,7 +14,7 @@ import { parseNumber } from "./numberHelper";
 import { startTestServer, stopTestServer } from "./setup/testServer";
 import { getFirstRecord } from "./tokenSupplyHelper";
 
-let app: any;
+let app: Express;
 
 beforeAll(async () => {
   const server = await startTestServer();
@@ -144,7 +145,7 @@ describe("paginated", () => {
 
     const records = response.body.data;
     const filteredRecords = records
-      ? records.filter((record: any) => record.blockchain === CHAIN_ARBITRUM)
+      ? records.filter((record: { blockchain?: string }) => record.blockchain === CHAIN_ARBITRUM)
       : [];
     expect(filteredRecords.length).toBeGreaterThan(0);
   });
@@ -158,7 +159,7 @@ describe("paginated", () => {
 
     const records = response.body.data;
     const filteredRecords = records
-      ? records.filter((record: any) => record.blockchain === CHAIN_ETHEREUM)
+      ? records.filter((record: { blockchain?: string }) => record.blockchain === CHAIN_ETHEREUM)
       : [];
     expect(filteredRecords.length).toBeGreaterThan(0);
   });
@@ -172,7 +173,7 @@ describe("paginated", () => {
 
     const records = response.body.data;
     const filteredRecords = records
-      ? records.filter((record: any) => record.blockchain === CHAIN_FANTOM)
+      ? records.filter((record: { blockchain?: string }) => record.blockchain === CHAIN_FANTOM)
       : [];
     expect(filteredRecords.length).toBe(0); // 0 TokenSupply on this blockchain
   });
@@ -186,7 +187,7 @@ describe("paginated", () => {
 
     const records = response.body.data;
     const filteredRecords = records
-      ? records.filter((record: any) => record.blockchain === CHAIN_POLYGON)
+      ? records.filter((record: { blockchain?: string }) => record.blockchain === CHAIN_POLYGON)
       : [];
     expect(filteredRecords.length).toBe(0); // 0 TokenSupply on this blockchain
   });
@@ -225,7 +226,7 @@ describe("latest", () => {
     const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
     const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
     const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
-    const berachainResult = getFirstRecord(records, CHAIN_BERACHAIN);
+    const _berachainResult = getFirstRecord(records, CHAIN_BERACHAIN);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawResult?.block);
@@ -250,9 +251,12 @@ describe("latest", () => {
       const data2 = responseTwo.body.data;
 
       // For arrays, exclude _meta.timestamp from each item
-      const excludeTimestamp = (item: any) => {
+      const excludeTimestamp = (item: Record<string, unknown>) => {
         if (!item || !item._meta) return item;
-        const { timestamp, ...restMeta } = item._meta;
+        const { timestamp, ...restMeta } = item._meta as {
+          timestamp: unknown;
+          [key: string]: unknown;
+        };
         return { ...item, _meta: restMeta };
       };
 
@@ -298,7 +302,7 @@ describe("earliest", () => {
     const ethereumResult = getFirstRecord(records, CHAIN_ETHEREUM);
     const fantomResult = getFirstRecord(records, CHAIN_FANTOM);
     const polygonResult = getFirstRecord(records, CHAIN_POLYGON);
-    const berachainResult = getFirstRecord(records, CHAIN_BERACHAIN);
+    const _berachainResult = getFirstRecord(records, CHAIN_BERACHAIN);
 
     // Check that the block is the same
     expect(arbitrumResult?.block).toEqual(arbitrumRawResult?.block);

@@ -1,9 +1,10 @@
 import { addDays } from "date-fns";
+import type { Express } from "express";
 import request from "supertest";
 import { getISO8601DateString } from "./dateHelper";
 import { startTestServer, stopTestServer } from "./setup/testServer";
 
-let app: any;
+let app: Express;
 
 beforeAll(async () => {
   const server = await startTestServer();
@@ -36,9 +37,12 @@ describe("latest", () => {
       const data2 = responseTwo.body.data;
 
       // For arrays, exclude _meta.timestamp from each item
-      const excludeTimestamp = (item: any) => {
+      const excludeTimestamp = (item: Record<string, unknown>) => {
         if (!item || !item._meta) return item;
-        const { timestamp, ...restMeta } = item._meta;
+        const { timestamp, ...restMeta } = item._meta as {
+          timestamp: unknown;
+          [key: string]: unknown;
+        };
         return { ...item, _meta: restMeta };
       };
 

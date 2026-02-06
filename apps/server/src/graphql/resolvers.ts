@@ -5,7 +5,7 @@ import {
   getNextStartDate,
   getOffsetDays,
 } from "../core/dateHelper";
-import { Metric as CoreMetric, getMetricObject } from "../core/metricHelper";
+import { getMetricObject } from "../core/metricHelper";
 import {
   filterLatestBlockByDay as filterProtocolMetricsByDay,
   type ProtocolMetric,
@@ -22,7 +22,6 @@ import {
 } from "../core/tokenSupplyHelper";
 import {
   ConsoleLogger,
-  Logger,
   type ProtocolMetricsResponse,
   type TokenRecordsResponse,
   type TokenSuppliesResponse,
@@ -112,7 +111,7 @@ function mapToTokenSuppliesResponse(
 /**
  * Convert TokenRecordsResponse back to flat array with blockchain property
  */
-function responseToTokenRecordsArray(response: TokenRecordsResponse): TokenRecord[] {
+function _responseToTokenRecordsArray(response: TokenRecordsResponse): TokenRecord[] {
   const records: TokenRecord[] = [];
   const chainMapping: Array<{ key: keyof TokenRecordsResponse; name: string }> = [
     { key: "treasuryArbitrum_tokenRecords", name: "Arbitrum" },
@@ -133,7 +132,7 @@ function responseToTokenRecordsArray(response: TokenRecordsResponse): TokenRecor
 /**
  * Convert TokenSuppliesResponse back to flat array with blockchain property
  */
-function responseToTokenSuppliesArray(response: TokenSuppliesResponse): TokenSupply[] {
+function _responseToTokenSuppliesArray(response: TokenSuppliesResponse): TokenSupply[] {
   const supplies: TokenSupply[] = [];
   const chainMapping: Array<{ key: keyof TokenSuppliesResponse; name: string }> = [
     { key: "treasuryArbitrum_tokenSupplies", name: "Arbitrum" },
@@ -780,7 +779,7 @@ export const resolvers = {
       );
 
       const finalStartDate = new Date(startDate);
-      if (isNaN(finalStartDate.getTime())) {
+      if (Number.isNaN(finalStartDate.getTime())) {
         throw new Error(`startDate should be in the YYYY-MM-DD format.`);
       }
 
@@ -829,8 +828,12 @@ export const resolvers = {
           `paginatedTokenRecords: Got results from ${results.successfulChains.length} chains, failed: ${results.failedChains.join(", ")}`
         );
 
-        results.successfulChains.forEach((c) => successfulChainsSet.add(c));
-        results.failedChains.forEach((c) => failedChainsSet.add(c));
+        for (const c of results.successfulChains) {
+          successfulChainsSet.add(c);
+        }
+        for (const c of results.failedChains) {
+          failedChainsSet.add(c);
+        }
 
         // Merge results
         for (const [chain, data] of results.results.entries()) {
@@ -925,7 +928,7 @@ export const resolvers = {
       );
 
       const finalStartDate = new Date(startDate);
-      if (isNaN(finalStartDate.getTime())) {
+      if (Number.isNaN(finalStartDate.getTime())) {
         throw new Error(`startDate should be in the YYYY-MM-DD format.`);
       }
 
@@ -974,8 +977,12 @@ export const resolvers = {
           `paginatedTokenSupplies: Got results from ${results.successfulChains.length} chains, failed: ${results.failedChains.join(", ")}`
         );
 
-        results.successfulChains.forEach((c) => successfulChainsSet.add(c));
-        results.failedChains.forEach((c) => failedChainsSet.add(c));
+        for (const c of results.successfulChains) {
+          successfulChainsSet.add(c);
+        }
+        for (const c of results.failedChains) {
+          failedChainsSet.add(c);
+        }
 
         // Merge results
         for (const [chain, data] of results.results.entries()) {
@@ -1051,7 +1058,7 @@ export const resolvers = {
       );
 
       const finalStartDate = new Date(startDate);
-      if (isNaN(finalStartDate.getTime())) {
+      if (Number.isNaN(finalStartDate.getTime())) {
         throw new Error(`startDate should be in the YYYY-MM-DD format.`);
       }
 
@@ -1163,7 +1170,7 @@ export const resolvers = {
       );
 
       const finalStartDate = new Date(startDate);
-      if (isNaN(finalStartDate.getTime())) {
+      if (Number.isNaN(finalStartDate.getTime())) {
         throw new Error(`startDate should be in the YYYY-MM-DD format.`);
       }
 
@@ -1230,8 +1237,12 @@ export const resolvers = {
           );
 
         // Track successful/failed chains
-        allTokenRecords.successfulChains.forEach((c) => successfulChains.add(c));
-        allTokenRecords.failedChains.forEach((c) => failedChains.add(c));
+        for (const c of allTokenRecords.successfulChains) {
+          successfulChains.add(c);
+        }
+        for (const c of allTokenRecords.failedChains) {
+          failedChains.add(c);
+        }
 
         // Merge results
         for (const [chain, data] of allTokenRecords.results.entries()) {
@@ -1330,7 +1341,7 @@ export const resolvers = {
           if (!recordsByDate.has(record.date)) {
             recordsByDate.set(record.date, []);
           }
-          recordsByDate.get(record.date)!.push({ ...record, blockchain: name });
+          recordsByDate.get(record.date)?.push({ ...record, blockchain: name });
         }
       }
 
@@ -1349,7 +1360,7 @@ export const resolvers = {
           if (!suppliesByDate.has(supply.date)) {
             suppliesByDate.set(supply.date, []);
           }
-          suppliesByDate.get(supply.date)!.push({ ...supply, blockchain: name });
+          suppliesByDate.get(supply.date)?.push({ ...supply, blockchain: name });
         }
       }
 
@@ -1363,7 +1374,7 @@ export const resolvers = {
           if (!protocolByDate.has(metric.date)) {
             protocolByDate.set(metric.date, []);
           }
-          protocolByDate.get(metric.date)!.push({ ...metric, blockchain: CHAIN_NAMES[chain] });
+          protocolByDate.get(metric.date)?.push({ ...metric, blockchain: CHAIN_NAMES[chain] });
         }
       }
 

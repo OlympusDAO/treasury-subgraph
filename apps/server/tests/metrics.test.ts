@@ -1,4 +1,5 @@
 import { addDays } from "date-fns";
+import type { Express } from "express";
 import request from "supertest";
 import {
   CHAIN_ARBITRUM,
@@ -32,7 +33,7 @@ import { filter as filterTokenSupplies } from "./tokenSupplyHelper";
 const BUYBACK_MS = "0xf7deb867e65306be0cb33918ac1b8f89a72109db".toLowerCase();
 const DAO_WALLET = "0x245cc372c84b3645bf0ffe6538620b04a217988b".toLowerCase();
 
-let app: any;
+let app: Express;
 
 beforeAll(async () => {
   const server = await startTestServer();
@@ -172,15 +173,18 @@ describe("paginated", () => {
 
       const records = response.body.data;
       // Find a record that has data for required chains (Ethereum and Arbitrum)
-      const recordWithRequiredData = records!.find(
-        (r: any) =>
+      const recordWithRequiredData = records?.find(
+        (r: { ohmTotalSupplyRecords?: Record<string, unknown[]>; [key: string]: unknown }) =>
           r.ohmTotalSupplyRecords?.Arbitrum?.length > 0 &&
           r.ohmTotalSupplyRecords?.Ethereum?.length > 0
       );
 
       expect(recordWithRequiredData).toBeDefined();
 
-      const firstRecord = recordWithRequiredData!;
+      if (!recordWithRequiredData) {
+        throw new Error("Record with required data not found");
+      }
+      const firstRecord = recordWithRequiredData;
       const totalSupplyRecords = firstRecord.ohmTotalSupplyRecords;
       const circulatingSupplyRecords = firstRecord.ohmCirculatingSupplyRecords;
       const floatingSupplyRecords = firstRecord.ohmFloatingSupplyRecords;
@@ -235,7 +239,7 @@ describe("paginated", () => {
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
 
-    const firstRecord = records![0];
+    const firstRecord = records?.[0];
     const totalSupplyRecords = firstRecord.ohmTotalSupplyRecords;
     const circulatingSupplyRecords = firstRecord.ohmCirculatingSupplyRecords;
     const floatingSupplyRecords = firstRecord.ohmFloatingSupplyRecords;
@@ -490,11 +494,11 @@ describe("metrics", () => {
       await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
-    const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
-    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
+    const _arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const _baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
-    const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
-    const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
+    const _fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
+    const _polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
     const arbitrumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ARBITRUM);
@@ -551,7 +555,7 @@ describe("metrics", () => {
 
     // Fetch the Metric record for the same date
     const records = response.body.data;
-    const record = records?.filter((record: any) => record.date === START_DATE)[0];
+    const record = records?.filter((record: { date?: string }) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmTotalSupply).toBeCloseTo(expectedSupply);
@@ -567,11 +571,11 @@ describe("metrics", () => {
       await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
-    const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
-    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
+    const _arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const _baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
-    const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
-    const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
+    const _fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
+    const _polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
     const arbitrumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ARBITRUM);
@@ -636,7 +640,7 @@ describe("metrics", () => {
 
     // Fetch the Metric record for the same date
     const records = response.body.data;
-    const record = records?.filter((record: any) => record.date === START_DATE)[0];
+    const record = records?.filter((record: { date?: string }) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmCirculatingSupply).toBeCloseTo(expectedSupply);
@@ -652,11 +656,11 @@ describe("metrics", () => {
       await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
-    const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
-    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
+    const _arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const _baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
-    const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
-    const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
+    const _fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
+    const _polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
     const arbitrumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ARBITRUM);
@@ -722,7 +726,7 @@ describe("metrics", () => {
 
     // Fetch the Metric record for the same date
     const records = response.body.data;
-    const record = records?.filter((record: any) => record.date === START_DATE)[0];
+    const record = records?.filter((record: { date?: string }) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmFloatingSupply).toBeCloseTo(expectedSupply);
@@ -738,11 +742,11 @@ describe("metrics", () => {
       await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
-    const arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
-    const baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
+    const _arbitrumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ARBITRUM);
+    const _baseTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_BASE);
     const ethereumTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_ETHEREUM);
-    const fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
-    const polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
+    const _fantomTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_FANTOM);
+    const _polygonTokenRecords = filterTokenRecords(combinedTokenRecords, CHAIN_POLYGON);
 
     // Raw data has an array property for each chain
     const arbitrumTokenSupplies = filterTokenSupplies(combinedTokenSupplies, CHAIN_ARBITRUM);
@@ -810,7 +814,7 @@ describe("metrics", () => {
 
     // Fetch the Metric record for the same date
     const records = response.body.data;
-    const record = records?.filter((record: any) => record.date === START_DATE)[0];
+    const record = records?.filter((record: { date?: string }) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmBackedSupply).toBeCloseTo(expectedSupply);
@@ -831,17 +835,19 @@ describe("metrics", () => {
 
     // Fetch the Metric record for the same date
     const records = response.body.data;
-    const record = records?.filter((record: any) => record.date === START_DATE)[0];
+    const record = records?.filter((record: { date?: string }) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     // The calculation logic of the backed supply metrics is already tested, so this just checks that the derived metric is correct
-    expect(record?.gOhmBackedSupply).toBeCloseTo(record?.ohmBackedSupply! / record?.ohmIndex!);
+    const ohmBackedSupply = record?.ohmBackedSupply ?? 0;
+    const ohmIndex = record?.ohmIndex ?? 1;
+    expect(record?.gOhmBackedSupply).toBeCloseTo(ohmBackedSupply / ohmIndex);
   });
 
   test(
     "treasury market value is accurate",
     async () => {
-      const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+      const [combinedTokenRecords, _combinedTokenSupplies, _combinedProtocolMetrics] =
         await getRecords(START_DATE);
 
       // Raw data has an array property for each chain
@@ -870,7 +876,7 @@ describe("metrics", () => {
 
       // Fetch the Metric record for the same date
       const records = response.body.data;
-      const record = records?.filter((record: any) => record.date === START_DATE)[0];
+      const record = records?.filter((record: { date?: string }) => record.date === START_DATE)[0];
 
       expect(record).not.toBeNull();
       expect(record?.treasuryMarketValue).toBeCloseTo(marketValue);
@@ -884,20 +890,20 @@ describe("metrics", () => {
       expect(
         record?.treasuryMarketValueRecords?.Ethereum.filter(
           (record: TokenRecord) =>
-            record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+            record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() === DAO_WALLET
         ).length
       ).toEqual(0);
 
       const isOHM = (value: TokenRecord): boolean => {
-        if (value.token == "OHM V1") {
+        if (value.token === "OHM V1") {
           return true;
         }
 
-        if (value.token == "OHM V2") {
+        if (value.token === "OHM V2") {
           return true;
         }
 
-        if (value.token == "gOHM") {
+        if (value.token === "gOHM") {
           return true;
         }
 
@@ -913,7 +919,7 @@ describe("metrics", () => {
       // Only OHM in the buyback address should be included
       const buybackOhmValue = filterReduce(
         combinedTokenRecords,
-        (value) => isOHM(value) && value.sourceAddress.toLowerCase() == BUYBACK_MS,
+        (value) => isOHM(value) && value.sourceAddress.toLowerCase() === BUYBACK_MS,
         false
       );
 
@@ -921,7 +927,8 @@ describe("metrics", () => {
 
       const buybackOhmRecords =
         record?.treasuryMarketValueRecords?.Ethereum.filter(
-          (record: TokenRecord) => isOHM(record) && record.sourceAddress.toLowerCase() == BUYBACK_MS
+          (record: TokenRecord) =>
+            isOHM(record) && record.sourceAddress.toLowerCase() === BUYBACK_MS
         ) || [];
       expect(buybackOhmRecords.length).toBeGreaterThan(0);
     },
@@ -929,7 +936,7 @@ describe("metrics", () => {
   );
 
   test("treasury liquid backing is accurate", async () => {
-    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+    const [combinedTokenRecords, _combinedTokenSupplies, _combinedProtocolMetrics] =
       await getRecords(START_DATE);
 
     // Raw data has an array property for each chain
@@ -941,32 +948,32 @@ describe("metrics", () => {
 
     const liquidBackingValue = filterReduce(
       combinedTokenRecords,
-      (value) => value.isLiquid == true,
+      (value) => value.isLiquid === true,
       true
     );
     const liquidBackingValueArbitrum = filterReduce(
       arbitrumTokenRecords,
-      (value) => value.isLiquid == true,
+      (value) => value.isLiquid === true,
       true
     );
     const liquidBackingValueBase = filterReduce(
       baseTokenRecords,
-      (value) => value.isLiquid == true,
+      (value) => value.isLiquid === true,
       true
     );
     const liquidBackingValueEthereum = filterReduce(
       ethereumTokenRecords,
-      (value) => value.isLiquid == true,
+      (value) => value.isLiquid === true,
       true
     );
     const liquidBackingValueFantom = filterReduce(
       fantomTokenRecords,
-      (value) => value.isLiquid == true,
+      (value) => value.isLiquid === true,
       true
     );
     const liquidBackingValuePolygon = filterReduce(
       polygonTokenRecords,
-      (value) => value.isLiquid == true,
+      (value) => value.isLiquid === true,
       true
     );
 
@@ -982,7 +989,7 @@ describe("metrics", () => {
 
     // Fetch the Metric record for the same date
     const records = response.body.data;
-    const record = records?.filter((record: any) => record.date === START_DATE)[0];
+    const record = records?.filter((record: { date?: string }) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.treasuryLiquidBacking).toBeCloseTo(liquidBackingValue);
@@ -1000,7 +1007,7 @@ describe("metrics", () => {
     expect(
       record?.treasuryMarketValueRecords?.Ethereum.filter(
         (record: TokenRecord) =>
-          record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == DAO_WALLET
+          record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() === DAO_WALLET
       ).length
     ).toEqual(0);
 
@@ -1008,13 +1015,13 @@ describe("metrics", () => {
     expect(
       record?.treasuryMarketValueRecords?.Ethereum.filter(
         (record: TokenRecord) =>
-          record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() == BUYBACK_MS
+          record.tokenAddress.includes("OHM") && record.sourceAddress.toLowerCase() === BUYBACK_MS
       ).length
     ).toEqual(0);
   });
 
   test("OHM index", async () => {
-    const [combinedTokenRecords, combinedTokenSupplies, combinedProtocolMetrics] =
+    const [_combinedTokenRecords, _combinedTokenSupplies, combinedProtocolMetrics] =
       await getRecords(START_DATE);
 
     const ohmIndex = +combinedProtocolMetrics.filter(
@@ -1030,7 +1037,7 @@ describe("metrics", () => {
 
     // Fetch the Metric record for the same date
     const records = response.body.data;
-    const record = records?.filter((record: any) => record.date === START_DATE)[0];
+    const record = records?.filter((record: { date?: string }) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     expect(record?.ohmIndex).toEqual(ohmIndex);
@@ -1046,15 +1053,18 @@ describe("metrics", () => {
 
     // Fetch the Metric record for the same date
     const records = response.body.data;
-    const record = records?.filter((record: any) => record.date === START_DATE)[0];
+    const record = records?.filter((record: { date?: string }) => record.date === START_DATE)[0];
 
     expect(record).not.toBeNull();
     // The calculation logic of the liquid backing and backed supply metrics are already tested above, so this just checks that the derived metric is correct
+    const treasuryLiquidBacking = record?.treasuryLiquidBacking ?? 0;
+    const ohmBackedSupply = record?.ohmBackedSupply ?? 1;
+    const gOhmBackedSupply = record?.gOhmBackedSupply ?? 1;
     expect(record?.treasuryLiquidBackingPerOhmBacked).toBeCloseTo(
-      record?.treasuryLiquidBacking! / record?.ohmBackedSupply!
+      treasuryLiquidBacking / ohmBackedSupply
     );
     expect(record?.treasuryLiquidBackingPerGOhmBacked).toBeCloseTo(
-      record?.treasuryLiquidBacking! / record?.gOhmBackedSupply!
+      treasuryLiquidBacking / gOhmBackedSupply
     );
   });
 });

@@ -17,7 +17,7 @@ export const filter = (
   }
 
   if (date) {
-    filteredRecords = filteredRecords.filter((record) => record.date == date);
+    filteredRecords = filteredRecords.filter((record) => record.date === date);
   }
 
   return filteredRecords;
