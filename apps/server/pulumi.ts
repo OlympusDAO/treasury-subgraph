@@ -104,11 +104,10 @@ const cloudRun = new gcp.cloudrunv2.Service(
             },
             cpuIdle: true,
           },
-          ports: [
-            {
-              containerPort: 9991,
-            }
-          ],
+          ports: {
+            containerPort: 9991,
+            name: "http1",
+          },
           // Needed at runtime
           envs: [
             {
@@ -245,8 +244,8 @@ new gcp.monitoring.AlertPolicy(
         conditionThreshold: {
           filter:
             pulumi.interpolate`
-            resource.type = "cloud_run_revision" AND 
-            resource.labels.service_name = "${cloudRun.name}" AND 
+            resource.type = "cloud_run_revision" AND
+            resource.labels.service_name = "${cloudRun.name}" AND
             metric.type = "run.googleapis.com/request_latencies"
             `,
           aggregations: [
@@ -288,9 +287,9 @@ new gcp.monitoring.AlertPolicy(
         conditionThreshold: {
           filter:
             pulumi.interpolate`
-            resource.type = "cloud_run_revision" AND 
-            resource.labels.service_name = "${cloudRun.name}" AND 
-            metric.type = "run.googleapis.com/request_count" AND 
+            resource.type = "cloud_run_revision" AND
+            resource.labels.service_name = "${cloudRun.name}" AND
+            metric.type = "run.googleapis.com/request_count" AND
             metric.labels.response_code_class != "2xx"
             `,
           aggregations: [
@@ -334,7 +333,7 @@ new gcp.monitoring.AlertPolicy(
           filter:
             pulumi.interpolate`
             resource.type = "cloud_run_revision" AND
-            resource.labels.service_name = "${cloudRun.name}" AND 
+            resource.labels.service_name = "${cloudRun.name}" AND
             (textPayload=~"runtime error" OR textPayload=~"\\"level\\": \\"error\\"")`,
         },
       },
@@ -367,7 +366,7 @@ new gcp.monitoring.AlertPolicy(
           filter:
             pulumi.interpolate`
             resource.type = "cloud_run_revision" AND
-            resource.labels.service_name = "${cloudRun.name}" AND 
+            resource.labels.service_name = "${cloudRun.name}" AND
             textPayload=~"memory limit"`,
         },
       },

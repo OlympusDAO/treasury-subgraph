@@ -1,8 +1,7 @@
-import { RequestLogger } from "@wundergraph/sdk/server";
-import { TokenSupply, filterCompleteRecords, filterLatestBlockByDay } from "../.wundergraph/tokenSupplyHelper";
-
 import { mock } from "jest-mock-extended";
-import { TokenSuppliesLatestResponseData } from "../.wundergraph/generated/models";
+import type { TokenSupply } from "../src/core/tokenSupplyHelper";
+import { filterCompleteRecords, filterLatestBlockByDay } from "../src/core/tokenSupplyHelper";
+import type { Logger, TokenSuppliesResponse } from "../src/core/types";
 
 const getSampleRecord = (id: string, date: string, block: number): TokenSupply => {
   return {
@@ -18,8 +17,10 @@ const getSampleRecord = (id: string, date: string, block: number): TokenSupply =
     tokenAddress: "",
     type: "",
     supplyBalance: "",
-  }
-}
+    pool: null,
+    poolAddress: null,
+  };
+};
 
 describe("filterLatestBlockByDay", () => {
   it("should return the latest block for each day", () => {
@@ -45,13 +46,13 @@ describe("filterLatestBlockByDay", () => {
 });
 
 describe("filterCompleteRecords", () => {
-  let mockLog: RequestLogger;
+  let mockLog: Logger;
   beforeAll(() => {
-    mockLog = mock<RequestLogger>();
+    mockLog = mock<Logger>();
   });
 
   it("should return records up to the latest Arbitrum date if lagging", () => {
-    const records: TokenSuppliesLatestResponseData = {
+    const records: TokenSuppliesResponse = {
       treasuryArbitrum_tokenSupplies: [
         getSampleRecord("2", "2021-01-02", 2),
         getSampleRecord("1", "2021-01-01", 1),
@@ -63,7 +64,8 @@ describe("filterCompleteRecords", () => {
         getSampleRecord("1", "2021-01-01", 1),
       ],
       treasuryFantom_tokenSupplies: [],
-      treasuryPolygon_tokenSupplies: []
+      treasuryPolygon_tokenSupplies: [],
+      treasuryBerachain_tokenSupplies: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -80,7 +82,7 @@ describe("filterCompleteRecords", () => {
   });
 
   it("should return records up to the latest Ethereum date if lagging", () => {
-    const records: TokenSuppliesLatestResponseData = {
+    const records: TokenSuppliesResponse = {
       treasuryArbitrum_tokenSupplies: [
         getSampleRecord("3", "2021-01-03", 3),
         getSampleRecord("2", "2021-01-02", 2),
@@ -92,7 +94,8 @@ describe("filterCompleteRecords", () => {
         getSampleRecord("1", "2021-01-01", 1),
       ],
       treasuryFantom_tokenSupplies: [],
-      treasuryPolygon_tokenSupplies: []
+      treasuryPolygon_tokenSupplies: [],
+      treasuryBerachain_tokenSupplies: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -109,7 +112,7 @@ describe("filterCompleteRecords", () => {
   });
 
   it("should return no records if Ethereum length is 0", () => {
-    const records: TokenSuppliesLatestResponseData = {
+    const records: TokenSuppliesResponse = {
       treasuryArbitrum_tokenSupplies: [
         getSampleRecord("3", "2021-01-03", 3),
         getSampleRecord("2", "2021-01-02", 2),
@@ -118,7 +121,8 @@ describe("filterCompleteRecords", () => {
       treasuryBase_tokenSupplies: [],
       treasuryEthereum_tokenSupplies: [],
       treasuryFantom_tokenSupplies: [],
-      treasuryPolygon_tokenSupplies: []
+      treasuryPolygon_tokenSupplies: [],
+      treasuryBerachain_tokenSupplies: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);
@@ -128,7 +132,7 @@ describe("filterCompleteRecords", () => {
   });
 
   it("should return no records if Arbitrum length is 0", () => {
-    const records: TokenSuppliesLatestResponseData = {
+    const records: TokenSuppliesResponse = {
       treasuryArbitrum_tokenSupplies: [],
       treasuryEthereum_tokenSupplies: [
         getSampleRecord("3", "2021-01-03", 3),
@@ -137,7 +141,8 @@ describe("filterCompleteRecords", () => {
       ],
       treasuryBase_tokenSupplies: [],
       treasuryFantom_tokenSupplies: [],
-      treasuryPolygon_tokenSupplies: []
+      treasuryPolygon_tokenSupplies: [],
+      treasuryBerachain_tokenSupplies: [],
     };
 
     const filteredRecords = filterCompleteRecords(records, mockLog);

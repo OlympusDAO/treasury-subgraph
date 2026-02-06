@@ -5,3 +5,9 @@
 .env.prod
 **/coverage/
 out/
+*.tgz
+
+# Include agent files
+!**/AGENTS.md
+!**/CLAUDE.md
+!**/.claude/

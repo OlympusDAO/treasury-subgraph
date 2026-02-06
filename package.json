@@ -7,12 +7,17 @@
   "author": "Jem <0x0xjem@gmail.com>",
   "license": "MIT",
   "private": true,
+  "resolutions": {
+    "graphql": "^16.8.0",
+    "js-yaml": "^4.1.1"
+  },
   "scripts": {
     "build": "turbo build",
-    "lint": "turbo lint",
+    "build:release": "dotenv -e .env.prod -- turbo run build:release --force",
+    "lint": "biome check --write .",
+    "lint:check": "biome check .",
     "server:start": "cd apps/server && dotenv -e ../../.env -- yarn start",
     "changelog": "cd apps/client && yarn changelog",
-    "publish-package": "dotenv -e .env.prod -v YARN_OTP=$YARN_OTP -- turbo publish-package",
     "depcheck": "syncpack",
     "depcheck:fix": "syncpack fix-mismatches",
     "test": "turbo test",
@@ -24,8 +29,9 @@
     "apps/*"
   ],
   "devDependencies": {
-    "dotenv-cli": "^7.2.1",
-    "syncpack": "^9.8.6",
+    "@biomejs/biome": "2.3.14",
+    "dotenv-cli": "^11.0.0",
+    "syncpack": "^13.0.4",
     "turbo": "^1.9.3"
   }
 }
