@@ -29,7 +29,7 @@ jobs:
         run: |
           EXIT_CODE=0
           yarn audit --level moderate --json > /dev/null 2>&1 || EXIT_CODE=$?
-          yarn audit --level moderate
+          yarn audit --level moderate || true
           if [ $EXIT_CODE -ge 4 ]; then
             echo "::error::Moderate or higher severity vulnerabilities found (exit code: $EXIT_CODE)"
             exit 1
