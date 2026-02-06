@@ -2,56 +2,31 @@
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist",
-        ".wundergraph/generated/**"
-      ],
-      "env": [
-        "WG_PUBLIC_NODE_URL",
-        "ARBITRUM_SUBGRAPH_API_KEY"
-      ]
+      "dependsOn": ["^build", "^typecheck"],
+      "outputs": ["dist"],
+      "env": ["WG_PUBLIC_NODE_URL", "ARBITRUM_SUBGRAPH_API_KEY"],
+      "cache": false
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "cache": false
     },
     "lint": {},
+    "lint:check": {
+      "cache": false
+    },
     "test": {
-      "dependsOn": [
-        "^test"
-      ],
-      "env": [
-        "ARBITRUM_SUBGRAPH_API_KEY"
-      ]
+      "dependsOn": ["^test"],
+      "env": ["ARBITRUM_SUBGRAPH_API_KEY"]
     },
     "test:ci": {
-      "dependsOn": [
-        "^test:ci"
-      ],
-      "env": [
-        "ARBITRUM_SUBGRAPH_API_KEY"
-      ]
+      "dependsOn": ["^test:ci"],
+      "env": ["ARBITRUM_SUBGRAPH_API_KEY"]
     },
     "build:release": {
-      "dependsOn": [
-        "^build:release"
-      ],
+      "dependsOn": ["^build:release"],
       "cache": false,
-      "dotEnv": [
-        ".env.prod"
-      ]
-    },
-    "publish-package": {
-      "dependsOn": [
-        "build:release"
-      ],
-      "env": [
-        "ARBITRUM_SUBGRAPH_API_KEY",
-        "YARN_OTP"
-      ],
-      "cache": false,
-      "dotEnv": [
-        ".env.prod"
-      ]
+      "dotEnv": [".env.prod"]
     }
   }
 }

@@ -1,15 +1,18 @@
 import { addDays } from "date-fns";
-import { createTestServer } from "../.wundergraph/generated/testing";
+import type { Application } from "express";
+import request from "supertest";
 import { getISO8601DateString } from "./dateHelper";
+import { startTestServer, stopTestServer } from "./setup/testServer";
 
-const wg = createTestServer();
+let app: Application;
 
 beforeAll(async () => {
-  await wg.start();
+  const server = await startTestServer();
+  app = server.app;
 });
 
 afterAll(async () => {
-  await wg.stop();
+  await stopTestServer();
 });
 
 beforeEach(async () => {
@@ -18,51 +21,62 @@ beforeEach(async () => {
 
 const getStartDate = (days: number = -5): string => {
   return getISO8601DateString(addDays(new Date(), days));
-}
+};
 
 jest.setTimeout(10 * 1000);
 
 describe("latest", () => {
-  test("subsequent results are equal", async () => {
-    const result = await wg.client().query({
-      operationName: "latest/protocolMetrics",
-    });
+  test(
+    "subsequent results are equal",
+    async () => {
+      const response = await request(app).get("/operations/latest/protocolMetrics");
 
-    const records = result.data;
+      const records = response.body.data;
 
-    const resultTwo = await wg.client().query({
-      operationName: "latest/protocolMetrics",
-    });
+      const responseTwo = await request(app).get("/operations/latest/protocolMetrics");
+      const data2 = responseTwo.body.data;
 
-    expect(resultTwo.data).toEqual(records);
-  }, 20 * 1000);
+      // For arrays, exclude _meta.timestamp from each item
+      const excludeTimestamp = (item: Record<string, unknown>) => {
+        if (!item || !item._meta) return item;
+        const { timestamp, ...restMeta } = item._meta as {
+          timestamp: unknown;
+          [key: string]: unknown;
+        };
+        return { ...item, _meta: restMeta };
+      };
+
+      const cleanRecords = Array.isArray(records) ? records.map(excludeTimestamp) : records;
+      const cleanData2 = Array.isArray(data2) ? data2.map(excludeTimestamp) : data2;
+
+      expect(cleanData2).toEqual(cleanRecords);
+    },
+    20 * 1000
+  );
 });
 
 describe("paginated", () => {
   test("returns recent results", async () => {
-    const result = await wg.client().query({
-      operationName: "paginated/protocolMetrics",
-      input: {
-        startDate: getStartDate(-1),
-      },
-    });
+    const response = await request(app)
+      .get("/operations/paginated/protocolMetrics")
+      .query({
+        wg_variables: JSON.stringify({ startDate: getStartDate(-1) }),
+      });
 
-    const records = result.data;
+    const records = response.body.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
   });
 
-
   test("returns recent results beyond first page", async () => {
-    const startDateString = getStartDate(-20); // default date offset of 10
-    const result = await wg.client().query({
-      operationName: "paginated/protocolMetrics",
-      input: {
-        startDate: startDateString,
-      }
-    });
+    const startDateString = getStartDate(-20);
+    const response = await request(app)
+      .get("/operations/paginated/protocolMetrics")
+      .query({
+        wg_variables: JSON.stringify({ startDate: startDateString }),
+      });
 
-    const records = result.data;
+    const records = response.body.data;
     const recordsNotNull = records ? records : [];
     // Most recent date
     expect(recordsNotNull[0].date).toEqual(getISO8601DateString(new Date()));
@@ -70,56 +84,59 @@ describe("paginated", () => {
     expect(recordsNotNull[recordsNotNull.length - 1].date).toEqual(startDateString);
   });
 
-  test("subsequent results are equal", async () => {
-    const result = await wg.client().query({
-      operationName: "paginated/protocolMetrics",
-      input: {
-        startDate: getStartDate(-1),
-      },
-    });
+  test(
+    "subsequent results are equal",
+    async () => {
+      const response = await request(app)
+        .get("/operations/paginated/protocolMetrics")
+        .query({
+          wg_variables: JSON.stringify({ startDate: getStartDate(-1) }),
+        });
 
-    const records = result.data;
+      const records = response.body.data;
 
-    const resultTwo = await wg.client().query({
-      operationName: "paginated/protocolMetrics",
-      input: {
-        startDate: getStartDate(-1),
-      },
-    });
+      const responseTwo = await request(app)
+        .get("/operations/paginated/protocolMetrics")
+        .query({
+          wg_variables: JSON.stringify({ startDate: getStartDate(-1) }),
+        });
 
-    expect(resultTwo.data).toEqual(records);
-  }, 20 * 1000);
+      expect(responseTwo.body.data).toEqual(records);
+    },
+    20 * 1000
+  );
 
-  test("subsequent results are equal, long timeframe", async () => {
-    // This tests both setting and getting a large amount of data, which can error out
-    const result = await wg.client().query({
-      operationName: "paginated/protocolMetrics",
-      input: {
-        startDate: getStartDate(-60),
-      },
-    });
+  test(
+    "subsequent results are equal, long timeframe",
+    async () => {
+      // This tests both setting and getting a large amount of data, which can error out
+      const response = await request(app)
+        .get("/operations/paginated/protocolMetrics")
+        .query({
+          wg_variables: JSON.stringify({ startDate: getStartDate(-60) }),
+        });
 
-    const records = result.data;
+      const records = response.body.data;
 
-    const resultTwo = await wg.client().query({
-      operationName: "paginated/protocolMetrics",
-      input: {
-        startDate: getStartDate(-60),
-      },
-    });
+      const responseTwo = await request(app)
+        .get("/operations/paginated/protocolMetrics")
+        .query({
+          wg_variables: JSON.stringify({ startDate: getStartDate(-60) }),
+        });
 
-    expect(resultTwo.data).toEqual(records);
-  }, 20 * 1000);
+      expect(responseTwo.body.data).toEqual(records);
+    },
+    20 * 1000
+  );
 
   test("returns results", async () => {
-    const result = await wg.client().query({
-      operationName: "paginated/protocolMetrics",
-      input: {
-        startDate: getStartDate(-5),
-      },
-    });
+    const response = await request(app)
+      .get("/operations/paginated/protocolMetrics")
+      .query({
+        wg_variables: JSON.stringify({ startDate: getStartDate(-5) }),
+      });
 
-    const records = result.data;
+    const records = response.body.data;
     const recordLength = records ? records.length : 0;
     expect(recordLength).toBeGreaterThan(0);
   });

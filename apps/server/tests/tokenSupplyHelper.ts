@@ -1,8 +1,12 @@
-import { TokenSuppliesResponseData } from "../.wundergraph/generated/models";
+import type { TokenSupply } from "../src/core/tokenSupplyHelper";
 
-export type TokenSupply = TokenSuppliesResponseData["treasuryEthereum_tokenSupplies"][0];
+export type { TokenSupply };
 
-export const filter = (records: TokenSupply[] | undefined, chain?: string, date?: string): TokenSupply[] => {
+export const filter = (
+  records: TokenSupply[] | undefined,
+  chain?: string,
+  date?: string
+): TokenSupply[] => {
   if (!records) {
     return [];
   }
@@ -13,13 +17,17 @@ export const filter = (records: TokenSupply[] | undefined, chain?: string, date?
   }
 
   if (date) {
-    filteredRecords = filteredRecords.filter((record) => record.date == date);
+    filteredRecords = filteredRecords.filter((record) => record.date === date);
   }
 
   return filteredRecords;
 };
 
-export const getFirstRecord = (records: TokenSupply[] | undefined, chain?: string, date?: string): TokenSupply | null => {
+export const getFirstRecord = (
+  records: TokenSupply[] | undefined,
+  chain?: string,
+  date?: string
+): TokenSupply | null => {
   const filteredRecords = filter(records, chain, date);
 
   return filteredRecords.length > 0 ? filteredRecords[0] : null;
