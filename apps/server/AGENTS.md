@@ -149,6 +149,7 @@ npx tsc --noEmit
 4. **Polygon subgraph is currently failing** - This was the original issue that prompted the rewrite
 5. **Paginated queries are not yet implemented** - They return empty arrays (marked with TODO)
 6. **Client package must be maintained** - The `apps/client/` package is used by other repositories and must remain API-compatible
+7. **ALWAYS obtain approval before making commits** - Do not use git commit commands without explicit user approval. Ask the user before committing any changes.
 
 ## Common Tasks
 
