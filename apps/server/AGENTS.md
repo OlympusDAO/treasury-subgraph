@@ -151,17 +151,16 @@ The infrastructure is managed through Pulumi and deployed to Google Cloud Run.
 # Select the Pulumi stack (dev/prod)
 pulumi stack select dev
 
-# Preview deployment changes
+# Preview deployment changes (interactive)
 pulumi up
-
-# Deploy without confirmation (use with caution)
-pulumi up --yes
 
 # Destroy infrastructure
 pulumi destroy
 ```
 
-**Important:** Always run `yarn build` before `pulumi up` to ensure the latest code is compiled. The Docker image built during deployment will include the compiled JavaScript from `dist/`.
+**Important:**
+- Always run `yarn build` before `pulumi up` to ensure the latest code is compiled. The Docker image built during deployment will include the compiled JavaScript from `dist/`.
+- **NEVER run `pulumi up --yes` or `--non-interactive`** - Always review changes before applying infrastructure updates.
 
 ## Important Notes for Agents
 
