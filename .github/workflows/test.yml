@@ -22,10 +22,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'yarn'
+        cache: 'pnpm'
     - run: yarn
 
     ## Fetch values from Subgraph Studio
-    - run: yarn test:ci # Runs build automatically
+    - run: pnpm test:ci # Runs build automatically
       env:
         ARBITRUM_SUBGRAPH_API_KEY: ${{ secrets.ARBITRUM_SUBGRAPH_API_KEY }}

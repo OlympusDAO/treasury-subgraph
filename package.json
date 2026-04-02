@@ -22,7 +22,8 @@
     "depcheck:fix": "syncpack fix-mismatches",
     "test": "turbo test",
     "test:ci": "turbo test:ci",
-    "test:local": "WG_PUBLIC_NODE_URL=http://localhost:9991/ dotenv -- turbo test"
+    "test:local": "WG_PUBLIC_NODE_URL=http://localhost:9991/ dotenv -- turbo test",
+    "preinstall": "npx only-allow pnpm"
   },
   "workspaces": [
     "packages/*",
@@ -33,5 +34,11 @@
     "dotenv-cli": "^11.0.0",
     "syncpack": "^13.0.4",
     "turbo": "^1.9.3"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "pnpm": "10.33.0",
+    "npm": "use-pnpm",
+    "yarn": "use-pnpm"
   }
 }
