@@ -40,5 +40,19 @@
     "pnpm": "10.33.0",
     "npm": "use-pnpm",
     "yarn": "use-pnpm"
+  },
+  "pnpm": {
+    "overrides": {
+      "brace-expansion": ">=2.0.3",
+      "effect": ">=3.20.0",
+      "minimatch": ">=9.0.7",
+      "picomatch": ">=2.3.2",
+      "brace-expansion@>=2.0.0 <2.0.3": ">=2.0.3",
+      "brace-expansion@>=2.0.0 <=2.0.1": ">=2.0.2",
+      "effect@<3.20.0": ">=3.20.0",
+      "minimatch@>=9.0.0 <9.0.6": ">=9.0.6",
+      "minimatch@>=9.0.0 <9.0.7": ">=9.0.7",
+      "picomatch@<2.3.2": ">=2.3.2"
+    }
   }
 }
