@@ -28,6 +28,8 @@ jobs:
 
       - name: Run build
         run: pnpm run build
+        env:
+          WG_PUBLIC_NODE_URL: http://localhost:9991
 
   test:
     runs-on: ubuntu-latest
@@ -47,7 +49,10 @@ jobs:
         run: pnpm install
 
       - name: Run test
-        run: pnpm run test
+        run: pnpm run test:ci
+        env:
+          ARBITRUM_SUBGRAPH_API_KEY: ${{ secrets.ARBITRUM_SUBGRAPH_API_KEY }}
+          WG_PUBLIC_NODE_URL: http://localhost:9991
 
   lint_check:
     runs-on: ubuntu-latest

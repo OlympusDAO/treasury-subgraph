@@ -12,7 +12,7 @@
     "js-yaml": "^4.1.1"
   },
   "scripts": {
-    "build": "turbo build",
+    "build": "turbo run build",
     "build:release": "dotenv -e .env.prod -- turbo run build:release --force",
     "lint": "biome check --write .",
     "lint:check": "biome check .",
@@ -20,9 +20,9 @@
     "changelog": "cd apps/client && yarn changelog",
     "depcheck": "syncpack",
     "depcheck:fix": "syncpack fix-mismatches",
-    "test": "turbo test",
-    "test:ci": "turbo test:ci",
-    "test:local": "WG_PUBLIC_NODE_URL=http://localhost:9991/ dotenv -- turbo test",
+    "test": "turbo run test",
+    "test:ci": "turbo run test:ci",
+    "test:local": "WG_PUBLIC_NODE_URL=http://localhost:9991/ dotenv -- turbo run test",
     "preinstall": "npx only-allow pnpm"
   },
   "workspaces": [
@@ -43,6 +43,8 @@
   },
   "pnpm": {
     "overrides": {
+      "@types/express": "4.17.14",
+      "@types/express-serve-static-core": "4.17.31",
       "brace-expansion": ">=2.0.3",
       "effect": ">=3.20.0",
       "minimatch": ">=9.0.7",

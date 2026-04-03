@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "prebuild": "yarn typecheck",
+    "prebuild": "pnpm typecheck",
     "build": "tsup",
     "build:release": "tsup",
     "dev": "tsup --watch",
@@ -33,7 +33,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@olympusdao/treasury-subgraph": "*",
+    "@olympusdao/treasury-subgraph": "workspace:*",
     "auto-changelog": "^2.4.0",
     "tsup": "^8.0.0",
     "typescript": "^5.3.0"
