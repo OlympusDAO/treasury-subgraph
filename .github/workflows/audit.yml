@@ -31,6 +31,6 @@ jobs:
         with:
           package_json_path: ./
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          level: high
+          level: moderate
           fails: true
           single_comment: true
