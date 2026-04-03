@@ -7,10 +7,6 @@
   "author": "Jem <0x0xjem@gmail.com>",
   "license": "MIT",
   "private": true,
-  "resolutions": {
-    "graphql": "^16.8.0",
-    "js-yaml": "^4.1.1"
-  },
   "scripts": {
     "build": "turbo run build",
     "build:release": "dotenv -e .env.prod -- turbo run build:release --force",
@@ -43,10 +39,13 @@
   },
   "pnpm": {
     "overrides": {
+      "@babel/runtime": "^7.26.10",
       "@types/express": "4.17.14",
       "@types/express-serve-static-core": "4.17.31",
       "brace-expansion": ">=2.0.3",
       "effect": ">=3.20.0",
+      "graphql": "^16.8.0",
+      "js-yaml": "^4.1.1",
       "minimatch": ">=9.0.7",
       "picomatch": ">=2.3.2",
       "brace-expansion@>=2.0.0 <2.0.3": ">=2.0.3",
