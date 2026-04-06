@@ -19,7 +19,7 @@
     "test": "turbo run test",
     "test:ci": "turbo run test:ci",
     "test:local": "WG_PUBLIC_NODE_URL=http://localhost:9991/ dotenv -- turbo run test",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow@1.2.2 pnpm"
   },
   "workspaces": [
     "packages/*",
