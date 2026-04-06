@@ -14,7 +14,7 @@ const resolveSubgraphUrl = (url: string): string => {
 
 export const SUBGRAPH_URLS: Record<string, string> = {
   ethereum: resolveSubgraphUrl(
-    `https://api.studio.thegraph.com/query/46563/olympus-protocol-metrics/version/latest`
+    `${SUBGRAPH_BASE_URL}/[api-key]/subgraphs/id/7jeChfyUTWRyp2JxPGuuzxvGt3fDKMkC9rLjm7sfLcNp`
   ),
   arbitrum: resolveSubgraphUrl(
     `${SUBGRAPH_BASE_URL}/[api-key]/deployments/id/QmNQfMN2GjnGYx2mGo92gAc7z47fMbTMRR9M1gGEUjLZHX`

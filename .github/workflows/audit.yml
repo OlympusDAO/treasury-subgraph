@@ -26,5 +26,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Audit production dependencies (fail on moderate+)
-        run: pnpm audit --prod --audit-level=moderate --ignore-unfixable
+      - name: Audit pnpm dependencies (fail on moderate+)
+        uses: JamesRobertWiseman/pnpm-audit@v3
+        with:
+          package_json_path: ./
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          level: moderate
+          fails: true
+          single_comment: true
