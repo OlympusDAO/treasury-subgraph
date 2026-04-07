@@ -74,6 +74,8 @@ Orchestration is performed using Pulumi. To deploy, follow these steps:
 2. Authenticate with Pulumi, using `pulumi login`
 3. Run `pulumi up --stack <dev | prod>`
 
+Pulumi may require pnpm's hoisted linker layout to avoid `.pnpm/...` closure-loading or export-path errors, so this workspace sets `node-linker=hoisted` in `.npmrc`.
+
 NOTE: the Upstash credentials in the production project and environment should be different to that of all other projects/environments, so that the production cache is not polluted.
 
 ### Deployment - Client NPM Package
