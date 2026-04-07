@@ -4,9 +4,11 @@ WORKDIR /app
 
 ### Install Dependencies ###
 
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+
 COPY package.json /app/
-COPY tmp/yarn.lock /app/yarn.lock
-RUN yarn install --frozen-lockfile --non-interactive --prefer-offline --no-audit
+COPY tmp/pnpm-lock.yaml /app/pnpm-lock.yaml
+RUN pnpm install --frozen-lockfile --prefer-offline --no-fund
 
 ### Build ###
 
@@ -15,7 +17,7 @@ COPY tsconfig.json /app/
 COPY src /app/src
 
 # Build TypeScript
-RUN yarn build
+RUN pnpm build
 
 ### Server Setup ###
 

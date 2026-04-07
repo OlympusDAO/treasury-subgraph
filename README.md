@@ -38,24 +38,24 @@ The repo is setup using [turbo](https://turbo.build/) to make handling tasks eas
 
 ### Setup
 
-1. Run `yarn` in the root directory.
+1. Run `pnpm install` in the root directory.
 2. Copy `.env.sample` to `.env` and replace any required values
 
 ### Building
 
-During local development, you can trigger a build with `yarn build:local`. This requires the [setup](#setup) tasks to have been completed.
+During local development, you can trigger a build with `pnpm build`. This requires the [setup](#setup) tasks to have been completed.
 
-`yarn build` requires an environment variable to be set, and is used in the Wundergraph Cloud deploy process.
+`pnpm build:release` requires an environment variable to be set, and is used in the Wundergraph Cloud deploy process.
 
 ### Running
 
-During local development, you can run an API endpoint locally with `yarn server:start`.
+During local development, you can run an API endpoint locally with `pnpm server:start`.
 
 This requires environment variables to be set, so follow the instructions in [setup](#setup).
 
 ### Unit Tests
 
-Run `yarn test:local`.
+Run `pnpm test:local`.
 
 This requires environment variables to be set, so follow the instructions in [setup](#setup).
 
@@ -64,7 +64,7 @@ This requires environment variables to be set, so follow the instructions in [se
 Running the [frontend](https://github.com/OlympusDAO/olympus-frontend/) against a different API endpoint requires jumping through some (small) hoops:
 
 1. Run the API endpoint locally. See [Running](#running).
-2. Pass the API endpoint to the frontend: `VITE_WG_PUBLIC_NODE_URL=http://localhost:9991 yarn start`
+2. Pass the API endpoint to the frontend: `VITE_WG_PUBLIC_NODE_URL=http://localhost:9991 pnpm start`
 
 ### Deployment - Wundergraph Server
 
@@ -83,9 +83,9 @@ NOTE: the Upstash credentials in the production project and environment should b
 1. Set the required values in `.env.prod`
 2. Update the `version` in `apps/client/package.json`
 3. Update the changelog
-4. Build the release: `yarn build:release`
+4. Build the release: `pnpm build:release`
 5. Change to the client directory: `cd apps/client`
-6. Run: `yarn publish --access public`
+6. Run: `pnpm publish --access public`
 7. Answer the prompts (npm will ask for OTP if 2FA is enabled)
 
 NOTE: You must be a member of the `@olympusdao` org in NPM in order to publish.

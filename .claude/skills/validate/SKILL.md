@@ -19,10 +19,10 @@ Run this skill when:
 
 ```bash
 # Step 1: Lint check
-yarn lint:check
+pnpm lint:check
 
 # Step 2: Build all packages (includes typecheck via prebuild)
-yarn build
+pnpm build
 
 # Step 3: Pulumi preview (dev stack)
 cd apps/server && pulumi preview --stack dev --show-full-output
