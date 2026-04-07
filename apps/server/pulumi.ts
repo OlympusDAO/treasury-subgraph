@@ -2,6 +2,7 @@ import * as gcp from "@pulumi/gcp";
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import { execSync, spawnSync } from "child_process";
+import * as path from "path";
 
 const gcpConfig = new pulumi.Config("gcp");
 const pulumiConfig = new pulumi.Config();
@@ -53,6 +54,8 @@ const getDockerImageLabel = (projectName: string, imageVersion: string) => {
   return pulumi.interpolate`gcr.io/${gcpConfig.require("project")}/${projectName}:${imageVersion}`;
 };
 
+const repoRoot = path.resolve(__dirname, "../..");
+
 const createDockerImage = (resourceName: string, imageVersion: string, dependsOn?: pulumi.Resource[]) => {
   const imageCurrent = getDockerImageLabel(projectName, imageVersion);
   const imageLatest = getDockerImageLabel(projectName, "latest");
@@ -60,6 +63,8 @@ const createDockerImage = (resourceName: string, imageVersion: string, dependsOn
   return new docker.Image(resourceName, {
     imageName: imageCurrent,
     build: {
+      context: repoRoot,
+      dockerfile: path.join(repoRoot, "apps/server/Dockerfile"),
       args: {
         BUILDKIT_INLINE_CACHE: "1",
         ARBITRUM_SUBGRAPH_API_KEY: pulumiConfig.requireSecret("ARBITRUM_SUBGRAPH_API_KEY"),
