@@ -6,10 +6,6 @@
   },
   "license": "MIT",
   "private": true,
-  "resolutions": {
-    "graphql": "^16.8.0",
-    "@babel/runtime": "^7.26.10"
-  },
   "devDependencies": {
     "@pulumi/docker": "^4.11.0",
     "@pulumi/gcp": "^9.11.0",
@@ -41,11 +37,11 @@
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "typecheck": "tsc --noEmit",
-    "prebuild": "yarn typecheck",
+    "prebuild": "pnpm typecheck",
     "build": "tsc",
     "build:release": "tsc",
     "build:watch": "tsc --watch",
-    "pretest": "yarn build",
+    "pretest": "pnpm build",
     "test": "jest",
     "test:ci": "jest --runInBand --ci",
     "test:local": "dotenv -e ../../.env -- jest"

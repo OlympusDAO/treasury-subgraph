@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22]
 
     steps:
     - uses: actions/checkout@v4
@@ -22,10 +22,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'yarn'
-    - run: yarn
+    - name: Install pnpm
+      uses: pnpm/action-setup@v5
+    - run: pnpm install
 
     ## Fetch values from Subgraph Studio
-    - run: yarn test:ci # Runs build automatically
+    - run: pnpm test:ci # Runs build automatically
       env:
         ARBITRUM_SUBGRAPH_API_KEY: ${{ secrets.ARBITRUM_SUBGRAPH_API_KEY }}
+        WG_PUBLIC_NODE_URL: http://localhost:9991

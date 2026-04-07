@@ -125,22 +125,22 @@ On-chain protocol metrics (APY, rebase, supplies).
 
 ```bash
 # Install dependencies
-yarn install
+pnpm install
 
 # Build TypeScript
-yarn build
+pnpm build
 
 # Run in development
-yarn dev
+pnpm dev
 
 # Run tests
-yarn test
+pnpm test
 
 # Type check
 npx tsc --noEmit
 
 # Build for production (uses .env.prod)
-yarn build:release
+pnpm build:release
 ```
 
 ## Deployment (Pulumi)
@@ -162,7 +162,7 @@ pulumi destroy
 ```
 
 **Important:**
-- Always run `yarn build` before `pulumi up` to ensure the latest code is compiled. The Docker image built during deployment will include the compiled JavaScript from `dist/`.
+- Always run `pnpm build` before `pulumi up` to ensure the latest code is compiled. The Docker image built during deployment will include the compiled JavaScript from `dist/`.
 - **NEVER run `pulumi up --yes` or `--non-interactive`** - Always review changes before applying infrastructure updates.
 
 ## Important Notes for Agents
@@ -228,14 +228,14 @@ const metrics = await client.query({
 ### Building
 ```bash
 cd apps/client
-yarn build
+pnpm build
 ```
 
 ### Building for Production
 The production URL is baked in at build time:
 ```bash
 # Uses .env.prod for WG_PUBLIC_NODE_URL
-yarn build:release
+pnpm build:release
 ```
 
-**Note:** The client has a `devDependency` on the server package to ensure proper build ordering. When building the monorepo with `yarn build:prod`, the server builds first, then the client.
+**Note:** The client has a `devDependency` on the server package to ensure proper build ordering. When building the monorepo with `pnpm build:release`, the server builds first, then the client.

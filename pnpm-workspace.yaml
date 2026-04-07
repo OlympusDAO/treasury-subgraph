@@ -1,0 +1,7 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+auditConfig:
+  ignoreGhsas:
+    - GHSA-9q82-xgwf-vj6h

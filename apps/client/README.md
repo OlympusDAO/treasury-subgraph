@@ -8,7 +8,7 @@ As the repository is composed of entirely generated code, none of it is committe
 
 ### Building
 
-To build, run `yarn build` in the root directory.
+To build, run `pnpm build` in the root directory.
 
 ## Users
 
