@@ -6,18 +6,21 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
-COPY package.json /app/
-COPY tmp/pnpm-lock.yaml /app/pnpm-lock.yaml
-RUN pnpm install --frozen-lockfile --prefer-offline --no-fund
+COPY package.json /app/package.json
+COPY pnpm-workspace.yaml /app/pnpm-workspace.yaml
+COPY pnpm-lock.yaml /app/pnpm-lock.yaml
+COPY .npmrc /app/.npmrc
+COPY apps/server/package.json /app/apps/server/package.json
+RUN pnpm install --frozen-lockfile --filter @olympusdao/treasury-subgraph
 
 ### Build ###
 
 # Copy source code
-COPY tsconfig.json /app/
-COPY src /app/src
+COPY apps/server/tsconfig.json /app/apps/server/
+COPY apps/server/src /app/apps/server/src
 
 # Build TypeScript
-RUN pnpm build
+RUN pnpm --filter @olympusdao/treasury-subgraph build
 
 ### Server Setup ###
 
@@ -29,4 +32,4 @@ ENV PORT=9991
 ENV NODE_ENV=production
 
 # Start the server
-CMD ["node", "dist/index.js"]
+CMD ["node", "apps/server/dist/index.js"]

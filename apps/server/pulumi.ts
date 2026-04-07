@@ -22,12 +22,6 @@ const serviceFirebase = new gcp.projects.Service("firebase", {
 });
 
 /**
- * Copy required files
- */
-execSync("mkdir -p tmp");
-execSync("cp ../../pnpm-lock.yaml tmp/pnpm-lock.yaml");
-
-/**
  * Docker images
  */
 // Create Docker repository
