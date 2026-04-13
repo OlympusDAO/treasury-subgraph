@@ -1,4 +1,5 @@
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@as-integrations/express4";
 import cors from "cors";
 import express from "express";
 import type { GraphQLSchema } from "graphql";
@@ -41,7 +42,7 @@ export async function startTestServer() {
   });
 
   await apollo.start();
-  apollo.applyMiddleware({ app, path: "/graphql" });
+  app.use("/graphql", expressMiddleware(apollo));
 
   testServer = { app, apollo };
   return testServer;
