@@ -1,4 +1,5 @@
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@as-integrations/express4";
 import cors from "cors";
 import express from "express";
 import type { GraphQLSchema } from "graphql";
@@ -49,12 +50,6 @@ async function startServer() {
     typeDefs: typeDefs as unknown as GraphQLSchema, // Cast to bypass graphql version conflict
     resolvers,
     introspection: process.env.NODE_ENV !== "production",
-    context: ({ req }) => {
-      return {
-        req,
-        // You can add request-specific context here
-      };
-    },
     formatError: (error) => {
       // Log errors but don't expose internal details
       console.error("GraphQL Error:", error);
@@ -68,8 +63,15 @@ async function startServer() {
 
   await server.start();
 
-  // Apply GraphQL middleware
-  server.applyMiddleware({ app, path: "/graphql" });
+  app.use(
+    "/graphql",
+    expressMiddleware(server, {
+      context: async ({ req }) => ({
+        req,
+        // You can add request-specific context here
+      }),
+    })
+  );
 
   // Start listening and store server reference
   const httpServer = app.listen(PORT, () => {

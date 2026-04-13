@@ -12,6 +12,8 @@
     "build:release": "dotenv -e .env.prod -- turbo run build:release --force",
     "lint": "biome check --write .",
     "lint:check": "biome check .",
+    "docker:build:server": "docker build -f apps/server/Dockerfile -t treasury-subgraph/server:local .",
+    "docker:tag:scan:server": "docker tag treasury-subgraph/server:local treasury-subgraph/server:scan",
     "server:start": "cd apps/server && dotenv -e ../../.env -- pnpm start",
     "changelog": "cd apps/client && pnpm changelog",
     "depcheck": "syncpack",
@@ -33,6 +35,7 @@
   },
   "packageManager": "pnpm@10.33.0",
   "engines": {
+    "node": ">=24",
     "pnpm": "10.33.0",
     "npm": "use-pnpm",
     "yarn": "use-pnpm"
