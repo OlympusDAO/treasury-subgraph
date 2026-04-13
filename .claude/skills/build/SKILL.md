@@ -21,13 +21,13 @@ Run this skill when:
 
 ```bash
 # Build all packages
-yarn build
+pnpm build
 ```
 
 ### Server Package
 
 ```bash
-cd apps/server && yarn build
+cd apps/server && pnpm build
 ```
 
 Builds the Apollo Server GraphQL API:
@@ -38,7 +38,7 @@ Builds the Apollo Server GraphQL API:
 ### Client Package
 
 ```bash
-cd apps/client && yarn build
+cd apps/client && pnpm build
 ```
 
 Builds the TypeScript client library:
@@ -54,5 +54,5 @@ Builds the TypeScript client library:
 
 ## Next Steps After Build
 
-- **Server**: Run locally with `yarn start` or `node dist/index.js`
+- **Server**: Run locally with `pnpm start` or `node dist/index.js`
 - **Client**: Import from `dist/` or publish to npm

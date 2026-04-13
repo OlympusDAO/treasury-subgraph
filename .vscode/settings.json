@@ -1,5 +1,5 @@
 {
   "editor.formatOnSave": true,
   "jest.rootPath": "apps/server/",
-  "jest.jestCommandLine": "yarn dotenv -e ../../.env yarn test"
+  "jest.jestCommandLine": "pnpm exec dotenv -e ../../.env -- pnpm test"
 }
