@@ -22,7 +22,26 @@ COPY apps/server/src /app/apps/server/src
 # Build TypeScript
 RUN pnpm --filter @olympusdao/treasury-subgraph build
 
+### Runtime Hardening ###
+
+# Reduce noise from prebundled package-manager tooling and patch libc/openssl.
+RUN apk add --no-cache --upgrade libcrypto3 libssl3 openssl zlib \
+  && rm -rf \
+    /root/.cache/node/corepack \
+    /root/.npm \
+    /usr/local/lib/node_modules/corepack \
+    /usr/local/lib/node_modules/npm \
+    /usr/local/bin/corepack \
+    /usr/local/bin/corepack-pnpm \
+    /usr/local/bin/npm \
+    /usr/local/bin/npx \
+    /tmp/* \
+    /usr/local/share/.cache \
+    /var/cache/apk/*
+
 ### Server Setup ###
+
+USER node
 
 # Expose the GraphQL API
 EXPOSE 9991
