@@ -5,3 +5,12 @@ packages:
 auditConfig:
   ignoreGhsas:
     - GHSA-9q82-xgwf-vj6h
+minimumReleaseAge: 10080
+preferFrozenLockfile: true
+engineStrict: true
+strictDepBuilds: true
+blockExoticSubdeps: true
+onlyBuiltDependencies:
+  - "@apollo/protobufjs@1.2.7"
+  - esbuild@0.27.7
+  - protobufjs@7.5.4
