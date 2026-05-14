@@ -11,3 +11,4 @@ out/
 !**/AGENTS.md
 !**/CLAUDE.md
 !**/.claude/
+.pnpm-store/
