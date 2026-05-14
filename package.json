@@ -39,23 +39,5 @@
     "pnpm": ">=10.33.0",
     "npm": "use-pnpm",
     "yarn": "use-pnpm"
-  },
-  "pnpm": {
-    "overrides": {
-      "@babel/runtime": "^7.26.10",
-      "@types/express": "4.17.14",
-      "@types/express-serve-static-core": "4.17.31",
-      "effect": ">=3.20.0",
-      "graphql": "^16.8.0",
-      "js-yaml": "^4.1.1",
-      "brace-expansion@>=2.0.0 <2.0.3": "^2.0.3",
-      "effect@<3.20.0": "^3.20.0",
-      "ip-address@<=10.1.0": "^10.1.1",
-      "minimatch@>=9.0.0 <9.0.7": "^9.0.7",
-      "picomatch@<2.3.2": "^2.3.2",
-      "@protobufjs/utf8@<=1.1.0": "^1.1.1",
-      "uuid@>=11.0.0 <11.1.1": "^11.1.1",
-      "protobufjs@<7.5.6": "^7.5.6"
-    }
   }
 }
