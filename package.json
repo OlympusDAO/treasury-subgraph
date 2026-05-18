@@ -38,6 +38,7 @@
     "node": ">=24",
     "pnpm": ">=10.33.0",
     "npm": "use-pnpm",
-    "yarn": "use-pnpm"
+    "yarn": "use-pnpm",
+    "bun": "use-pnpm"
   }
 }
