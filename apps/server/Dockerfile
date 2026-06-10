@@ -9,7 +9,6 @@ RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 COPY package.json /app/package.json
 COPY pnpm-workspace.yaml /app/pnpm-workspace.yaml
 COPY pnpm-lock.yaml /app/pnpm-lock.yaml
-COPY .npmrc /app/.npmrc
 COPY apps/server/package.json /app/apps/server/package.json
 RUN pnpm install --frozen-lockfile --filter @olympusdao/treasury-subgraph
 
