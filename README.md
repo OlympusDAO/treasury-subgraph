@@ -2,94 +2,143 @@
 
 ## Purpose
 
-It proved to be enormously difficult to aggregate GraphQL results across multiple endpoints and date ranges (due to limitations with Graph Protocol pagination). The code in this monorepo seeks to address that.
+This repository provides the treasury API and client package used by OlympusDAO applications. The API aggregates treasury subgraph data across chains, computes protocol and treasury metrics, and serves the results through GraphQL plus legacy-compatible REST operation endpoints.
 
 ## Architecture
 
-The monorepo contains two components:
+The workspace contains two applications:
 
-- apps/
-  - server/
-    - Code to configure and deploy a [Wundergraph](https://wundergraph.com/) API server that aggregates and transforms GraphQL results
-    - Offers a number of 'operations' (in Wundergraph terminology):
-      - Earliest: the earliest record from each blockchain
-        - earliest/metrics
-        - earliest/tokenRecords
-        - earliest/tokenSupplies
-      - Latest: the latest record from each blockchain
-        - latest/metrics
-        - latest/tokenRecords
-        - latest/tokenSupplies
-      - Paginated: records from the `startDate` input variable until the present. Aggregates all blockchains and handles pagination. Specify `crossChainDataComplete` to restrict results up to the latest date with cross-chain data. Specify `includeRecords` to include records used to calculate each metric (large response size).
-        - paginated/metrics
-        - paginated/tokenRecords
-        - paginated/tokenSupplies
-  - client/
-    - Generates a React-compatible client that can be used in [olympus-frontend](https://github.com/OlympusDAO/olympus-frontend/)
-    - Publishes the client to [NPM](https://www.npmjs.com/package/@olympusdao/treasury-subgraph-client)
+- `apps/server`
+  - Apollo Server with Express.
+  - GraphQL schema and resolvers for latest, earliest, paginated, and block-specific treasury data.
+  - REST compatibility routes that preserve the legacy WunderGraph operation shape at `/operations/*`.
+  - Subgraph clients for Ethereum, Arbitrum, Fantom, Polygon, Base, and Berachain.
+  - Shared metric helpers for OHM supply, treasury market value, liquid backing, APY, prices, TVL, and related protocol metrics.
+  - Dockerfile and Pulumi program for Google Cloud Run deployment.
+- `apps/client`
+  - TypeScript client for consuming the API.
+  - Published as [`@olympusdao/treasury-subgraph-client`](https://www.npmjs.com/package/@olympusdao/treasury-subgraph-client).
+  - Keeps the old WunderGraph-style `createClient().query({ operationName, input })` interface for downstream compatibility.
 
-The API server is currently hosted on Google Cloud Run, with Firebase Hosting to provide a static domain name.
+The API server is hosted on Google Cloud Run, with Firebase Hosting providing the stable public URL. The service uses The Graph gateway, keyed by `ARBITRUM_SUBGRAPH_API_KEY`, to query configured subgraph deployments.
 
-HTTP-layer caching is provided by Google Cloud Run. An attempt was made to utilise caching in Redis (on Upstash), but it performed slower than the OOTB HTTP-layer caching. It can be enabled through the `CACHE_ENABLED` environment variable.
+## Package Manager
 
-## Developer Tasks
+Use `pnpm@10.33.0`.
 
-The repo is setup using [turbo](https://turbo.build/) to make handling tasks easier.
+The root and server `package.json` files pin `packageManager` to `pnpm@10.33.0` and use `engines` to mark `npm`, `yarn`, and `bun` as `use-pnpm`. The root `preinstall` script also runs `only-allow pnpm`.
 
-### Setup
+Shared pnpm policy lives in `pnpm-workspace.yaml`, including:
 
-1. Run `pnpm install` in the root directory.
-2. Copy `.env.sample` to `.env` and replace any required values
+- `engineStrict: true`
+- `preferFrozenLockfile: true`
+- `strictDepBuilds: true`
+- `blockExoticSubdeps: true`
+- approved build dependencies
+- dependency overrides
+- `nodeLinker: hoisted`
 
-### Building
+The hoisted linker is intentional. Pulumi and Docker deployment paths may fail with `.pnpm/...` closure-loading or export-path errors if this is changed.
 
-During local development, you can trigger a build with `pnpm build`. This requires the [setup](#setup) tasks to have been completed.
+## Setup
 
-`pnpm build:release` requires an environment variable to be set, and is used in the Wundergraph Cloud deploy process.
+1. Enable the pinned pnpm version with Corepack if needed:
 
-### Running
+   ```bash
+   corepack enable
+   corepack prepare pnpm@10.33.0 --activate
+   ```
 
-During local development, you can run an API endpoint locally with `pnpm server:start`.
+2. Install dependencies from the repo root:
 
-This requires environment variables to be set, so follow the instructions in [setup](#setup).
+   ```bash
+   pnpm install
+   ```
 
-### Unit Tests
+3. Copy `.env.sample` to `.env` and set required values.
 
-Run `pnpm test:local`.
+The main required variables are:
 
-This requires environment variables to be set, so follow the instructions in [setup](#setup).
+- `ARBITRUM_SUBGRAPH_API_KEY` for server queries against The Graph gateway.
+- `WG_PUBLIC_NODE_URL` for client builds, because the default API URL is baked into the published client package.
 
-### Testing the Olympus Frontend
+## Development
 
-Running the [frontend](https://github.com/OlympusDAO/olympus-frontend/) against a different API endpoint requires jumping through some (small) hoops:
+Run commands from the repo root unless noted otherwise.
 
-1. Run the API endpoint locally. See [Running](#running).
-2. Pass the API endpoint to the frontend: `VITE_WG_PUBLIC_NODE_URL=http://localhost:9991 pnpm start`
+```bash
+pnpm lint:check
+WG_PUBLIC_NODE_URL=http://localhost:9991 pnpm build
+pnpm test:local
+pnpm server:start
+```
 
-### Deployment - Wundergraph Server
+`pnpm server:start` starts the compiled server from `apps/server` with `.env` loaded and listens on port `9991` by default.
 
-Orchestration is performed using Pulumi. To deploy, follow these steps:
+To run the server directly during development:
 
-1. Change to the `apps/server` directory.
-2. Authenticate with Pulumi, using `pulumi login`
-3. Run `pulumi up --stack <dev | prod>`
+```bash
+cd apps/server
+pnpm dev
+```
 
-Pulumi may require pnpm's hoisted linker layout to avoid `.pnpm/...` closure-loading or export-path errors, so this workspace sets `nodeLinker: hoisted` in `pnpm-workspace.yaml`.
+To test the Olympus frontend against a local API endpoint:
 
-NOTE: the Upstash credentials in the production project and environment should be different to that of all other projects/environments, so that the production cache is not polluted.
+```bash
+VITE_WG_PUBLIC_NODE_URL=http://localhost:9991 pnpm start
+```
 
-### Deployment - Client NPM Package
+## Server Deployment
 
-1. Set the required values in `.env.prod`
-2. Update the `version` in `apps/client/package.json`
-3. Update the changelog
-4. Build the release: `pnpm build:release`
-5. Change to the client directory: `cd apps/client`
-6. Run: `pnpm publish --access public`
-7. Answer the prompts (npm will ask for OTP if 2FA is enabled)
+Server infrastructure is managed by Pulumi in `apps/server` and deploys to Google Cloud Run. The Pulumi program also builds and tags Docker images, configures Cloud Run, wires Firebase Hosting rewrites, and manages monitoring resources.
 
-NOTE: You must be a member of the `@olympusdao` org in NPM in order to publish.
+Validate before deploying:
+
+```bash
+pnpm lint:check
+WG_PUBLIC_NODE_URL=<api-url> pnpm build
+pnpm test:local
+```
+
+Deploy:
+
+```bash
+cd apps/server
+pulumi login
+pulumi stack select <dev|prod>
+pulumi preview --stack <dev|prod>
+pulumi up --stack <dev|prod>
+```
+
+Review the preview before applying. Do not run `pulumi up --yes` or other non-interactive approval flags for this repo.
+
+The deployment requires the Pulumi stack configuration to include `ARBITRUM_SUBGRAPH_API_KEY` and the GCP/Firebase settings referenced by `apps/server/pulumi.ts`.
+
+## Client Package Release
+
+1. Set the production API URL in `.env.prod` with `WG_PUBLIC_NODE_URL`.
+2. Update the version in `apps/client/package.json`.
+3. Update the changelog:
+
+   ```bash
+   pnpm changelog
+   ```
+
+4. Build the release from the repo root:
+
+   ```bash
+   pnpm build:release
+   ```
+
+5. Publish from the client directory:
+
+   ```bash
+   cd apps/client
+   pnpm publish --access public
+   ```
+
+You must be a member of the `@olympusdao` npm organization to publish the client package.
 
 ## Wishlist / TODO
 
-- When testing/developing new subgraph versions, it would be nice to be able to provide a URL parameter with the subgraph deployment ID and have the Typescript operation use that deployment ID instead of the configured data source.
+- When testing or developing new subgraph versions, it would be useful to provide a URL parameter with the subgraph deployment ID and have the TypeScript operation use that deployment ID instead of the configured data source.
