@@ -8,6 +8,16 @@ const gcpConfig = new pulumi.Config("gcp");
 const pulumiConfig = new pulumi.Config();
 const projectName = "treasury-subgraph";
 const projectStackName = `${projectName}-${pulumi.getStack()}`;
+const replacementApiUrl = "https://treasury-subgraph-api.olympusdao.finance";
+const deployDeprecatedApi = pulumiConfig.getBoolean("deployDeprecatedApi") ?? false;
+let cloudRun: gcp.cloudrunv2.Service | undefined;
+let cloudRunUrl: pulumi.Output<string> | undefined;
+
+const serviceFirebase = new gcp.projects.Service("firebase", {
+  service: "firebase.googleapis.com",
+});
+
+if (deployDeprecatedApi) {
 
 /**
  * Enable services
@@ -17,9 +27,6 @@ const serviceArtifactRegistry = new gcp.projects.Service("artifact-registry", {
 });
 const serviceCloudRun = new gcp.projects.Service("cloud-run", {
   service: "run.googleapis.com",
-});
-const serviceFirebase = new gcp.projects.Service("firebase", {
-  service: "firebase.googleapis.com",
 });
 
 /**
@@ -87,7 +94,7 @@ const dockerImageLatest = createDockerImage(`${projectName}-latest`, "latest", [
 /**
  * Cloud Run
  */
-const cloudRun = new gcp.cloudrunv2.Service(
+cloudRun = new gcp.cloudrunv2.Service(
   projectName,
   {
     location: gcpConfig.require("region"),
@@ -127,6 +134,8 @@ const cloudRun = new gcp.cloudrunv2.Service(
   },
 );
 
+cloudRunUrl = cloudRun.uri;
+
 // Enable the Cloud Run service to be invoked by Firebase Hosting
 new gcp.cloudrunv2.ServiceIamMember("noauth", {
   name: cloudRun.name,
@@ -137,11 +146,13 @@ new gcp.cloudrunv2.ServiceIamMember("noauth", {
 }, {
   dependsOn: [cloudRun],
 });
+}
 
 /**
  * Firebase
  *
- * We utilise Firebase hosting to provide a static URL to Cloud Run.
+ * The Firebase Hosting URLs are retained as deprecated entry points and now
+ * permanently redirect to the replacement protocol metrics API.
  */
 
 // Deploy a Firebase Hosting site, so that we can obtain a static URL
@@ -172,35 +183,32 @@ if (!firebaseSiteId) {
 }
 
 const firebaseSiteIdInput: pulumi.Input<string> = firebaseSiteId.apply(str => `${str}`);
+const firebaseHostingVersionDependencies: pulumi.Resource[] = cloudRun
+  ? [firebaseHostingSite, cloudRun]
+  : [firebaseHostingSite];
 
-// Rewrite all requests to the Cloud Run instance
+// Permanently redirect all Firebase Hosting requests to the replacement API.
 const firebaseHostingVersion = new gcp.firebase.HostingVersion(
   projectName,
   {
     siteId: firebaseSiteIdInput,
     config: {
-      /**
-       * Firebase hosting does not forward CORS headers to the Cloud Run instance
-       * when using redirects, so we need to do a rewrite.
-       *
-       * Pulumi's implementation does not support specifying the region of the
-       * function (or does not discover the region accurately), so we need to
-       * ensure that both the Cloud Function and Firebase Hosting are in the
-       * default region, which is us-central1.
-       */
-      rewrites: [
+      redirects: [
         {
-          glob: "**",
-          run: {
-            region: gcpConfig.require("region"),
-            serviceId: cloudRun.name,
-          },
+          glob: "/",
+          location: replacementApiUrl,
+          statusCode: 301,
+        },
+        {
+          glob: "/:path*",
+          location: `${replacementApiUrl}/:path`,
+          statusCode: 301,
         },
       ],
     },
   },
   {
-    dependsOn: [firebaseHostingSite, cloudRun],
+    dependsOn: firebaseHostingVersionDependencies,
   },
 );
 
@@ -209,7 +217,7 @@ new gcp.firebase.HostingRelease(
   {
     siteId: firebaseSiteIdInput,
     versionName: firebaseHostingVersion.name,
-    message: "Cloud Run integration",
+    message: "Permanent redirect to replacement API",
   },
   {
     dependsOn: [firebaseHostingVersion],
@@ -219,6 +227,7 @@ new gcp.firebase.HostingRelease(
 /**
  * Alerts
  */
+if (deployDeprecatedApi && cloudRun) {
 // Notification channel
 const notificationEmail = new gcp.monitoring.NotificationChannel(
   "email",
@@ -392,6 +401,11 @@ const uptimeCheck = new gcp.monitoring.UptimeCheckConfig("uptime-check", {
     path: "/",
     port: 443,
     useSsl: true,
+    acceptedResponseStatusCodes: [
+      {
+        statusValue: 301,
+      },
+    ],
   },
   monitoredResource: {
     type: "uptime_url",
@@ -440,9 +454,18 @@ new gcp.monitoring.AlertPolicy("uptime-check-alert", {
 }, {
   dependsOn: [uptimeCheck],
 });
+}
+
+if (!deployDeprecatedApi) {
+  console.log(
+    "deployDeprecatedApi is false; only Firebase Hosting redirect resources will be managed.",
+  );
+}
 
 /**
  * Exports
  */
-export const cloudRunUrl = cloudRun.uri;
+if (cloudRunUrl) {
+  module.exports.cloudRunUrl = cloudRunUrl;
+}
 export const firebaseHostingUrl = firebaseHostingSite.defaultUrl;
