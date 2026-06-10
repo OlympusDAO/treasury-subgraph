@@ -1,5 +1,9 @@
 # OlympusDAO Treasury Subgraph
 
+> [!WARNING]
+> This repository is deprecated. New protocol metrics indexing and API work lives in [`OlympusDAO/olympus-protocol-metrics-subgraph`](https://github.com/OlympusDAO/olympus-protocol-metrics-subgraph), with the API hosted at [`treasury-subgraph-api.olympusdao.finance`](https://treasury-subgraph-api.olympusdao.finance).
+> Pulumi-managed Firebase Hosting URLs for this repository now permanently redirect to the replacement API.
+
 ## Purpose
 
 This repository provides the treasury API and client package used by OlympusDAO applications. The API aggregates treasury subgraph data across chains, computes protocol and treasury metrics, and serves the results through GraphQL plus legacy-compatible REST operation endpoints.
@@ -20,7 +24,7 @@ The workspace contains two applications:
   - Published as [`@olympusdao/treasury-subgraph-client`](https://www.npmjs.com/package/@olympusdao/treasury-subgraph-client).
   - Keeps the old WunderGraph-style `createClient().query({ operationName, input })` interface for downstream compatibility.
 
-The API server is hosted on Google Cloud Run, with Firebase Hosting providing the stable public URL. The service uses The Graph gateway, keyed by `ARBITRUM_SUBGRAPH_API_KEY`, to query configured subgraph deployments.
+The deprecated API server was hosted on Google Cloud Run, with Firebase Hosting now redirecting deprecated public URLs to the replacement API. The service uses The Graph gateway, keyed by `ARBITRUM_SUBGRAPH_API_KEY`, to query configured subgraph deployments.
 
 ## Package Manager
 
@@ -90,7 +94,9 @@ VITE_WG_PUBLIC_NODE_URL=http://localhost:9991 pnpm start
 
 ## Server Deployment
 
-Server infrastructure is managed by Pulumi in `apps/server` and deploys to Google Cloud Run. The Pulumi program also builds and tags Docker images, configures Cloud Run, wires Firebase Hosting rewrites, and manages monitoring resources.
+Server infrastructure is managed by Pulumi in `apps/server`. The active default stack keeps Firebase Hosting permanent redirects in place.
+
+Deprecated Cloud Run API infrastructure is gated by the Pulumi config value `deployDeprecatedApi`, which defaults to `false`. With the default value, Pulumi keeps the Firebase Hosting site and redirect release active while removing the old Cloud Run service, Docker image resources, Artifact Registry repository, and monitoring resources from desired state.
 
 Validate before deploying:
 
